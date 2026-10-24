@@ -56,8 +56,9 @@ function Invoke-TdFlow([string]$TdCommand, [string]$FlowScript, [string]$RunDire
         $exitCode = $LASTEXITCODE
         $output | ForEach-Object { Write-Host $_ }
 
-        $fatalText = $output | Select-String -Pattern '(^|\s)ERROR:|couldn.t read file|Script error|return -code error'
-        if (($exitCode -ne 0) -or $fatalText) {
+        $fatalText = $output | Select-String -Pattern '\bERROR\b|\bFATAL\b|couldn.t read file|Script error|return -code error'
+        $flowCompleted = $output | Select-String -Pattern 'start command "export_flow_status'
+        if (($exitCode -ne 0) -or $fatalText -or -not $flowCompleted) {
             Write-Fail "$Label failed (exit code $exitCode)."
         } else {
             Write-Pass "$Label completed."
@@ -74,6 +75,7 @@ $pptPath = Require-File '赛题解析一.pptx'
 $projectPath = Require-File 'src\td_project\HDMI1.4b_Transmitter_v1.0.al'
 $topPath = Require-File 'src\user_source\hdl_source\top_tf_hdmi_audio.v'
 $sdBmpPath = Require-File 'src\user_source\hdl_source\SD\sd_card_bmp.v'
+$scalerPath = Require-File 'src\user_source\hdl_source\SD\bmp_bilinear_reader.v'
 $axisPath = Require-File 'src\user_source\hdl_source\video_rgb_to_axis_640x480.v'
 $fadePath = Require-File 'src\user_source\hdl_source\video_fade_transition.v'
 $osdPath = Require-File 'src\user_source\hdl_source\video_osd_overlay.v'
@@ -84,6 +86,9 @@ $timingPath = Require-File 'src\user_source\constraints_source\timing.sdc'
 Write-Host "`n== Structural checks ==" -ForegroundColor Cyan
 Require-Text $topPath '^\s*module\s+top\b' 'Top module is present.'
 Require-Text $sdBmpPath '^\s*module\s+sd_card_bmp\b' 'TF/BMP controller is present.'
+Require-Text $scalerPath '^\s*module\s+bmp_bilinear_reader\b' 'Bilinear BMP loader is present.'
+Require-Text $sdBmpPath 'bmp_bilinear_reader\s+bmp_read_m0' 'Bilinear loader is instantiated.'
+Require-Text $projectPath 'bmp_bilinear_reader\.v' 'Tang Dynasty project references bilinear loader.'
 Require-Text $fadePath '^\s*module\s+video_fade_transition\b' 'Fade transition module is present.'
 Require-Text $osdPath '^\s*module\s+video_osd_overlay\b' 'OSD overlay module is present.'
 Require-Text $topPath 'u_video_fade_transition' 'Fade transition is instantiated in top.'
@@ -165,7 +170,7 @@ if ($RunSynthesis) {
             Invoke-TdFlow $tdCommand ($flowScript -replace '\\','/') $synDirectory 'TD synthesis'
         }
 
-        if ($RunImplementation) {
+        if ($RunImplementation -and $script:FailureCount -eq 0) {
             if (-not (Test-Path -LiteralPath $phyDirectory -PathType Container)) {
                 Write-Fail "Implementation run directory not found: $phyDirectory"
             } else {
@@ -187,7 +192,11 @@ if (Test-Path -LiteralPath $bitPath -PathType Leaf) {
     if ($latestHdl -and ($bitFile.LastWriteTime -ge $latestHdl.LastWriteTime)) {
         Write-Pass "Bitstream is newer than the latest HDL file ($($latestHdl.Name))."
     } else {
-        Write-Warn 'Bitstream is older than the latest HDL source; rerun implementation.'
+        if ($RunImplementation) {
+            Write-Fail 'Implementation did not produce a bitstream newer than the HDL source.'
+        } else {
+            Write-Warn 'Bitstream is older than the latest HDL source; rerun implementation.'
+        }
     }
 } else {
     Write-Warn 'No implementation bitstream found.'

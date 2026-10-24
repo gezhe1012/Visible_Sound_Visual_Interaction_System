@@ -61,6 +61,7 @@ module frame_read_write
 	input                            write_clk,                  // data write module clock
 	input                            write_req,                  // data write module write request,keep '1' until read_req_ack = '1'
 	output                           write_req_ack,              // data write module write request response
+	output                           write_ready,                // write-clock-domain FIFO backpressure
 	output                           write_finish,               // data write module write request finish
 	input[ADDR_BITS - 1:0]           write_addr_0,               // data write module write request base address 0, used when write_addr_index = 0
 	input[ADDR_BITS - 1:0]           write_addr_1,               // data write module write request base address 1, used when write_addr_index = 1
@@ -80,6 +81,18 @@ wire								 App_wr_busy;
 
 wire                                 read_fifo_aclr;             // fifo Asynchronous clear
 wire                                 write_fifo_aclr;            // fifo Asynchronous clear
+wire [8:0] write_used_words;
+wire write_fifo_full;
+wire write_req_ack_mem;
+reg [1:0] write_ack_sync;
+always @(posedge write_clk or posedge rst) begin
+    if(rst) write_ack_sync<=2'b00;
+    else write_ack_sync<={write_ack_sync[0],write_req_ack_mem};
+end
+assign write_req_ack=write_ack_sync[1];
+// Reserve 32 entries for registered ready/valid and pointer synchronization.
+// wrusedw is already synchronized INSIDE the vendor FIFO to write_clk.
+assign write_ready = !write_fifo_full && write_used_words < 9'd480;
 
 wire O_wr_busy;
 wire O_rd_busy;
@@ -98,8 +111,8 @@ wfifo_32_32_512 write_buf
 	.re                      	(App_wr_en        		  ),          // Read Request
 	.di                       	(write_data               ),          // Input Data
 	.empty_flag                 (                         ),          // Read side Empty flag
-	.full_flag                  (                         ),          // Write side Full flag
-	.wrusedw                	(              	  		  ),          // Read Used Words
+	.full_flag                  (write_fifo_full          ),          // Write side Full flag
+	.wrusedw                    (write_used_words         ),          // Write clock domain occupancy
 	.rdusedw                	(rdusedw                  ),          // Write Used Words
 	.dout                       (App_wr_din		          )
 );
@@ -128,7 +141,7 @@ frame_fifo_write_m0
 	.App_wr_en					(App_wr_en),
     .App_wr_addr				(App_wr_addr),
 	.write_req                  (write_req                ),
-	.write_req_ack              (write_req_ack            ),
+	.write_req_ack              (write_req_ack_mem        ),
 	.write_finish               (write_finish             ),
 	.write_addr_0               (write_addr_0             ),
 	.write_addr_1               (write_addr_1             ),

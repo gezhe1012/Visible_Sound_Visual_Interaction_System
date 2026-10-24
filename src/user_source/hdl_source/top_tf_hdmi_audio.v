@@ -75,6 +75,7 @@ wire        sd_card_write_en;
 wire [31:0] sd_card_write_data;
 wire        sd_card_write_req;
 wire        sd_card_write_req_ack;
+wire        sd_card_write_ready;
 wire        frame_write_finish;
 reg         frame_write_toggle_mem;
 
@@ -186,6 +187,7 @@ sd_card_bmp #(
 
     .write_req         (sd_card_write_req),
     .write_req_ack     (sd_card_write_req_ack),
+    .write_ready       (sd_card_write_ready),
     .write_en          (sd_card_write_en),
     .write_data        (sd_card_write_data),
     .SD_nCS            (sd_ncs),
@@ -313,6 +315,7 @@ frame_read_write #(
     .write_clk         (sd_card_clk),
     .write_req         (sd_card_write_req),
     .write_req_ack     (sd_card_write_req_ack),
+    .write_ready       (sd_card_write_ready),
     .write_finish      (frame_write_finish),
     .write_addr_0      (BUF0_ADDR),
     .write_addr_1      (BUF1_ADDR),

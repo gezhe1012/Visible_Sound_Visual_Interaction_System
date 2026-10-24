@@ -27,6 +27,7 @@ module sd_card_bmp #(
 
     output                      write_req,
     input                       write_req_ack,
+    input                       write_ready,
     output                      write_en,
     output [31:0]               write_data,
     output                      SD_nCS,
@@ -47,6 +48,7 @@ wire             bmp_data_wr_en;
 wire [23:0]      bmp_data;
 wire             sd_init_done;
 wire             bmp_ready;
+wire             bmp_load_error;
 wire             scan_done;
 wire             scan_found_valid;
 wire [31:0]      scan_found_sector;
@@ -73,6 +75,8 @@ reg              transition_pending;
 
 // bmp_ready 先表示“源文件读取/送 FIFO 完成”；真正切显示要等 write_finish_toggle 同步后
 reg              source_done_seen;
+reg              source_started_seen;
+reg              memory_done_seen;
 
 // 同步 mem_clk 域的 write_finish_toggle
 reg [2:0]        wrfin_tgl_sync;
@@ -175,6 +179,8 @@ always @(posedge clk or posedge rst) begin
         load_busy             <= 1'b0;
         transition_pending    <= 1'b0;
         source_done_seen      <= 1'b0;
+        source_started_seen   <= 1'b0;
+        memory_done_seen      <= 1'b0;
         display_valid         <= 1'b0;
         transition_start_toggle <= 1'b0;
         transition_buf_idx      <= 2'd0;
@@ -203,6 +209,8 @@ always @(posedge clk or posedge rst) begin
             load_busy             <= 1'b0;
             transition_pending    <= 1'b0;
             source_done_seen      <= 1'b0;
+            source_started_seen   <= 1'b0;
+            memory_done_seen      <= 1'b0;
             display_valid         <= 1'b0;
             transition_start_toggle <= 1'b0;
             transition_buf_idx      <= 2'd0;
@@ -222,13 +230,19 @@ always @(posedge clk or posedge rst) begin
             end
 
             // 记住 bmp_read 已经把源图送完 FIFO，但还不能切显示，得等整帧写完
-            if (load_busy && bmp_ready)
+            if (load_busy && !bmp_ready)
+                source_started_seen <= 1'b1;
+            if (load_busy && source_started_seen && bmp_ready)
                 source_done_seen <= 1'b1;
+            if (load_busy && write_finish_pulse)
+                memory_done_seen <= 1'b1;
 
             // 整帧写完后通知 video 域启动转场，但暂不切换当前显示缓冲区。
-            if (load_busy && source_done_seen && write_finish_pulse) begin
+            if (load_busy && source_done_seen && memory_done_seen && !bmp_load_error) begin
                 load_busy             <= 1'b0;
                 source_done_seen      <= 1'b0;
+                source_started_seen   <= 1'b0;
+                memory_done_seen      <= 1'b0;
                 transition_pending    <= 1'b1;
                 transition_buf_idx    <= pending_buf_idx;
                 transition_start_toggle <= ~transition_start_toggle;
@@ -261,6 +275,8 @@ always @(posedge clk or posedge rst) begin
                 load_busy             <= 1'b0;
                 transition_pending    <= 1'b0;
                 source_done_seen      <= 1'b0;
+                source_started_seen   <= 1'b0;
+                memory_done_seen      <= 1'b0;
                 transition_start_toggle <= 1'b0;
                 transition_buf_idx      <= 2'd0;
             end else begin
@@ -293,6 +309,8 @@ always @(posedge clk or posedge rst) begin
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     source_done_seen <= 1'b0;
+                    source_started_seen <= 1'b0;
+                    memory_done_seen <= 1'b0;
                     next_req_pending <= 1'b0;
                     auto_cnt         <= 32'd0;
                 end
@@ -305,6 +323,8 @@ always @(posedge clk or posedge rst) begin
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     source_done_seen <= 1'b0;
+                    source_started_seen <= 1'b0;
+                    memory_done_seen <= 1'b0;
                     next_req_pending <= 1'b0;
                     auto_cnt         <= 32'd0;
                 end
@@ -317,14 +337,24 @@ always @(posedge clk or posedge rst) begin
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     source_done_seen <= 1'b0;
+                    source_started_seen <= 1'b0;
+                    memory_done_seen <= 1'b0;
                     auto_cnt         <= 32'd0;
                 end
+            end
+            // Keep displaying the committed frame after a rejected/failed load.
+            if (bmp_load_error) begin
+                load_busy <= 1'b0;
+                source_done_seen <= 1'b0;
+                source_started_seen <= 1'b0;
+                memory_done_seen <= 1'b0;
+                next_req_pending <= 1'b0;
             end
         end
     end
 end
 
-bmp_read bmp_read_m0(
+bmp_bilinear_reader bmp_read_m0(
     .clk                    (clk),
     .rst                    (rst),
     .ready                  (bmp_ready),
@@ -347,6 +377,8 @@ bmp_read bmp_read_m0(
     .bmp_height             (bmp_height),
     .write_req              (write_req),
     .write_req_ack          (write_req_ack),
+    .write_ready            (write_ready),
+    .load_error             (bmp_load_error),
     .sd_sec_read            (sd_sec_read),
     .sd_sec_read_addr       (sd_sec_read_addr),
     .sd_sec_read_data       (sd_sec_read_data),

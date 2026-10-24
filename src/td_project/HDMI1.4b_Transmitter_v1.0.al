@@ -119,7 +119,7 @@
                     <Attr Name="CompileOrder" Val="21"/>
                 </FileInfo>
             </File>
-            <File Path="../user_source/hdl_source/SD/bmp_read.v">
+            <File Path="../user_source/hdl_source/SD/bmp_bilinear_reader.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
