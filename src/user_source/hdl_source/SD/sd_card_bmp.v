@@ -3,7 +3,8 @@ module sd_card_bmp #(
     parameter integer CLK_FREQ_HZ       = 100_000_000,
     parameter [31:0]  SCAN_START_SECTOR = 32'd0,
     parameter [31:0]  SCAN_MAX_SECTOR   = 32'd131071,
-    parameter [2:0]   SCAN_TARGET_COUNT = 3'd4
+    parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
+    parameter integer KEY_EVENT_MODE  = 0 // 1: video-domain short-action toggles
 )(
     input                       clk,
     input                       rst,
@@ -94,6 +95,7 @@ assign next_from_current = next_index_limited(img_idx, img_found_count);
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign transition_done_pulse = trans_done_tgl_sync[2] ^ trans_done_tgl_sync[1];
 
+generate if(KEY_EVENT_MODE==0) begin : g_physical_keys
 key_press_debounce #(
     .CLK_FREQ_HZ (CLK_FREQ_HZ),
     .DEBOUNCE_MS (20)
@@ -113,6 +115,18 @@ key_press_debounce #(
     .button_in  (key_auto),
     .press_pulse(key_auto_press)
 );
+end else begin : g_key_events
+    reg [2:0] next_sync,auto_sync;
+    always @(posedge clk or posedge rst) begin
+        if(rst) begin next_sync<=0; auto_sync<=0; end
+        else begin
+            next_sync<={next_sync[1:0],key_next};
+            auto_sync<={auto_sync[1:0],key_auto};
+        end
+    end
+    assign key_next_press=next_sync[2]^next_sync[1];
+    assign key_auto_press=auto_sync[2]^auto_sync[1];
+end endgenerate
 
 function [1:0] next_index_limited;
     input [1:0] cur;

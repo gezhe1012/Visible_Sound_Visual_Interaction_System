@@ -19,6 +19,8 @@ Desktop.ini
 # ModelSim regression products
 tests/work/
 tests/commit_work/
+tests/controls_work/
+tests/extension4_osd_preview.*
 tests/transcript
 tests/vsim.wlf
 tests/modelsim.ini

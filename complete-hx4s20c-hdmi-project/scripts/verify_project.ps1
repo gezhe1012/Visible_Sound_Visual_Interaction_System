@@ -76,6 +76,8 @@ $projectPath = Require-File 'src\td_project\HDMI1.4b_Transmitter_v1.0.al'
 $topPath = Require-File 'src\user_source\hdl_source\top_tf_hdmi_audio.v'
 $sdBmpPath = Require-File 'src\user_source\hdl_source\SD\sd_card_bmp.v'
 $scalerPath = Require-File 'src\user_source\hdl_source\SD\bmp_bilinear_reader.v'
+$controlsPath = Require-File 'src\user_source\hdl_source\display_key_controls.v'
+$adjustPath = Require-File 'src\user_source\hdl_source\video_picture_adjust.v'
 $axisPath = Require-File 'src\user_source\hdl_source\video_rgb_to_axis_640x480.v'
 $fadePath = Require-File 'src\user_source\hdl_source\video_fade_transition.v'
 $osdPath = Require-File 'src\user_source\hdl_source\video_osd_overlay.v'
@@ -89,6 +91,10 @@ Require-Text $sdBmpPath '^\s*module\s+sd_card_bmp\b' 'TF/BMP controller is prese
 Require-Text $scalerPath '^\s*module\s+bmp_bilinear_reader\b' 'Bilinear BMP loader is present.'
 Require-Text $sdBmpPath 'bmp_bilinear_reader\s+bmp_read_m0' 'Bilinear loader is instantiated.'
 Require-Text $projectPath 'bmp_bilinear_reader\.v' 'Tang Dynasty project references bilinear loader.'
+Require-Text $topPath 'u_display_key_controls' 'Display key controls are instantiated.'
+Require-Text $topPath 'u_video_picture_adjust' 'Brightness/contrast processor is instantiated.'
+Require-Text $projectPath 'display_key_controls\.v' 'Tang Dynasty project references key controls.'
+Require-Text $projectPath 'video_picture_adjust\.v' 'Tang Dynasty project references picture processor.'
 Require-Text $fadePath '^\s*module\s+video_fade_transition\b' 'Fade transition module is present.'
 Require-Text $osdPath '^\s*module\s+video_osd_overlay\b' 'OSD overlay module is present.'
 Require-Text $topPath 'u_video_fade_transition' 'Fade transition is instantiated in top.'
@@ -142,6 +148,16 @@ if ($RunImplementation) {
     $RunSynthesis = $true
 }
 
+function Get-HdlSignature {
+    $sourceFiles = Get-ChildItem -LiteralPath (Join-Path $ProjectRoot 'src\user_source') -Recurse -File |
+        Where-Object { $_.Extension -in '.v','.vhd','.sdc','.adc' } | Sort-Object FullName
+    return (($sourceFiles | ForEach-Object {
+        $sourceHash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+        '{0}={1}' -f $_.FullName,$sourceHash
+    }) -join "`n")
+}
+
+$sourceSignatureBefore = if($RunSynthesis) { Get-HdlSignature } else { '' }
 if ($RunSynthesis) {
     $tdCommand = $null
     $commandInfo = Get-Command 'td_commands_prompt.exe' -ErrorAction SilentlyContinue
@@ -178,6 +194,10 @@ if ($RunSynthesis) {
             }
         }
     }
+}
+
+if($RunSynthesis -and $sourceSignatureBefore -cne (Get-HdlSignature)) {
+    Write-Fail 'HDL or constraints changed during this build; rebuild from the stable sources.'
 }
 
 Write-Host "`n== Bitstream freshness ==" -ForegroundColor Cyan

@@ -23,7 +23,7 @@ localparam IDLE=0, SCAN=1, HEADER=2, VALIDATE=3, WAIT_WRITE=4,
     VERTICAL=13, EMIT=14, ADVANCE_X=15, ADVANCE_Y=16,
     Y_WEIGHT=17, SETUP=18, SCAN_GAP=19, ROW_MULTIPLY=20, ROW_OFFSET=21,
     MIX_DIFF=22, MIX_PRODUCT=23, MIX_ADD=24, H0_DONE=25, H1_DONE=26, V_DONE=27,
-    PREPARE_X=28, ROW_TEST=29;
+    PREPARE_X=28, ROW_TEST=29, ROW_DECIDE=30;
 reg [4:0] state;
 reg [9:0] header_byte;
 reg [7:0] magic0, magic1;
@@ -38,6 +38,7 @@ reg [10:0] line_write_x;
 reg load_line;
 reg [11:0] cache_tag0, cache_tag1, requested_row;
 reg cache_valid0, cache_valid1;
+reg cache_miss0, cache_miss1;
 reg [11:0] src_x, src_y;
 reg [9:0] dst_x, dst_y;
 reg [11:0] x_remainder, y_remainder;
@@ -163,6 +164,7 @@ always @(posedge clk or posedge rst) begin
         row_complete<=0;
         load_line<=0; cache_tag0<=0; cache_tag1<=0;
         cache_valid0<=0; cache_valid1<=0; requested_row<=0;
+        cache_miss0<=1; cache_miss1<=1;
         src_x<=0; src_y<=0; dst_x<=0; dst_y<=0;
         x_remainder<=0; y_remainder<=0; fx<=0; fy<=0;
         fraction_remainder<=0; fraction_bit<=0;
@@ -236,9 +238,16 @@ always @(posedge clk or posedge rst) begin
             SETUP: if(!write_req_ack) state<=CHECK_ROW;
             CHECK_ROW: begin
                 state_code<=4;
-                if(!cache_valid0 || cache_tag0!=src_y) begin
+                // Separate 12-bit tag comparisons from state/register enables.
+                // Tags and source coordinates stay fixed through ROW_DECIDE.
+                cache_miss0<=!cache_valid0 || cache_tag0!=src_y;
+                cache_miss1<=!cache_valid1 || cache_tag1!=next_src_y;
+                state<=ROW_DECIDE;
+            end
+            ROW_DECIDE: begin
+                if(cache_miss0) begin
                     requested_row<=src_y; load_line<=0; state<=ROW_ADDRESS;
-                end else if(!cache_valid1 || cache_tag1!=next_src_y) begin
+                end else if(cache_miss1) begin
                     requested_row<=next_src_y; load_line<=1; state<=ROW_ADDRESS;
                 end else begin src_x<=0; x_remainder<=0; dst_x<=0; state<=PREPARE_X; end
             end

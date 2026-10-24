@@ -17,6 +17,9 @@ module video_osd_overlay #(
     input             vs,
     input             de,
     input      [23:0] rgb_in,
+    input signed [8:0] brightness,
+    input [2:0] contrast_q2,
+    input [1:0] active_control,
     output reg [23:0] rgb_out
 );
 
@@ -40,6 +43,10 @@ reg [3:0]  glyph_col;
 reg [3:0]  glyph_row;
 reg [10:0] ticker_sum;
 reg [9:0]  ticker_rel;
+reg [23:0] panel_color,text_color;
+reg [4:0] panel_alpha;
+wire [8:0] brightness_magnitude=brightness[8] ? -brightness : brightness;
+localparam [151:0] HELP_TEXT="HOLD K1:BRI K2:CON ";
 
 wire frame_tick;
 assign frame_tick = vs & ~vs_d;
@@ -118,12 +125,56 @@ function [7:0] ticker_char;
     end
 endfunction
 
+function [7:0] parameter_char;
+    input [4:0] index;
+    begin
+        case(index)
+            0: parameter_char="B"; 1: parameter_char="R"; 2: parameter_char="I";
+            3,11: parameter_char=":";
+            4: parameter_char=brightness[8] ? "-" : "+";
+            5: parameter_char=decimal_ascii(brightness_magnitude/10);
+            6: parameter_char=decimal_ascii(brightness_magnitude%10);
+            8: parameter_char="C"; 9: parameter_char="O"; 10: parameter_char="N";
+            12: parameter_char=(contrast_q2>=4) ? "1" : "0";
+            13: case(contrast_q2)
+                2,6: parameter_char="5";
+                3: parameter_char="7";
+                5: parameter_char="2";
+                default: parameter_char="0";
+            endcase
+            14: parameter_char=(contrast_q2==3 || contrast_q2==5) ? "5" : "0";
+            15: parameter_char="%";
+            default: parameter_char=" ";
+        endcase
+    end
+endfunction
+
 function [4:0] font5x7;
     input [7:0] ch;
     input [2:0] row;
     begin
         font5x7 = 5'b00000;
         case (ch)
+            "B": case (row)
+                0: font5x7=5'b11110; 1: font5x7=5'b10001; 2: font5x7=5'b10001;
+                3: font5x7=5'b11110; 4: font5x7=5'b10001; 5: font5x7=5'b10001;
+                6: font5x7=5'b11110; default: font5x7=0; endcase
+            "R": case (row)
+                0: font5x7=5'b11110; 1: font5x7=5'b10001; 2: font5x7=5'b10001;
+                3: font5x7=5'b11110; 4: font5x7=5'b10100; 5: font5x7=5'b10010;
+                6: font5x7=5'b10001; default: font5x7=0; endcase
+            "K": case (row)
+                0: font5x7=5'b10001; 1: font5x7=5'b10010; 2: font5x7=5'b10100;
+                3: font5x7=5'b11000; 4: font5x7=5'b10100; 5: font5x7=5'b10010;
+                6: font5x7=5'b10001; default: font5x7=0; endcase
+            "+": case (row)
+                1,2,4,5: font5x7=5'b00100; 3: font5x7=5'b11111;
+                default: font5x7=0; endcase
+            "-": if(row==3) font5x7=5'b11111;
+            "%": case (row)
+                0: font5x7=5'b11001; 1: font5x7=5'b11010; 2: font5x7=5'b00010;
+                3: font5x7=5'b00100; 4: font5x7=5'b01000; 5: font5x7=5'b01011;
+                6: font5x7=5'b10011; default: font5x7=0; endcase
             "A": case (row)
                 0: font5x7=5'b01110; 1: font5x7=5'b10001; 2: font5x7=5'b10001;
                 3: font5x7=5'b11111; 4: font5x7=5'b10001; 5: font5x7=5'b10001;
@@ -322,61 +373,67 @@ always @(posedge clk or posedge rst) begin
 end
 
 always @* begin
-    rgb_out        = de ? rgb_in : 24'h000000;
+    rgb_out        = 24'h000000;
     glyph_char     = " ";
     glyph_row_bits = 5'b00000;
     glyph_index    = 5'd0;
     glyph_col      = 4'd0;
     glyph_row      = 4'd0;
-    ticker_sum     = 11'd0;
+    ticker_sum     = {1'b0,x}+{1'b0,scroll_pos};
     ticker_rel     = 10'd0;
-
-    if (de) begin
-        // Top-left logo panel, 12/16 alpha.
-        if ((x >= 10'd18) && (x < 10'd174) && (y >= 10'd14) && (y < 10'd50))
-            rgb_out = alpha_mix_rgb(rgb_out, 24'h075AA8, 5'd12);
-
-        if ((x >= 10'd30) && (x < 10'd156) && (y >= 10'd22) && (y < 10'd43)) begin
-            glyph_index    = (x - 10'd30) / 18;
-            glyph_col      = ((x - 10'd30) % 18) / 3;
-            glyph_row      = (y - 10'd22) / 3;
-            glyph_char     = logo_char(glyph_index);
-            glyph_row_bits = font5x7(glyph_char, glyph_row[2:0]);
-            if ((glyph_col < 5) && glyph_row_bits[4-glyph_col])
-                rgb_out = 24'hFFFFFF;
+    panel_color    = 24'd0;
+    panel_alpha    = 5'd0;
+    text_color     = 24'hFFFFFF;
+    if(de) begin
+        // Select one background, then use one shared Alpha mixer.
+        if(x>=18 && x<174 && y>=14 && y<50) begin
+            panel_color=24'h075AA8; panel_alpha=12;
+        end else if(x>=420 && x<622 && y>=14 && y<50) begin
+            panel_color=24'h101820; panel_alpha=10;
+        end else if(x>=18 && x<338 && y>=62 && y<116) begin
+            panel_color=(active_control==3) ? 24'h095A32 : 24'h101820;
+            panel_alpha=11;
+        end else if(y>=430 && y<464) begin
+            panel_color=24'h071A2B; panel_alpha=11;
         end
 
-        // Top-right clock panel, 10/16 alpha.
-        if ((x >= 10'd420) && (x < 10'd622) && (y >= 10'd14) && (y < 10'd50))
-            rgb_out = alpha_mix_rgb(rgb_out, 24'h101820, 5'd10);
-
-        if ((x >= 10'd432) && (x < 10'd588) && (y >= 10'd25) && (y < 10'd39)) begin
-            glyph_index    = (x - 10'd432) / 12;
-            glyph_col      = ((x - 10'd432) % 12) / 2;
-            glyph_row      = (y - 10'd25) / 2;
-            glyph_char     = time_char(glyph_index);
-            glyph_row_bits = font5x7(glyph_char, glyph_row[2:0]);
-            if ((glyph_col < 5) && glyph_row_bits[4-glyph_col])
-                rgb_out = 24'hFFE66D;
+        if(x>=30 && x<156 && y>=22 && y<43) begin
+            glyph_index=(x-10'd30)/18;
+            glyph_col=((x-10'd30)%18)/3;
+            glyph_row=(y-10'd22)/3;
+            glyph_char=logo_char(glyph_index);
+        end else if(x>=432 && x<588 && y>=25 && y<39) begin
+            glyph_index=(x-10'd432)/12;
+            glyph_col=((x-10'd432)%12)/2;
+            glyph_row=(y-10'd25)/2;
+            glyph_char=time_char(glyph_index);
+            text_color=24'hFFE66D;
+        end else if(x>=24 && x<280 && y>=70 && y<84) begin
+            glyph_index=(x-10'd24)>>4;
+            glyph_col=((x-10'd24)&10'd15)>>1;
+            glyph_row=(y-10'd70)>>1;
+            glyph_char=parameter_char(glyph_index);
+            if((active_control==1 && glyph_index<7) ||
+               (active_control==2 && glyph_index>=8))
+                text_color=24'hFFE66D;
+        end else if(x>=24 && x<328 && y>=94 && y<108) begin
+            glyph_index=(x-10'd24)>>4;
+            glyph_col=((x-10'd24)&10'd15)>>1;
+            glyph_row=(y-10'd94)>>1;
+            if(glyph_index<19) glyph_char=HELP_TEXT[(18-glyph_index)*8 +: 8];
+            text_color=24'h9BC5DD;
+        end else if(y>=440 && y<454 && ticker_sum>=640 && ticker_sum<880) begin
+            ticker_rel=ticker_sum-11'd640;
+            glyph_index=ticker_rel/12;
+            glyph_col=(ticker_rel%12)/2;
+            glyph_row=(y-10'd440)/2;
+            glyph_char=ticker_char(glyph_index);
+            text_color=24'h52E3FF;
         end
-
-        // Bottom caption strip and scrolling text.
-        if ((y >= 10'd430) && (y < 10'd464))
-            rgb_out = alpha_mix_rgb(rgb_out, 24'h071A2B, 5'd11);
-
-        ticker_sum = {1'b0, x} + {1'b0, scroll_pos};
-        if ((y >= 10'd440) && (y < 10'd454) &&
-            (ticker_sum >= 11'd640) && (ticker_sum < 11'd880)) begin
-            ticker_rel     = ticker_sum - 11'd640;
-            glyph_index    = ticker_rel / 12;
-            glyph_col      = (ticker_rel % 12) / 2;
-            glyph_row      = (y - 10'd440) / 2;
-            glyph_char     = ticker_char(glyph_index);
-            glyph_row_bits = font5x7(glyph_char, glyph_row[2:0]);
-            if ((glyph_col < 5) && glyph_row_bits[4-glyph_col])
-                rgb_out = 24'h52E3FF;
-        end
+        glyph_row_bits=font5x7(glyph_char,glyph_row[2:0]);
+        rgb_out=alpha_mix_rgb(rgb_in,panel_color,panel_alpha);
+        if(glyph_col<5 && glyph_row<7 && glyph_row_bits[4-glyph_col])
+            rgb_out=text_color;
     end
 end
-
 endmodule

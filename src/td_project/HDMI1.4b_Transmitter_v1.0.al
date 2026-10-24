@@ -86,6 +86,22 @@
                     <Attr Name="CompileOrder" Val="12"/>
                 </FileInfo>
             </File>
+            <File Path="../user_source/hdl_source/display_key_controls.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="48"/>
+                </FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/video_picture_adjust.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="49"/>
+                </FileInfo>
+            </File>
             <File Path="../user_source/hdl_source/top_tf_hdmi_audio.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>

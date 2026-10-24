@@ -50,6 +50,12 @@ wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
 wire [23:0] vout_data_faded;
 wire [23:0] vout_data_osd;
+wire [23:0] vout_data_adjusted;
+wire hs_adjusted,vs_adjusted,de_adjusted;
+wire signed [8:0] display_brightness;
+wire [2:0] display_contrast_q2;
+wire [1:0] display_active_control;
+wire next_key_toggle,auto_key_toggle;
 wire        sd_display_valid;
 
 // OSD / transition extension signals
@@ -166,12 +172,13 @@ sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4)
+    .SCAN_TARGET_COUNT (3'd4),
+    .KEY_EVENT_MODE    (1)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
-    .key_next          (key1),
-    .key_auto          (key2),
+    .key_next          (next_key_toggle),
+    .key_auto          (auto_key_toggle),
     .state_code        (state_code),
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
@@ -239,6 +246,20 @@ video_delay video_delay_m0(
     .vout_data         (vout_data_raw)
 );
 
+// Extension 4: short/long key gestures, frame-atomic parameters and RGB pipeline.
+display_key_controls u_display_key_controls (
+    .clk(video_clk), .rst(rst_all), .vs(vs), .key1(key1), .key2(key2),
+    .next_toggle(next_key_toggle), .auto_toggle(auto_key_toggle),
+    .brightness(display_brightness), .contrast_q2(display_contrast_q2),
+    .active_control(display_active_control)
+);
+video_picture_adjust u_video_picture_adjust (
+    .clk(video_clk), .rst(rst_all), .hs(hs), .vs(vs), .de(de),
+    .rgb_in(vout_data_raw), .brightness(display_brightness),
+    .contrast_q2(display_contrast_q2), .hs_out(hs_adjusted),
+    .vs_out(vs_adjusted), .de_out(de_adjusted), .rgb_out(vout_data_adjusted)
+);
+
 // ===================== 扩展要求2：双缓冲淡出/淡入转场 =====================
 video_fade_transition #(
     .FADE_FRAMES       (16),
@@ -256,9 +277,9 @@ video_fade_transition #(
 );
 
 // 4-bit brightness coefficient: 0/16 ... 16/16.
-assign fade_r_product = vout_data_raw[23:16] * transition_fade_level;
-assign fade_g_product = vout_data_raw[15:8]  * transition_fade_level;
-assign fade_b_product = vout_data_raw[7:0]   * transition_fade_level;
+assign fade_r_product = vout_data_adjusted[23:16] * transition_fade_level;
+assign fade_g_product = vout_data_adjusted[15:8]  * transition_fade_level;
+assign fade_b_product = vout_data_adjusted[7:0]   * transition_fade_level;
 assign vout_data_faded = transition_display_valid ?
                          {fade_r_product[11:4], fade_g_product[11:4], fade_b_product[11:4]} :
                          24'h000000;
@@ -269,9 +290,12 @@ video_osd_overlay #(
 ) u_video_osd_overlay (
     .clk     (video_clk),
     .rst     (rst_all),
-    .hs      (hs),
-    .vs      (vs),
-    .de      (de),
+    .hs      (hs_adjusted),
+    .vs      (vs_adjusted),
+    .de      (de_adjusted),
+    .brightness(display_brightness),
+    .contrast_q2(display_contrast_q2),
+    .active_control(display_active_control),
     .rgb_in  (vout_data_faded),
     .rgb_out (vout_data_osd)
 );
@@ -382,8 +406,8 @@ audio_arc_calculate #(
 video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
     .I_clk         (video_clk),
     .I_rst         (rst_all),
-    .I_vs          (vs),
-    .I_de          (de),
+    .I_vs          (vs_adjusted),
+    .I_de          (de_adjusted),
     .I_rgb         (vout_data),
     .O_video_user  (axis_s_user),
     .O_video_valid (axis_s_valid),
