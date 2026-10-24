@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project Version="3" Minor="2" Path="G:/BaiduNetdiskDownload/7_lab_ex_2026_nosoft/lab_ex5_i2s/src/td_project">
     <Project_Created_Time></Project_Created_Time>
-    <TD_Version>6.2.168116</TD_Version>
+    <TD_Version>5.6.71036</TD_Version>
     <Name>HDMI1.4b_Transmitter_v1.0</Name>
     <HardWare>
         <Family>EG4</Family>
@@ -201,7 +201,6 @@
             </File>
             <File Path="../user_source/hdl_source/SD/video_define.v">
                 <FileInfo>
-                    <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
@@ -290,7 +289,6 @@
             </File>
             <File Path="../user_source/hdl_source/include/global_def.v">
                 <FileInfo>
-                    <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
@@ -443,14 +441,10 @@
         <Run Name="syn_1" Type="Synthesis" ConstraintSet="constraint_1" Description="" Active="true">
             <Strategy Name="Default_Synthesis_Strategy">
             </Strategy>
-            <UserParams>
-            </UserParams>
         </Run>
         <Run Name="phy_1" Type="PhysicalDesign" ConstraintSet="constraint_1" Description="" SynRun="syn_1" Active="true">
             <Strategy Name="Default_PhysicalDesign_Strategy">
             </Strategy>
-            <UserParams>
-            </UserParams>
         </Run>
     </Runs>
     <Project_Settings>
