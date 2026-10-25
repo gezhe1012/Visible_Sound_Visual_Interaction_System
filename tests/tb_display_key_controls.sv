@@ -22,6 +22,7 @@ sd_card_bmp #(.CLK_FREQ_HZ(1000),.KEY_EVENT_MODE(1)) receiver(
     .bmp_width(16'd640),.bmp_height(16'd480),.transition_done_toggle(1'b0),
     .write_finish_toggle(1'b0),.write_req_ack(1'b0),.write_ready(1'b1),.SD_MISO(1'b1),
     .state_code(),.display_valid(),.transition_start_toggle(),.transition_buf_idx(),
+    .transition_lesson_idx(),
     .write_buf_idx(),.disp_buf_idx(),.write_req(),.write_en(),.write_data(),
     .SD_nCS(),.SD_DCLK(),.SD_MOSI());
 always @(posedge sd_clk) begin

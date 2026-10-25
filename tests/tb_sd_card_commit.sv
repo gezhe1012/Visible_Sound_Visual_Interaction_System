@@ -7,6 +7,7 @@ always #5 clk=~clk;
 reg write_finish_toggle=0, transition_done_toggle=0;
 wire [3:0] state_code;
 wire [1:0] write_buf_idx,disp_buf_idx,transition_buf_idx;
+wire [1:0] transition_lesson_idx;
 wire display_valid,transition_start_toggle,write_req,write_en;
 wire [31:0] write_data;
 wire SD_nCS,SD_DCLK,SD_MOSI;

@@ -4,7 +4,8 @@ module sd_card_bmp #(
     parameter [31:0]  SCAN_START_SECTOR = 32'd0,
     parameter [31:0]  SCAN_MAX_SECTOR   = 32'd131071,
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
-    parameter integer KEY_EVENT_MODE  = 0 // 1: video-domain short-action toggles
+    parameter integer KEY_EVENT_MODE  = 0, // 1: video-domain short-action toggles
+    parameter integer AUTO_PLAY_SECONDS = 1
 )(
     input                       clk,
     input                       rst,
@@ -21,6 +22,7 @@ module sd_card_bmp #(
     input                       transition_done_toggle,
     output reg                  transition_start_toggle,
     output reg [1:0]            transition_buf_idx,
+    output [1:0]                transition_lesson_idx,
 
     input                       write_finish_toggle,
     output reg [1:0]            write_buf_idx,
@@ -90,7 +92,8 @@ wire [1:0] next_from_current;
 
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
-assign auto_tick  = (auto_cnt == (CLK_FREQ_HZ - 1));
+assign auto_tick  = (auto_cnt == (CLK_FREQ_HZ * AUTO_PLAY_SECONDS - 1));
+assign transition_lesson_idx = load_idx; // stable bundled payload until transition ack
 assign next_from_current = next_index_limited(img_idx, img_found_count);
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign transition_done_pulse = trans_done_tgl_sync[2] ^ trans_done_tgl_sync[1];

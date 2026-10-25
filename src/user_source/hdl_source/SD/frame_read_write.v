@@ -73,8 +73,8 @@ module frame_read_write
 	input[WRITE_DATA_BITS - 1:0]     write_data                 // write data
 
 );
-wire[BURST_BITS - 1:0]                           wrusedw;                    // write used words
-wire[BURST_BITS - 1:0]                           rdusedw;                    // read used words
+// Physical FIFO occupancy ports are nine bits, independently of burst counters.
+wire [8:0] wrusedw,rdusedw;
 
 wire 								 App_rd_busy;
 wire								 App_wr_busy;
@@ -84,6 +84,13 @@ wire                                 write_fifo_aclr;            // fifo Asynchr
 wire [8:0] write_used_words;
 wire write_fifo_full;
 wire write_req_ack_mem;
+wire read_req_ack_mem;
+reg [1:0] read_ack_sync;
+always @(posedge read_clk or posedge rst) begin
+    if(rst) read_ack_sync<=0;
+    else read_ack_sync<={read_ack_sync[0],read_req_ack_mem};
+end
+assign read_req_ack=read_ack_sync[1];
 reg [1:0] write_ack_sync;
 always @(posedge write_clk or posedge rst) begin
     if(rst) write_ack_sync<=2'b00;
@@ -150,7 +157,7 @@ frame_fifo_write_m0
 	.write_addr_index           (write_addr_index         ),    
 	.write_len                  (write_len                ),
 	.fifo_aclr                  (write_fifo_aclr          ),
-	.rdusedw                 	(rdusedw                  )
+	.rdusedw                 	({1'b0,rdusedw}           )
 );
 
 //instantiate an asynchronous FIFO 
@@ -191,7 +198,7 @@ frame_fifo_read_m0
     .App_rd_en					(App_rd_en),
     .App_rd_addr				(App_rd_addr),
 	.read_req                   (read_req                 ),
-	.read_req_ack               (read_req_ack             ),
+	.read_req_ack               (read_req_ack_mem         ),
 	.read_finish                (read_finish              ),
 	.read_addr_0                (read_addr_0              ),
 	.read_addr_1                (read_addr_1              ),
@@ -200,7 +207,7 @@ frame_fifo_read_m0
 	.read_addr_index            (read_addr_index          ),    
 	.read_len                   (read_len                 ),
 	.fifo_aclr                  (read_fifo_aclr           ),
-	.wrusedw                	(wrusedw                  )
+	.wrusedw                	({1'b0,wrusedw}           )
 );
 
 endmodule

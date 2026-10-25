@@ -65,6 +65,7 @@ wire        sd_display_valid;
 // OSD / transition extension signals
 wire        transition_start_toggle;
 wire [1:0]  transition_buf_idx;
+wire [1:0] transition_lesson_idx,display_lesson_idx;
 wire        transition_done_toggle;
 wire [1:0]  video_disp_buf_idx;
 wire        transition_display_valid;
@@ -138,7 +139,7 @@ wire rst_all;
 assign rst_all = ~rst_n | ~audio_pll_lock;
 
 // 保持你原来的 TF / SDRAM / video 时钟
-sys_pll sys_pll_m0(
+science_sys_pll sys_pll_m0(
     .refclk     (clk),
     .clk0_out   (sd_card_clk),
     .clk1_out   (ext_mem_clk),
@@ -177,7 +178,8 @@ sd_card_bmp #(
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
     .SCAN_TARGET_COUNT (3'd4),
-    .KEY_EVENT_MODE    (1)
+    .KEY_EVENT_MODE    (1),
+    .AUTO_PLAY_SECONDS (8)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
@@ -191,6 +193,7 @@ sd_card_bmp #(
     .transition_done_toggle (transition_done_toggle),
     .transition_start_toggle(transition_start_toggle),
     .transition_buf_idx     (transition_buf_idx),
+    .transition_lesson_idx  (transition_lesson_idx),
 
     .write_finish_toggle(frame_write_toggle_mem),
     .write_buf_idx     (write_buf_idx),
@@ -274,6 +277,8 @@ video_fade_transition #(
     .vs                      (vs),
     .request_toggle_async    (transition_start_toggle),
     .request_buf_idx_async   (transition_buf_idx),
+    .request_lesson_idx_async(transition_lesson_idx),
+    .display_lesson_idx      (display_lesson_idx),
     .display_buf_idx         (video_disp_buf_idx),
     .display_valid           (transition_display_valid),
     .fade_level              (transition_fade_level),
@@ -389,15 +394,11 @@ sdram U3(
 );
 
 // ===================== 音频：内部 I2S 测试音 =====================
-hdmi_audio_tone_i2s_64fs #(
-    .PHASE_INC (32'd39370534),
-    .AMP       (24'sd2000000)
-) u_hdmi_audio_tone_i2s_64fs (
-    .I_mclk      (audio_mclk),
-    .I_rst       (rst_all),
-    .O_i2s_BCLK  (audio_i2s_bclk),
-    .O_i2s_LRCK  (audio_i2s_lrck),
-    .O_i2s_DOUT  (audio_i2s_dout)
+science_audio_i2s u_science_audio_i2s (
+    .clk(video_clk), .rst(rst_all),
+    .lesson(display_lesson_idx), .enabled(transition_display_valid),
+    .bclk(audio_i2s_bclk), .lrck(audio_i2s_lrck), .dout(audio_i2s_dout),
+    .sample_tick(), .pcm_left(), .pcm_right(), .lesson_step()
 );
 
 I2S_receiver u_I2S_receiver(

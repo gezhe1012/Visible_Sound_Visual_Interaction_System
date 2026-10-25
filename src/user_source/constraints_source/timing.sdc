@@ -32,9 +32,11 @@ derive_clocks
 # ------------------------------------------------------------
 rename_clock -name {sd_card_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {sys_pll_m0/pll_inst.clkc[0]}]
 rename_clock -name {ext_mem_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {sys_pll_m0/pll_inst.clkc[1]}]
+rename_clock -name {ext_mem_clk_sft} -source [get_ports {clk}] -master_clock {clk} [get_pins {sys_pll_m0/pll_inst.clkc[2]}]
 rename_clock -name {video_clk}   -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[0]}]
 rename_clock -name {hdmi_5x_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[1]}]
-rename_clock -name {audio_mclk}  -source [get_ports {clk}] -master_clock {clk} [get_pins {u_audio_pll/pll_inst.clkc[2]}]
+# Science audio now uses video_clk with a rational 12.288MHz clock-enable.
+# The old audio PLL is retained only for its established power-up lock/reset.
 
 # ------------------------------------------------------------
 # 4. 从原 timing(2).sdc 迁移过来的 HDMI 像素/串行时钟约束
@@ -60,9 +62,7 @@ set_clock_groups -exclusive \
 #    audio_mclk 域里生成 I2S，video_clk 域里做三拍同步采样。
 #    这类路径不是普通同步时序路径，直接切掉更合理。
 # ------------------------------------------------------------
-set_clock_groups -asynchronous \
-    -group [get_clocks {audio_mclk}] \
-    -group [get_clocks {video_clk} hdmi_5x_clk sd_card_clk ext_mem_clk]
+# No active audio_mclk/video_clk crossing remains in the science audio source.
 
 # ------------------------------------------------------------
 # 6. 可选：如果你的 frame_read_write 内部异步 FIFO 已经完全处理好了跨域，

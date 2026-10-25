@@ -8,6 +8,8 @@
 `define   ROW_WIDTH                        11
 `define   BA_WIDTH                        2
 
-`define	  SDR_CLK_PERIOD				1000000000/125000000
-`define   SELF_REFRESH_INTERVAL			64000000/`SDR_CLK_PERIOD/2**(`ROW_WIDTH)
+// Science kiosk: 40MHz SDRAM, 25ns. Refresh count must follow the real clock.
+`define	  SDR_CLK_PERIOD				1000000000/40000000
+// Controller counts 0..INTERVAL inclusive: subtract one for exact 64ms/2048.
+`define   SELF_REFRESH_INTERVAL			(64000000/`SDR_CLK_PERIOD/2**(`ROW_WIDTH)-1)
 

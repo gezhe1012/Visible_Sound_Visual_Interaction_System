@@ -80,6 +80,8 @@ $controlsPath = Require-File 'src\user_source\hdl_source\display_key_controls.v'
 $adjustPath = Require-File 'src\user_source\hdl_source\video_picture_adjust.v'
 $wavePath = Require-File 'src\user_source\hdl_source\audio_waveform_overlay.v'
 $waveKeyPath = Require-File 'src\user_source\hdl_source\waveform_key_control.v'
+$scienceAudioPath = Require-File 'src\user_source\hdl_source\science_audio_i2s.v'
+$scienceClockPath = Require-File 'src\user_source\hdl_source\science_sys_pll.v'
 $axisPath = Require-File 'src\user_source\hdl_source\video_rgb_to_axis_640x480.v'
 $fadePath = Require-File 'src\user_source\hdl_source\video_fade_transition.v'
 $osdPath = Require-File 'src\user_source\hdl_source\video_osd_overlay.v'
@@ -99,6 +101,10 @@ Require-Text $wavePath '^\s*module\s+audio_waveform_overlay\b' 'PCM waveform ove
 Require-Text $topPath 'u_audio_waveform_overlay' 'PCM waveform overlay is instantiated.'
 Require-Text $projectPath 'audio_waveform_overlay\.v' 'Tang Dynasty project references PCM waveform overlay.'
 Require-Text $topPath 'u_waveform_key_control' 'KEY3 waveform toggle control is instantiated.'
+Require-Text $topPath 'u_science_audio_i2s' 'Science lesson audio is instantiated.'
+Require-Text $projectPath 'science_audio_i2s\.v' 'Project references science lesson audio.'
+Require-Text $topPath 'science_sys_pll\s+sys_pll_m0' 'Safe SDRAM clock configuration is active.'
+Require-Text $scienceClockPath 'CLKC1_DIV\(25\)' 'SDRAM clock uses the 40MHz divider.'
 Require-Text $projectPath 'waveform_key_control\.v' 'Tang Dynasty project references KEY3 controller.'
 Require-Text $pinPath '^set_pin_assignment\s+\{\s*key3\s*\}\s+\{\s*LOCATION\s*=\s*B1;' 'Board KEY3 is constrained to handbook pin B1.'
 Require-Text $projectPath 'display_key_controls\.v' 'Tang Dynasty project references key controls.'
@@ -206,6 +212,20 @@ if ($RunSynthesis) {
 
 if($RunSynthesis -and $sourceSignatureBefore -cne (Get-HdlSignature)) {
     Write-Fail 'HDL or constraints changed during this build; rebuild from the stable sources.'
+}
+
+if($RunImplementation -and $script:FailureCount -eq 0) {
+    Write-Host "`n== Routed timing ==" -ForegroundColor Cyan
+    $timingReport=Join-Path $ProjectRoot 'src\td_project\HDMI1.4b_Transmitter_v1.0_Runs\phy_1\HDMI1.4b_Transmitter_v1.0_pr.timing'
+    if(Test-Path -LiteralPath $timingReport) {
+        $timingText=Get-Content -LiteralPath $timingReport -Raw
+        $setupMatch=[regex]::Match($timingText,'SWNS:\s*(-?[0-9.]+)ns')
+        $holdMatch=[regex]::Match($timingText,'HWNS:\s*(-?[0-9.]+)ns')
+        if($setupMatch.Success -and $holdMatch.Success -and
+           [double]$setupMatch.Groups[1].Value -ge 0 -and [double]$holdMatch.Groups[1].Value -ge 0) {
+            Write-Pass ('Routed setup/hold WNS: '+$setupMatch.Groups[1].Value+' / '+$holdMatch.Groups[1].Value+' ns.')
+        } else { Write-Fail 'Routed timing has negative or unreadable setup/hold slack; do not ship this bit.' }
+    } else { Write-Fail 'Missing routed timing report.' }
 }
 
 Write-Host "`n== Bitstream freshness ==" -ForegroundColor Cyan

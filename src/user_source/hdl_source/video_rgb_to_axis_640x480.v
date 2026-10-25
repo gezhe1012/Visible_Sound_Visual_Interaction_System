@@ -44,7 +44,9 @@ always @(posedge I_clk or posedge I_rst) begin
         if (I_de) begin
             if (!S_de_1d) begin
                 // 一行首像素
-                S_x_cnt <= 11'd0;
+                // Count the NEXT pixel index. Before the last pixel this is
+                // 639, so TLAST and RGB are registered on the same edge.
+                S_x_cnt <= 11'd1;
                 if (S_frame_arm) begin
                     O_video_user <= 1'b1;
                     S_frame_arm  <= 1'b0;

@@ -21,6 +21,11 @@ tests/work/
 tests/commit_work/
 tests/controls_work/
 tests/waveform_work/
+tests/science_work/
+tests/science_image_*.hex
+tests/science_audio_vectors.hex
+doc/science_kiosk/science_tf_64MiB.img
+doc/science_kiosk/science_materials.zip
 tests/extension5_waveform_preview.*
 tests/extension4_osd_preview.*
 tests/transcript

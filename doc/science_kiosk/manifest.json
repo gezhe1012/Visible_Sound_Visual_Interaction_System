@@ -1,0 +1,40 @@
+{
+  "sample_rate": 48000,
+  "sample_bits": 24,
+  "channels": 2,
+  "audio_seconds": 8,
+  "samples_per_step": 48000,
+  "phase_increments": [
+    19685267,
+    29527900,
+    39370534,
+    59055800
+  ],
+  "images": [
+    {
+      "name": "01_pitch.bmp",
+      "root_name": "01PITCH.BMP",
+      "start_sector": 4067,
+      "bytes": 921654
+    },
+    {
+      "name": "02_level.bmp",
+      "root_name": "02LEVEL.BMP",
+      "start_sector": 5868,
+      "bytes": 1440054
+    },
+    {
+      "name": "03_timbre.bmp",
+      "root_name": "03TIMBR.BMP",
+      "start_sector": 8681,
+      "bytes": 2359350
+    },
+    {
+      "name": "04_stereo.bmp",
+      "root_name": "04STEREO.BMP",
+      "start_sector": 13290,
+      "bytes": 3686454
+    }
+  ],
+  "card_sha256": "bf79a1baa69ea2aef6adf0516c694651b0f844ef6045a603f1f7a2db35c66911"
+}
