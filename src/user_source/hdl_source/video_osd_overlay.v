@@ -46,7 +46,6 @@ reg [9:0]  ticker_rel;
 reg [23:0] panel_color,text_color;
 reg [4:0] panel_alpha;
 wire [8:0] brightness_magnitude=brightness[8] ? -brightness : brightness;
-localparam [151:0] HELP_TEXT="HOLD K2:BRI K4:CON "; // physical board labels, not legacy port names
 
 wire frame_tick;
 assign frame_tick = vs & ~vs_d;
@@ -390,7 +389,7 @@ always @* begin
             panel_color=24'h075AA8; panel_alpha=12;
         end else if(x>=420 && x<622 && y>=14 && y<50) begin
             panel_color=24'h101820; panel_alpha=10;
-        end else if(x>=18 && x<338 && y>=62 && y<116) begin
+        end else if(x>=18 && x<338 && y>=62 && y<92) begin
             panel_color=(active_control==3) ? 24'h095A32 : 24'h101820;
             panel_alpha=11;
         end else if(y>=430 && y<464) begin
@@ -416,12 +415,6 @@ always @* begin
             if((active_control==1 && glyph_index<7) ||
                (active_control==2 && glyph_index>=8))
                 text_color=24'hFFE66D;
-        end else if(x>=24 && x<328 && y>=94 && y<108) begin
-            glyph_index=(x-10'd24)>>4;
-            glyph_col=((x-10'd24)&10'd15)>>1;
-            glyph_row=(y-10'd94)>>1;
-            if(glyph_index<19) glyph_char=HELP_TEXT[(18-glyph_index)*8 +: 8];
-            text_color=24'h9BC5DD;
         end else if(y>=440 && y<454 && ticker_sum>=640 && ticker_sum<880) begin
             ticker_rel=ticker_sum-11'd640;
             glyph_index=ticker_rel/12;
