@@ -46,7 +46,7 @@ reg [9:0]  ticker_rel;
 reg [23:0] panel_color,text_color;
 reg [4:0] panel_alpha;
 wire [8:0] brightness_magnitude=brightness[8] ? -brightness : brightness;
-localparam [151:0] HELP_TEXT="HOLD K1:BRI K2:CON ";
+localparam [151:0] HELP_TEXT="HOLD K2:BRI K4:CON "; // physical board labels, not legacy port names
 
 wire frame_tick;
 assign frame_tick = vs & ~vs_d;

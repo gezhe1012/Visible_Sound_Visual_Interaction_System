@@ -1,9 +1,10 @@
 
 module top(
     input                       clk,
-    input                       rst_n,
-    input                       key1,           // 手动下一张
-    input                       key2,           // 自动播放 开/关
+    input                       rst_n,          // Board KEY1 / A2: reset (unchanged)
+    input                       key1,           // Board KEY2 / B2: next / brightness (unchanged)
+    input                       key2,           // Board KEY4 / C1: autoplay / contrast (unchanged)
+    input                       key3,           // Board KEY3 / B1: waveform visibility toggle
 
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
@@ -54,6 +55,7 @@ wire [23:0] vout_data_adjusted;
 wire hs_adjusted,vs_adjusted,de_adjusted;
 wire [23:0] vout_data_waveform;
 wire hs_waveform,vs_waveform,de_waveform;
+wire waveform_requested_visible;
 wire signed [8:0] display_brightness;
 wire [2:0] display_contrast_q2;
 wire [1:0] display_active_control;
@@ -288,10 +290,15 @@ assign vout_data_faded = transition_display_valid ?
 
 // Extension 5: listen to the existing video-clock PCM stream, without changing
 // the I2S generator/receiver, ACR or HDMI audio ports. Waveform is outside fade.
+waveform_key_control u_waveform_key_control (
+    .clk(video_clk), .rst(rst_all), .key3(key3),
+    .requested_visible(waveform_requested_visible)
+);
 audio_waveform_overlay u_audio_waveform_overlay (
     .clk(video_clk), .rst(rst_all),
     .hs(hs_adjusted), .vs(vs_adjusted), .de(de_adjusted),
     .rgb_in(vout_data_faded), .audio_valid(audio_valid),
+    .requested_visible(waveform_requested_visible),
     .audio_left(audio_left_data), .audio_right(audio_right_data),
     .hs_out(hs_waveform), .vs_out(vs_waveform), .de_out(de_waveform),
     .rgb_out(vout_data_waveform)

@@ -102,6 +102,14 @@
                     <Attr Name="CompileOrder" Val="49"/>
                 </FileInfo>
             </File>
+            <File Path="../user_source/hdl_source/waveform_key_control.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="51"/>
+                </FileInfo>
+            </File>
             <File Path="../user_source/hdl_source/audio_waveform_overlay.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>

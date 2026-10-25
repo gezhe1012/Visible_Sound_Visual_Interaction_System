@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 module tb_audio_waveform;
-reg clk=0,rst=1,hs=1,vs=0,de=0,audio_valid=0;
+reg clk=0,rst=1,hs=1,vs=0,de=0,audio_valid=0,requested_visible=1;
 always #5 clk=~clk;
 reg [23:0] rgb_in=24'h8090A0,audio_left=0,audio_right=0;
 wire hs_out,vs_out,de_out;

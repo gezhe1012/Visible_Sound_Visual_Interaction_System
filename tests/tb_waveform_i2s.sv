@@ -16,7 +16,7 @@ hdmi_audio_tone_i2s_64fs #(.NOTE_HOLD_FRAMES(64)) tone(
 I2S_receiver rx(.I_clk(clk),.I_rst(rst),.I_i2s_BCLK(bclk),.I_i2s_LRCK(lrck),.I_i2s_DOUT(dout),
     .O_audio_valid(audio_valid),.O_audio_left_data(left_data),.O_audio_right_data(right_data));
 audio_waveform_overlay dut(.clk(clk),.rst(rst),.hs(1'b1),.vs(vs),.de(1'b0),.rgb_in(24'd0),
-    .audio_valid(audio_valid),.audio_left(left_data),.audio_right(right_data),
+    .audio_valid(audio_valid),.requested_visible(1'b1),.audio_left(left_data),.audio_right(right_data),
     .hs_out(hs_out),.vs_out(vs_out),.de_out(de_out),.rgb_out(rgb_out));
 always @(negedge clk) begin
     if(!rst) begin cycles=cycles+1; vs=(cycles%50000>=10); end

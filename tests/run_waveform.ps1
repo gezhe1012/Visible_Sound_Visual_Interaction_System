@@ -3,7 +3,7 @@ param([string]$ModelSim='C:\modeltech64_10.6e\win64\vsim.exe')
 $ErrorActionPreference='Stop'
 Push-Location -LiteralPath $PSScriptRoot
 try {
-    foreach($testTop in @('tb_audio_waveform','tb_waveform_i2s')) {
+    foreach($testTop in @('tb_audio_waveform','tb_waveform_i2s','tb_waveform_key3')) {
         $output=& $ModelSim -c -do "set TEST_TOP $testTop; do run_waveform.do" 2>&1
         $code=$LASTEXITCODE
         $output | ForEach-Object { Write-Host $_ }

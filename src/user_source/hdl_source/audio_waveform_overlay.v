@@ -7,13 +7,14 @@ module audio_waveform_overlay #(
 )(
     input clk,rst,hs,vs,de,
     input [23:0] rgb_in,
-    input audio_valid,
+    input audio_valid,requested_visible,
     input [23:0] audio_left,audio_right,
     output hs_out,vs_out,de_out,
     output reg [23:0] rgb_out
 );
 reg [9:0] x,y;
 reg de_d,vs_d;
+reg visible_frame;
 wire frame_tick=vs && !vs_d;
 reg capture_bank,display_bank,display_valid,pending,capturing;
 reg [7:0] capture_index,trigger_wait;
@@ -53,13 +54,14 @@ end
 
 always @(posedge clk or posedge rst) begin
     if(rst) begin
-        x<=0; y<=0; de_d<=0; vs_d<=0;
+        x<=0; y<=0; de_d<=0; vs_d<=0; visible_frame<=0;
         capture_bank<=0; display_bank<=1; display_valid<=0;
         pending<=0; capturing<=0; capture_index<=0; trigger_wait<=0;
         previous_negative<=0; previous_left<=31; previous_right<=31;
         no_audio_count<=NO_AUDIO_CYCLES-1;
     end else begin
         de_d<=de; vs_d<=vs;
+        if(frame_tick) visible_frame<=requested_visible;
         if(de) x<=x+10'd1; else x<=0;
         if(!vs) y<=0; else if(de_d && !de) y<=y+10'd1;
         if(audio_valid) no_audio_count<=0;
@@ -90,17 +92,18 @@ end
 
 reg [9:0] px,py;
 reg [23:0] pixel_q;
-reg valid_q;
+reg valid_q,visible_q;
 reg [1:0] hs_pipe,vs_pipe,de_pipe;
 assign hs_out=hs_pipe[1];
 assign vs_out=vs_pipe[1];
 assign de_out=de_pipe[1];
 always @(posedge clk or posedge rst) begin
     if(rst) begin
-        px<=0; py<=0; pixel_q<=0; valid_q<=0;
+        px<=0; py<=0; pixel_q<=0; valid_q<=0; visible_q<=0;
         hs_pipe<=0; vs_pipe<=0; de_pipe<=0;
     end else begin
         px<=x; py<=y; pixel_q<=rgb_in; valid_q<=display_valid;
+        visible_q<=visible_frame;
         hs_pipe<={hs_pipe[0],hs}; vs_pipe<={vs_pipe[0],vs}; de_pipe<={de_pipe[0],de};
     end
 end
@@ -129,7 +132,7 @@ always @* begin
     composed=pixel_q;
     label_bits=0; label_x=px-10'd52;
     label_y=0; left_y=py-10'd255; right_y=py-10'd339;
-    if(px>=48 && px<592 && py>=238 && py<416) begin
+    if(visible_q && px>=48 && px<592 && py>=238 && py<416) begin
         // Alpha=12/16 black background, independently of picture BRI/CON.
         composed={2'b0,pixel_q[23:18],2'b0,pixel_q[15:10],2'b0,pixel_q[7:2]};
         if(px==48 || px==591 || py==238 || py==415) composed=24'h60849A;
