@@ -20,6 +20,8 @@ Desktop.ini
 tests/work/
 tests/commit_work/
 tests/controls_work/
+tests/waveform_work/
+tests/extension5_waveform_preview.*
 tests/extension4_osd_preview.*
 tests/transcript
 tests/vsim.wlf

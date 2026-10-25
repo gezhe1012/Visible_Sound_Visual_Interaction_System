@@ -52,6 +52,8 @@ wire [23:0] vout_data_faded;
 wire [23:0] vout_data_osd;
 wire [23:0] vout_data_adjusted;
 wire hs_adjusted,vs_adjusted,de_adjusted;
+wire [23:0] vout_data_waveform;
+wire hs_waveform,vs_waveform,de_waveform;
 wire signed [8:0] display_brightness;
 wire [2:0] display_contrast_q2;
 wire [1:0] display_active_control;
@@ -284,19 +286,30 @@ assign vout_data_faded = transition_display_valid ?
                          {fade_r_product[11:4], fade_g_product[11:4], fade_b_product[11:4]} :
                          24'h000000;
 
+// Extension 5: listen to the existing video-clock PCM stream, without changing
+// the I2S generator/receiver, ACR or HDMI audio ports. Waveform is outside fade.
+audio_waveform_overlay u_audio_waveform_overlay (
+    .clk(video_clk), .rst(rst_all),
+    .hs(hs_adjusted), .vs(vs_adjusted), .de(de_adjusted),
+    .rgb_in(vout_data_faded), .audio_valid(audio_valid),
+    .audio_left(audio_left_data), .audio_right(audio_right_data),
+    .hs_out(hs_waveform), .vs_out(vs_waveform), .de_out(de_waveform),
+    .rgb_out(vout_data_waveform)
+);
+
 // ===================== 扩展要求1：Alpha OSD、动态时间与滚动字幕 =====================
 video_osd_overlay #(
     .PIXEL_CLK_HZ (25_000_000)
 ) u_video_osd_overlay (
     .clk     (video_clk),
     .rst     (rst_all),
-    .hs      (hs_adjusted),
-    .vs      (vs_adjusted),
-    .de      (de_adjusted),
+    .hs      (hs_waveform),
+    .vs      (vs_waveform),
+    .de      (de_waveform),
     .brightness(display_brightness),
     .contrast_q2(display_contrast_q2),
     .active_control(display_active_control),
-    .rgb_in  (vout_data_faded),
+    .rgb_in  (vout_data_waveform),
     .rgb_out (vout_data_osd)
 );
 
@@ -406,8 +419,8 @@ audio_arc_calculate #(
 video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
     .I_clk         (video_clk),
     .I_rst         (rst_all),
-    .I_vs          (vs_adjusted),
-    .I_de          (de_adjusted),
+    .I_vs          (vs_waveform),
+    .I_de          (de_waveform),
     .I_rgb         (vout_data),
     .O_video_user  (axis_s_user),
     .O_video_valid (axis_s_valid),
