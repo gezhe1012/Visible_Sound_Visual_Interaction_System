@@ -14,11 +14,11 @@ reg sd_sec_read_data_valid=0,sd_sec_read_end=0;
 byte unsigned card[0:12582911];
 reg [23:0] expected[0:307199];
 integer fp,bytes_read,found=0,page,pixels=0,k,cycle=0;
-integer sectors[0:3]='{4067,5868,8681,13290};
+integer sectors[0:4]='{4067,5868,8681,13290,20491};
 integer request_address;
 reg checking=0;
 bmp_bilinear_reader dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(scan_start),
-    .scan_start_sector(32'd0),.scan_max_sector(32'd131071),.scan_target_count(3'd4),
+    .scan_start_sector(32'd0),.scan_max_sector(32'd131071),.scan_target_count(3'd5),
     .scan_done(scan_done),.scan_found_valid(scan_found_valid),.scan_found_sector(scan_found_sector),.scan_found_total(scan_found_total),
     .load_start(load_start),.load_sector(load_sector),.sd_init_done(1'b1),.state_code(state_code),
     .bmp_width(16'd640),.bmp_height(16'd480),.write_req(write_req),.write_req_ack(write_req_ack),.write_ready(write_ready),
@@ -29,7 +29,7 @@ always @(posedge clk) begin
     cycle<=cycle+1; write_req_ack<=write_req;
     write_ready<=cycle%97<61;
     if(!rst && scan_found_valid) begin
-        if(found>=4 || scan_found_sector!=sectors[found]) $fatal(1,"Card scan order incorrect");
+        if(found>=5 || scan_found_sector!=sectors[found]) $fatal(1,"Card scan order incorrect");
         found=found+1;
     end
     if(!rst && load_error) $fatal(1,"Actual teaching BMP rejected");
@@ -63,8 +63,8 @@ initial begin
     repeat(5) @(negedge clk); rst=0;
     @(negedge clk); scan_start=1; @(negedge clk); scan_start=0;
     wait(scan_done); repeat(5) @(negedge clk);
-    if(found!=4 || scan_found_total!=4) $fatal(1,"Did not scan four teaching files");
-    for(page=0;page<4;page=page+1) begin
+    if(found!=5 || scan_found_total!=5) $fatal(1,"Did not scan five teaching files");
+    for(page=0;page<5;page=page+1) begin
         $readmemh($sformatf("science_image_%0d.hex",page),expected);
         pixels=0; checking=1; load_sector=sectors[page];
         @(negedge clk); load_start=1; @(negedge clk); load_start=0;
@@ -72,7 +72,7 @@ initial begin
         if(pixels!=307200) $fatal(1,"Incomplete card frame");
         $display("PASS actual teaching BMP %0d: 307200 bilinear pixels with backpressure",page);
     end
-    $display("ALL SCIENCE CARD TESTS PASSED: real FAT32 scan order and 1228800 teaching RGB pixels");
+    $display("ALL SCIENCE CARD TESTS PASSED: real FAT32 five-page scan order and 1536000 teaching RGB pixels");
     $finish;
 end
 initial begin #1800000000; $fatal(1,"Actual card timeout page%0d pixel%0d",page,pixels); end

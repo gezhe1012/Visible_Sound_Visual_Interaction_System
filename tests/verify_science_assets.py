@@ -33,7 +33,8 @@ for n,entry in enumerate(manifest['images'],1):
         link=struct.unpack_from('<I',card,fat_start+4*(cluster+offset))[0]&0x0fffffff
         assert link==(cluster+offset+1 if offset<(size+511)//512-1 else 0x0fffffff)
     assert Image.open(root/'bmp'/entry['name']).mode=='RGB'
-print('PASS FAT32: four ordered, contiguous, header-verified BMPs; identical FAT copies and source payloads')
+assert len(manifest['images'])==5
+print('PASS FAT32: five ordered, contiguous, header-verified BMPs; identical FAT copies and source payloads')
 
 def load_audio(name):
     with wave.open(str(name),'rb') as wav:
@@ -65,5 +66,20 @@ assert harmonics[0]<.01 and .09<harmonics[1]<.13 and .30<harmonics[2]<.36
 assert not audio[3][:48000,1].any() and not audio[3][48000:96000,0].any()
 assert peak(audio[3][96000:144000,0])==440 and peak(audio[3][96000:144000,1])==660
 assert hashlib.sha256(card).hexdigest()==manifest['card_sha256']
+music=load_audio(root/'audio'/'05_melody_48k_24bit_stereo.wav')
+assert (music[0]==0).all() and (music[-1]==0).all() and abs(music).max()<=1966020
+assert np.array_equal(music[:,0],music[:,1])
+notes=manifest['melody']; offset=0
+assert notes['total_samples']==384000 and sum(notes['eighth_note_units'])==32
+for midi,units in zip(notes['midi'],notes['eighth_note_units']):
+    length=units*12000; values=music[offset:offset+length,0]
+    assert values[0]==0 and values[-1]==0
+    # Windowed, zero-padded independent spectral frequency estimate per note.
+    sp=abs(np.fft.rfft(values*np.hanning(length),262144))
+    frequency=np.argmax(sp)*48000/262144
+    assert abs(frequency-440*2**((midi-69)/12))<.5,(midi,frequency)
+    offset+=length
+assert offset==384000
+print('PASS melody: all 17 note pitches, durations, stereo identity, envelopes, exact 8-second phrase')
 print('PASS WAV: 48K/24-bit/stereo, pitch FFT peaks, 1:2:4 amplitude ratios, sine/triangle/square harmonics and L/R routing')
 print('ALL SCIENCE ASSET TESTS PASSED')

@@ -2,7 +2,8 @@
 module tb_science_audio;
 reg clk=0,rst=1,enabled=0;
 always #20 clk=~clk; // 25MHz
-reg [1:0] lesson=0;
+reg [2:0] lesson=0;
+wire melody_complete;
 wire bclk,lrck,dout,sample_tick;
 wire [23:0] pcm_left,pcm_right,rx_left,rx_right;
 wire [1:0] lesson_step;
@@ -87,7 +88,7 @@ initial begin
     $readmemh("science_audio_vectors.hex",vectors); queue[0]=0;
     repeat(8) @(negedge clk); rst=0;
     for(page=0;page<4;page=page+1) begin
-        enabled=0; lesson=2'(page); wait_samples(3);
+        enabled=0; lesson=3'(page); wait_samples(3);
         checked=0; reference_index=0; enabled=1;
         wait(checked==2048); @(negedge clk); enabled=0;
         $display("PASS teaching audio page %0d: 2048 bit-exact PCM pairs across four stages",page);

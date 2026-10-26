@@ -5,12 +5,14 @@ module sd_card_bmp #(
     parameter [31:0]  SCAN_MAX_SECTOR   = 32'd131071,
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer KEY_EVENT_MODE  = 0, // 1: video-domain short-action toggles
-    parameter integer AUTO_PLAY_SECONDS = 1
+    parameter integer AUTO_PLAY_SECONDS = 1,
+    parameter integer WAIT_MELODY_END = 0 // only top science build enables this
 )(
     input                       clk,
     input                       rst,
     input                       key_next,
     input                       key_auto,
+    input                       melody_complete, // sticky video-domain level
     output [3:0]                state_code,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
@@ -22,7 +24,7 @@ module sd_card_bmp #(
     input                       transition_done_toggle,
     output reg                  transition_start_toggle,
     output reg [1:0]            transition_buf_idx,
-    output [1:0]                transition_lesson_idx,
+    output [2:0]                transition_lesson_idx,
 
     input                       write_finish_toggle,
     output reg [1:0]            write_buf_idx,
@@ -65,13 +67,15 @@ reg              first_image_committed;
 reg              auto_play_en;
 reg [31:0]       auto_cnt;
 reg [2:0]        img_found_count;
-reg [1:0]        img_idx;              // 当前真正显示中的图片编号
-reg [1:0]        load_idx;             // 当前正在写入的图片编号
+reg [2:0]        img_idx;              // lesson index, NOT a frame-buffer address
+reg [2:0]        load_idx;
 reg [1:0]        pending_buf_idx;      // 当前正在写入的目标缓冲区
 reg [31:0]       img_sector0;
 reg [31:0]       img_sector1;
 reg [31:0]       img_sector2;
 reg [31:0]       img_sector3;
+reg [31:0]       img_sector4;
+reg [2:0]        melody_done_sync;
 reg              next_req_pending;
 reg              load_busy;
 reg              transition_pending;
@@ -88,7 +92,8 @@ reg [2:0]        trans_done_tgl_sync;
 wire             transition_done_pulse;
 
 wire auto_tick;
-wire [1:0] next_from_current;
+wire [2:0] next_from_current;
+wire auto_advance_allowed=(WAIT_MELODY_END==0) || img_idx!=3'd4 || melody_done_sync[2];
 
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
@@ -131,28 +136,24 @@ end else begin : g_key_events
     assign key_auto_press=auto_sync[2]^auto_sync[1];
 end endgenerate
 
-function [1:0] next_index_limited;
-    input [1:0] cur;
+function [2:0] next_index_limited;
+    input [2:0] cur;
     input [2:0] count;
     begin
-        case (count)
-            3'd0: next_index_limited = 2'd0;
-            3'd1: next_index_limited = 2'd0;
-            3'd2: next_index_limited = (cur == 2'd1) ? 2'd0 : (cur + 2'd1);
-            3'd3: next_index_limited = (cur == 2'd2) ? 2'd0 : (cur + 2'd1);
-            default: next_index_limited = (cur == 2'd3) ? 2'd0 : (cur + 2'd1);
-        endcase
+        if(count<2 || {1'b0,cur}+4'd1>={1'b0,count}) next_index_limited=0;
+        else next_index_limited=cur+3'd1;
     end
 endfunction
 
 function [31:0] sector_lut;
-    input [1:0] idx;
+    input [2:0] idx;
     begin
         case (idx)
-            2'd0: sector_lut = img_sector0;
-            2'd1: sector_lut = img_sector1;
-            2'd2: sector_lut = img_sector2;
-            2'd3: sector_lut = img_sector3;
+            3'd0: sector_lut = img_sector0;
+            3'd1: sector_lut = img_sector1;
+            3'd2: sector_lut = img_sector2;
+            3'd3: sector_lut = img_sector3;
+            3'd4: sector_lut = img_sector4;
             default: sector_lut = img_sector0;
         endcase
     end
@@ -175,6 +176,7 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         wrfin_tgl_sync        <= 3'b000;
         trans_done_tgl_sync   <= 3'b000;
+        melody_done_sync<=0; img_sector4<=0;
         scan_start_pulse      <= 1'b0;
         load_start_pulse      <= 1'b0;
         load_sector           <= 32'd0;
@@ -204,6 +206,7 @@ always @(posedge clk or posedge rst) begin
     end else begin
         wrfin_tgl_sync      <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         trans_done_tgl_sync <= {trans_done_tgl_sync[1:0], transition_done_toggle};
+        melody_done_sync <= {melody_done_sync[1:0],melody_complete};
         scan_start_pulse <= 1'b0;
         load_start_pulse <= 1'b0;
 
@@ -222,6 +225,7 @@ always @(posedge clk or posedge rst) begin
             img_sector1           <= 32'd0;
             img_sector2           <= 32'd0;
             img_sector3           <= 32'd0;
+            img_sector4           <= 32'd0;
             next_req_pending      <= 1'b0;
             load_busy             <= 1'b0;
             transition_pending    <= 1'b0;
@@ -232,17 +236,18 @@ always @(posedge clk or posedge rst) begin
             transition_start_toggle <= 1'b0;
             transition_buf_idx      <= 2'd0;
         end else begin
-            // 扫描阶段缓存前 4 张图的起始 sector
+            // Keep five file addresses, but still only TWO SDRAM frame buffers.
             if (scan_found_valid) begin
                 case (img_found_count)
                     3'd0: img_sector0 <= scan_found_sector;
                     3'd1: img_sector1 <= scan_found_sector;
                     3'd2: img_sector2 <= scan_found_sector;
                     3'd3: img_sector3 <= scan_found_sector;
+                    3'd4: img_sector4 <= scan_found_sector;
                     default: ;
                 endcase
 
-                if (img_found_count < 3'd4)
+                if (img_found_count < 3'd5)
                     img_found_count <= img_found_count + 3'd1;
             end
 
@@ -274,7 +279,7 @@ always @(posedge clk or posedge rst) begin
                 first_image_committed <= 1'b1;
             end
 
-            // 上电后自动发起一次“扫描前 4 张 BMP”
+            // Scan the configured target count (five in the science top).
             if (!scan_kicked && bmp_ready) begin
                 scan_start_pulse      <= 1'b1;
                 scan_kicked           <= 1'b1;
@@ -309,9 +314,9 @@ always @(posedge clk or posedge rst) begin
 
                 // 自动播放 1s 计数：只有当前没有写图任务时才计时
                 if (scan_done && auto_play_en && display_valid && !load_busy && !transition_pending && first_image_committed && (img_found_count > 3'd1)) begin
-                    if (auto_tick)
+                    if (auto_tick && auto_advance_allowed)
                         auto_cnt <= 32'd0;
-                    else
+                    else if(!auto_tick)
                         auto_cnt <= auto_cnt + 32'd1;
                 end else begin
                     auto_cnt <= 32'd0;
@@ -346,7 +351,7 @@ always @(posedge clk or posedge rst) begin
                     auto_cnt         <= 32'd0;
                 end
                 // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
-                else if (scan_done && bmp_ready && display_valid && !load_busy && !transition_pending && auto_play_en && auto_tick && (img_found_count > 3'd1)) begin
+                else if (scan_done && bmp_ready && display_valid && !load_busy && !transition_pending && auto_play_en && auto_tick && auto_advance_allowed && (img_found_count > 3'd1)) begin
                     load_idx         <= next_from_current;
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);

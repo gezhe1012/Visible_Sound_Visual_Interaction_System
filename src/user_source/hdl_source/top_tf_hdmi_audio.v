@@ -71,7 +71,8 @@ wire        sd_display_valid;
 // OSD / transition extension signals
 wire        transition_start_toggle;
 wire [1:0]  transition_buf_idx;
-wire [1:0] transition_lesson_idx,display_lesson_idx;
+wire [2:0] transition_lesson_idx,display_lesson_idx;
+wire melody_complete;
 wire        transition_done_toggle;
 wire [1:0]  video_disp_buf_idx;
 wire        transition_display_valid;
@@ -183,14 +184,16 @@ sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4),
+    .SCAN_TARGET_COUNT (3'd5),
     .KEY_EVENT_MODE    (1),
-    .AUTO_PLAY_SECONDS (8)
+    .AUTO_PLAY_SECONDS (8),
+    .WAIT_MELODY_END   (1)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
     .key_next          (next_key_toggle),
     .key_auto          (auto_key_toggle),
+    .melody_complete   (melody_complete),
     .state_code        (state_code),
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
@@ -424,7 +427,7 @@ science_audio_i2s u_science_audio_i2s (
     .clk(video_clk), .rst(rst_all),
     .lesson(display_lesson_idx), .enabled(transition_display_valid),
     .bclk(audio_i2s_bclk), .lrck(audio_i2s_lrck), .dout(audio_i2s_dout),
-    .sample_tick(), .pcm_left(), .pcm_right(), .lesson_step()
+    .sample_tick(), .pcm_left(), .pcm_right(), .lesson_step(), .melody_complete(melody_complete)
 );
 
 I2S_receiver u_I2S_receiver(

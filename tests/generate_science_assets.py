@@ -16,6 +16,10 @@ RATE = 48000
 FREQUENCIES = (220, 330, 440, 660)
 INCREMENTS = tuple(round(f * 2**32 / RATE) for f in FREQUENCIES)
 SINE = tuple(round(32767 * math.sin(i * math.pi / 128)) for i in range(65))
+MELODY_MIDI = (60,64,67,69,67,64,62,64,67,69,72,71,67,65,64,62,60)
+MELODY_UNITS = (2,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,4)
+MELODY_GAINS = (56,52,60,56,60,52,48,56,60,56,64,54,56,50,54,50,60)
+MELODY_INCREMENTS = tuple(round(440*2**((m-69)/12)*2**32/RATE) for m in MELODY_MIDI)
 BG, WHITE, MUTED, CYAN, GOLD = '#071521', '#F1F6FA', '#A1B8CC', '#52E3FF', '#FFE66D'
 FONT = Path('C:/Windows/Fonts/msyh.ttc')
 if not FONT.exists():
@@ -56,6 +60,21 @@ def make_page(index):
     # Top 0..236 and bottom 860..928 are reserved for the existing HDMI OSD.
     label(d, (720, 164), '看得见的声音 / SOUND LAB', 26, MUTED)
     d.line((48, 235, 1232, 235), fill='#29465B', width=2)
+    if index == 4:
+        label(d, (48, 247), '05 / 当声音成为音乐', 48)
+        label(d, (50, 313), '从频率、幅度和音色，到一段动听的旋律', 30, MUTED)
+        label(d, (50, 367), '旋律实时生成 · FPGA数字音频合成', 35, GOLD)
+        label(d, (50, 427), 'KEY3：时域＋频域分析 · KEY2 下一课', 28, CYAN)
+        d.rectangle((48, 476, 1232, 832), fill='#1B354E', outline='#29465B', width=2)
+        for y in (550,594,638,682,726):
+            d.line((76,y,1204,y), fill='#58758B', width=3)
+        # Vector-native staff graphic, matching the supplied simple-note motif.
+        for x,y in ((146,682),(308,638),(470,594),(632,638),(794,660),(956,572),(1118,616)):
+            d.ellipse((x-24,y-16,x+24,y+16), fill='#76DCD6')
+            d.line((x+22,y,x+22,y-126), fill='#76DCD6', width=8)
+        points=[(x,788-14*math.sin((x-76)/95)-9*math.sin((x-76)/167)) for x in range(76,1205)]
+        d.line(points,fill='#AFA07A',width=5)
+        return image
     titles = ('音高与频率', '响度与幅度', '音色与波形', '左右声道')
     subtitles = (
         '听音阶变化，观察同一时间窗口内的波形疏密。',
@@ -126,7 +145,10 @@ def pcm(phase, page, step, position, right, step_samples=RATE):
 def make_audio(page, destination):
     phase_l = phase_r = 0
     data = bytearray()
-    for n in range(RATE * 8):
+    if page == 4:
+        for value, _, _ in melody_values():
+            data.extend((value & 0xffffff).to_bytes(3,'little')*2)
+    for n in range(RATE * 8 if page != 4 else 0):
         position, step = n % RATE, n // RATE % 4
         for value in (pcm(phase_l, page, step, position, False), pcm(phase_r, page, step, position, True)):
             data.extend((value & 0xffffff).to_bytes(3, 'little'))
@@ -137,6 +159,18 @@ def make_audio(page, destination):
     with wave.open(str(destination), 'wb') as wav:
         wav.setparams((2, 3, RATE, 0, 'NONE', 'not compressed'))
         wav.writeframes(data)
+
+
+def melody_values(unit_samples=12000, attack_shift=2, release_shift=3):
+    """Integer oracle: sine DDS, per-note gain, attack/release, phase restart."""
+    for note, (inc, units, gain) in enumerate(zip(MELODY_INCREMENTS, MELODY_UNITS, MELODY_GAINS)):
+        phase, length = 0, unit_samples*units
+        for position in range(length):
+            remaining=length-1-position
+            env=(position>>attack_shift) if position<(64<<attack_shift) else (remaining>>release_shift) if remaining<(64<<release_shift) else 64
+            amplitude=(sine8(phase>>24)*gain*60)>>6
+            yield (amplitude*env)>>6, note, position
+            phase=(phase+inc)&0xffffffff
 
 
 def make_card(files):
@@ -205,8 +239,8 @@ def make_card(files):
 def main():
     for sub in ('bmp', 'audio', 'preview'):
         (OUT/sub).mkdir(parents=True, exist_ok=True)
-    sizes = ((640,480), (800,600), (1024,768), (1280,960))
-    names = ('01_pitch', '02_level', '03_timbre', '04_stereo')
+    sizes = ((640,480), (800,600), (1024,768), (1280,960), (960,720))
+    names = ('01_pitch', '02_level', '03_timbre', '04_stereo', '05_melody')
     pages, files = [], []
     for i, name in enumerate(names):
         page = make_page(i)
@@ -216,7 +250,7 @@ def main():
         preview.save(OUT/'preview'/f'{name}.png')
         pages.append(preview)
         # Name field: pad basename to eight characters, then BMP extension.
-        basename = ('01PITCH','02LEVEL','03TIMBR','04STEREO')[i]
+        basename = ('01PITCH','02LEVEL','03TIMBR','04STEREO','05MELODY')[i]
         files.append((path, f'{basename:<8}BMP'))
         make_audio(i, OUT/'audio'/f'{name}_48k_24bit_stereo.wav')
         # Independent load-time bilinear oracle: source rows are BMP bottom-up.
@@ -235,14 +269,18 @@ def main():
         result = (h0*(256-fy[:,None,None])+h1*fy[:,None,None]+128)>>8
         (ROOT/'tests'/f'science_image_{i}.hex').write_text(
             '\n'.join(f'{r:02x}{g:02x}{b:02x}' for r,g,b in result.reshape(-1,3))+'\n', encoding='ascii')
-    contact = Image.new('RGB', (1280,960))
+    contact = Image.new('RGB', (1280,1440),BG)
     for i,page in enumerate(pages):
         contact.paste(page, ((i%2)*640,(i//2)*480))
     contact.save(OUT/'preview'/'overview.png')
     entries, digest = make_card(files)
     manifest = {'sample_rate': RATE, 'sample_bits': 24, 'channels': 2, 'audio_seconds': 8,
                 'samples_per_step': RATE, 'phase_increments': INCREMENTS,
-                'images': entries, 'card_sha256': digest}
+                'images': entries, 'card_sha256': digest,
+                'melody': {'midi': MELODY_MIDI, 'eighth_note_units': MELODY_UNITS,
+                           'gain_q6': MELODY_GAINS,'phase_increments': MELODY_INCREMENTS,
+                           'unit_samples': 12000,'total_samples': sum(MELODY_UNITS)*12000,
+                           'playback': 'once on entry, silence after completion'}}
     (OUT/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     vectors=[]
     for page in range(4):
@@ -256,6 +294,10 @@ def main():
             ir=INCREMENTS[step] if page==0 else INCREMENTS[3] if page==3 else INCREMENTS[2]
             pl=(pl+il)&0xffffffff; pr=(pr+ir)&0xffffffff
     (ROOT/'tests'/'science_audio_vectors.hex').write_text('\n'.join(vectors)+'\n',encoding='ascii')
+    music=[f'{v&0xffffff:06x}{v&0xffffff:06x}' for v,_,_ in melody_values(128,0,0)]
+    (ROOT/'tests'/'melody_audio_vectors.hex').write_text('\n'.join(music)+'\n',encoding='ascii')
+    full_music=[f'{v&0xffffff:06x}{v&0xffffff:06x}' for v,_,_ in melody_values()]
+    (ROOT/'tests'/'melody_full_vectors.hex').write_text('\n'.join(full_music)+'\n',encoding='ascii')
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
 
 

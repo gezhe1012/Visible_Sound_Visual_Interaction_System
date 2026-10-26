@@ -1,15 +1,19 @@
-// Four-page science audio, all logic in video_clk (25MHz).
+// Five-page science audio, all logic in video_clk (25MHz).
 // Rational clock-enable: 12.288M enables per 25M clocks, /256 = EXACT average 48K.
 // This is a clock enable, NOT a fabric-generated clock. Existing I2S_receiver
 // still decodes the 24-bit stereo PCM before HDMI/ACR/waveform consumption.
 module science_audio_i2s #(
-    parameter integer STEP_SAMPLES=48000
+    parameter integer STEP_SAMPLES=48000,
+    parameter integer NOTE_UNIT_SAMPLES=12000, // eighth note, 120 BPM
+    parameter integer MELODY_ATTACK_SHIFT=2,  // 64<<2 = 256 samples
+    parameter integer MELODY_RELEASE_SHIFT=3 // 64<<3 = 512 samples
 )(
     input clk,rst,enabled,
-    input [1:0] lesson,
+    input [2:0] lesson,
     output reg bclk,lrck,dout,sample_tick,
     output reg [23:0] pcm_left,pcm_right,
-    output reg [1:0] lesson_step
+    output reg [1:0] lesson_step,
+    output reg melody_complete
 );
 reg [24:0] tick_acc;
 wire [25:0] tick_sum={1'b0,tick_acc}+26'd12288000;
@@ -18,9 +22,12 @@ reg [5:0] bit_count;
 reg [63:0] shift_reg;
 reg [31:0] phase_left,phase_right;
 reg [15:0] step_count;
-reg [1:0] active_lesson;
+reg [2:0] active_lesson;
+reg [4:0] melody_note;
+reg [15:0] melody_position;
 function [31:0] phase_increment;
-    input [1:0] page,step;
+    input [2:0] page;
+    input [1:0] step;
     input right;
     begin
         if(page==0) case(step)
@@ -122,7 +129,8 @@ function signed [15:0] triangle8;
 endfunction
 function [23:0] render_pcm;
     input [31:0] phase;
-    input [1:0] page,step;
+    input [2:0] page;
+    input [1:0] step;
     input [15:0] position;
     input right;
     reg signed [15:0] base;
@@ -151,6 +159,71 @@ function [23:0] render_pcm;
         render_pcm=shaped>>>6;
     end
 endfunction
+// Original 4-bar phrase in C major: 32 eighth-note units = exactly 8s.
+// C4 E4 G4 A4 G4 | E4 D4 E4 G4 | A4 C5 B4 G4 | F4 E4 D4 C4
+// Note records contain pitch, duration and gain; no WAV/ROM audio playback.
+function [31:0] melody_increment;
+    input [4:0] note;
+    begin
+        case(note)
+            0,16: melody_increment=32'd23409859;
+            6,15: melody_increment=32'd26276679;
+            1,5,7,14: melody_increment=32'd29494575;
+            13: melody_increment=32'd31248413;
+            2,4,8,12: melody_increment=32'd35075158;
+            3,9: melody_increment=32'd39370534;
+            11: melody_increment=32'd44191930;
+            10: melody_increment=32'd46819719;
+            default: melody_increment=0;
+        endcase
+    end
+endfunction
+function [15:0] melody_length;
+    input [4:0] note;
+    begin
+        case(note)
+            1,2,13,14: melody_length=NOTE_UNIT_SAMPLES;
+            16: melody_length=4*NOTE_UNIT_SAMPLES;
+            default: melody_length=2*NOTE_UNIT_SAMPLES;
+        endcase
+    end
+endfunction
+function [6:0] melody_gain;
+    input [4:0] note;
+    begin
+        case(note)
+            0,3,7,9,12: melody_gain=56;
+            1,5: melody_gain=52;
+            2,4,8,16: melody_gain=60;
+            6: melody_gain=48;
+            10: melody_gain=64;
+            11,14: melody_gain=54;
+            default: melody_gain=50;
+        endcase
+    end
+endfunction
+function [23:0] render_melody;
+    input [31:0] phase;
+    input [4:0] note;
+    input [15:0] position;
+    reg signed [15:0] base;
+    reg signed [23:0] weighted;
+    reg signed [31:0] amplitude,shaped;
+    reg [6:0] envelope;
+    reg [15:0] remaining,length;
+    begin
+        base=sine8(phase[31:24]);
+        length=melody_length(note); remaining=length-1-position;
+        if(position<(64<<MELODY_ATTACK_SHIFT)) envelope=position>>MELODY_ATTACK_SHIFT;
+        else if(remaining<(64<<MELODY_RELEASE_SHIFT)) envelope=remaining>>MELODY_RELEASE_SHIFT;
+        else envelope=64;
+        weighted=base*$signed({1'b0,melody_gain(note)});
+        amplitude=($signed(weighted)*32'sd60)>>>6;
+        shaped=amplitude*$signed({1'b0,envelope});
+        render_melody=shaped>>>6;
+    end
+endfunction
+wire [23:0] music_pcm=melody_complete ? 24'd0 : render_melody(phase_left,melody_note,melody_position);
 wire [23:0] next_left=render_pcm(phase_left,active_lesson,lesson_step,step_count,1'b0);
 wire [23:0] next_right=render_pcm(phase_right,active_lesson,lesson_step,step_count,1'b1);
 always @(posedge clk or posedge rst) begin
@@ -158,6 +231,7 @@ always @(posedge clk or posedge rst) begin
         tick_acc<=0; bit_count<=0; shift_reg<=0;
         phase_left<=0; phase_right<=0; step_count<=0;
         active_lesson<=0; lesson_step<=0;
+        melody_note<=0; melody_position<=0; melody_complete<=0;
         bclk<=0; lrck<=0; dout<=0; sample_tick<=0; pcm_left<=0; pcm_right<=0;
     end else begin
         if(mclk_enable) tick_acc<=tick_sum-26'd25000000;
@@ -174,8 +248,21 @@ always @(posedge clk or posedge rst) begin
                         sample_tick<=1;
                         if(!enabled || active_lesson!=lesson) begin
                             active_lesson<=lesson; lesson_step<=0; step_count<=0;
+                            melody_note<=0; melody_position<=0; melody_complete<=0;
                             phase_left<=0; phase_right<=0;
                             pcm_left<=0; pcm_right<=0; shift_reg<=0;
+                        end else if(active_lesson==4) begin
+                            pcm_left<=music_pcm; pcm_right<=music_pcm;
+                            shift_reg<={music_pcm,40'd0};
+                            if(!melody_complete) begin
+                                phase_left<=phase_left+melody_increment(melody_note);
+                                phase_right<=phase_right+melody_increment(melody_note);
+                                if(melody_position==melody_length(melody_note)-1) begin
+                                    melody_position<=0; phase_left<=0; phase_right<=0;
+                                    if(melody_note==16) melody_complete<=1;
+                                    else melody_note<=melody_note+5'd1;
+                                end else melody_position<=melody_position+16'd1;
+                            end
                         end else begin
                             pcm_left<=next_left; pcm_right<=next_right;
                             shift_reg<={next_left,40'd0};

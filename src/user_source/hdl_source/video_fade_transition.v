@@ -15,10 +15,10 @@ module video_fade_transition #(
 
     input             request_toggle_async,
     input      [1:0]  request_buf_idx_async,
-    input      [1:0]  request_lesson_idx_async,
+    input      [2:0]  request_lesson_idx_async,
 
     output reg [1:0]  display_buf_idx,
-    output reg [1:0]  display_lesson_idx,
+    output reg [2:0]  display_lesson_idx,
     output reg        display_valid,
     output reg [4:0]  fade_level,       // 0 = black, 16 = full brightness
     output reg        done_toggle
@@ -31,8 +31,8 @@ localparam [2:0] ST_FADE_IN    = 3'd3;
 
 reg [2:0] state;
 reg [1:0] target_buf_idx;
-reg [1:0] target_lesson_idx;
-reg [1:0] request_lesson_sync0,request_lesson_sync1;
+reg [2:0] target_lesson_idx;
+reg [2:0] request_lesson_sync0,request_lesson_sync1;
 reg [3:0] black_hold_count;
 
 reg       vs_d;

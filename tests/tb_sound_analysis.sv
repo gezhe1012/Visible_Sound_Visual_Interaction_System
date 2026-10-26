@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module tb_sound_analysis;
+module tb_sound_analysis #(parameter integer PICTURE_INDEX=0,PLAY_MELODY=0);
 reg clk=0,rst=1,hs=1,vs=0,de=0,key3=1;
 always #20 clk=~clk;
 reg [23:0] rgb_in=0,audio_left=0,audio_right=0;
@@ -34,9 +34,20 @@ video_rgb_to_axis_640x480 axis(.I_clk(clk),.I_rst(rst),.I_vs(vs_out),.I_de(de_ou
     .O_video_user(user),.O_video_valid(valid),.O_video_last(last),.O_video_data(data));
 integer sample_acc=0,sample_number=0;
 reg run_audio=1;
+wire music_bclk,music_lrck,music_dout,music_valid;
+wire [23:0] music_left,music_right;
+generate if(PLAY_MELODY) begin : g_music
+    science_audio_i2s music(.clk(clk),.rst(rst),.enabled(!rst),.lesson(3'd4),
+        .bclk(music_bclk),.lrck(music_lrck),.dout(music_dout),.sample_tick(),
+        .pcm_left(),.pcm_right(),.lesson_step(),.melody_complete());
+    I2S_receiver music_rx(.I_clk(clk),.I_rst(rst),.I_i2s_BCLK(music_bclk),.I_i2s_LRCK(music_lrck),.I_i2s_DOUT(music_dout),
+        .O_audio_valid(music_valid),.O_audio_left_data(music_left),.O_audio_right_data(music_right));
+end endgenerate
 always @(negedge clk) begin
     audio_valid=0;
-    if(!rst && run_audio) begin
+    if(!rst && run_audio && PLAY_MELODY) begin
+        audio_valid=music_valid; audio_left=music_left; audio_right=music_right;
+    end else if(!rst && run_audio) begin
         sample_acc=sample_acc+48000;
         if(sample_acc>=25000000) begin
             sample_acc=sample_acc-25000000; audio_valid=1;
@@ -46,7 +57,7 @@ always @(negedge clk) begin
         end
     end
 end
-integer xx,yy,phase,draw_x=0,draw_y=0,pixels=0,lines=0,starts=0,stream_x=0,fp;
+integer xx,yy,phase,draw_x=0,draw_y=0,pixels=0,lines=0,starts=0,stream_x=0,fp,fp_hidden;
 integer spectrum_pixels=0,wave_pixels=0,bank_swaps=0;
 reg raster=0,expected_visible=0;
 reg [3:0] eh=0,ev=0,ed=0,er=0,show=0;
@@ -93,6 +104,7 @@ always @(posedge clk) if(!rst) begin
             if(yp[3]>=255 && yp[3]<=401 && (rgb_out==24'h52E3FF || rgb_out==24'hFFE66D)) wave_pixels=wave_pixels+1;
         end
         if(phase==1) $fwrite(fp,"%c%c%c",osd_rgb[23:16],osd_rgb[15:8],osd_rgb[7:0]);
+        if(phase==0 && PLAY_MELODY) $fwrite(fp_hidden,"%c%c%c",osd_rgb[23:16],osd_rgb[15:8],osd_rgb[7:0]);
     end
     if(valid) begin
         if(last!==(stream_x==639)) $fatal(1,"Analysis broke AXIS line end %0d",stream_x);
@@ -106,14 +118,15 @@ task frame_edge;
 endtask
 reg [23:0] picture[0:307199];
 initial begin
-    $readmemh("science_image_0.hex",picture);
+    $readmemh($sformatf("science_image_%0d.hex",PICTURE_INDEX),picture);
     repeat(5) @(negedge clk); rst=0;
     wait(result_done); frame_edge();
     if(!spectrum.display_valid || !wave.display_valid || requested_visible) $fatal(1,"Hidden live analysis startup failed");
     // Short bounces before the first active frame must not enable either panel.
     repeat(3) begin key3=0; repeat(2) @(negedge clk); key3=1; repeat(3) @(negedge clk); end
     if(requested_visible) $fatal(1,"KEY3 bounce enabled analysis");
-    fp=$fopen("analysis_panel_preview.ppm","wb"); $fwrite(fp,"P6\n640 480\n255\n");
+    fp=$fopen(PLAY_MELODY ? "melody_preview.ppm" : "analysis_panel_preview.ppm","wb"); $fwrite(fp,"P6\n640 480\n255\n");
+    if(PLAY_MELODY) begin fp_hidden=$fopen("melody_hidden_preview.ppm","wb"); $fwrite(fp_hidden,"P6\n640 480\n255\n"); end
     for(phase=0;phase<3;phase=phase+1) begin
         expected_visible=(phase==1); raster=1;
         for(yy=0;yy<480;yy=yy+1) begin
@@ -132,6 +145,7 @@ initial begin
         end
     end
     $fclose(fp);
+    if(PLAY_MELODY) $fclose(fp_hidden);
     if(pixels!=921600 || lines!=1440 || starts!=3 || spectrum_pixels<100 || wave_pixels<100 || bank_swaps<2)
         $fatal(1,"Incomplete panel checks %0d px %0d lines %0d SOF %0d spectrum %0d wave %0d banks",pixels,lines,starts,spectrum_pixels,wave_pixels,bank_swaps);
     // No audio: invalidate BOTH display snapshots at the next frame boundary.
@@ -145,4 +159,8 @@ initial begin
     $finish;
 end
 initial begin #500000000; $fatal(1,"Analysis test timeout"); end
+endmodule
+
+module tb_melody_panel;
+tb_sound_analysis #(.PICTURE_INDEX(4),.PLAY_MELODY(1)) test();
 endmodule

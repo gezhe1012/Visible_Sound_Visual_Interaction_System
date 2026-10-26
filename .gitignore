@@ -29,6 +29,11 @@ tests/fft_gate_netlist.v
 tests/analysis_panel_preview.*
 tests/science_image_*.hex
 tests/science_audio_vectors.hex
+tests/melody_audio_vectors.hex
+tests/melody_full_vectors.hex
+tests/melody_work/
+tests/melody_preview.*
+tests/melody_hidden_preview.*
 doc/science_kiosk/science_tf_64MiB.img
 doc/science_kiosk/science_materials.zip
 tests/extension5_waveform_preview.*
