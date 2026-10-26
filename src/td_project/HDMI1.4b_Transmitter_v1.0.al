@@ -384,6 +384,14 @@
                     <Attr Name="CompileOrder" Val="56"/>
                 </FileInfo>
             </File>
+            <File Path="../user_source/hdl_source/sound_theme_footer.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="57"/>
+                </FileInfo>
+            </File>
         </Verilog>
         <ADC_FILE>
             <File Path="../user_source/constraints_source/pin.adc">

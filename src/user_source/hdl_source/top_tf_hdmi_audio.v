@@ -350,6 +350,8 @@ video_osd_overlay #(
     .brightness(display_brightness),
     .contrast_q2(display_contrast_q2),
     .active_control(display_active_control),
+    .lesson_idx(display_lesson_idx),
+    .audio_valid(audio_valid),.audio_left(audio_left_data),.audio_right(audio_right_data),
     .rgb_in  (vout_data_analysis),
     .rgb_out (vout_data_osd)
 );

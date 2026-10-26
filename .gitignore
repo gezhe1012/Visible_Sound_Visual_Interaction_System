@@ -32,6 +32,10 @@ tests/science_audio_vectors.hex
 tests/melody_audio_vectors.hex
 tests/melody_full_vectors.hex
 tests/melody_work/
+tests/ticker_work/
+tests/ticker_page_*.ppm
+tests/ticker_anim_*.ppm
+tests/ticker_preview.png
 tests/melody_preview.*
 tests/melody_hidden_preview.*
 doc/science_kiosk/science_tf_64MiB.img

@@ -19,6 +19,7 @@ audio_spectrum_overlay spectrum(.clk(clk),.rst(rst),.hs(wh),.vs(wv),.de(wd),.rgb
     .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),.result_done(result_done),.result_ack(result_ack),
     .hs_out(hs_out),.vs_out(vs_out),.de_out(de_out),.rgb_out(rgb_out));
 video_osd_overlay osd(.clk(clk),.rst(rst),.hs(hs_out),.vs(vs_out),.de(de_out),.rgb_in(rgb_out),
+    .lesson_idx(3'(PICTURE_INDEX)),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
     .brightness(9'sd16),.contrast_q2(3'd5),.active_control(2'd0),.rgb_out(osd_rgb));
 reg [23:0] original_pipe[0:3];
 integer d;
@@ -27,6 +28,7 @@ always @(posedge clk) begin
     else begin original_pipe[0]<=rgb_in; for(d=1;d<4;d=d+1) original_pipe[d]<=original_pipe[d-1]; end
 end
 video_osd_overlay original(.clk(clk),.rst(rst),.hs(hs_out),.vs(vs_out),.de(de_out),.rgb_in(original_pipe[3]),
+    .lesson_idx(3'(PICTURE_INDEX)),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
     .brightness(9'sd16),.contrast_q2(3'd5),.active_control(2'd0),.rgb_out(original_osd));
 wire user,valid,last;
 wire [23:0] data;

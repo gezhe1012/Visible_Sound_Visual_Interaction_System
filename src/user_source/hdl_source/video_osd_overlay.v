@@ -3,7 +3,7 @@
 // Layers:
 //   1. Semi-transparent ANLOGIC logo panel.
 //   2. Running HH:MM:SS timestamp.
-//   3. Scrolling "FPGA HDMI MULTIMEDIA" caption.
+//   3. Page-bound theme ticker + PCM-reactive side bars (bottom band only).
 //
 // The panels use 4-bit alpha blending and the glyphs come from a compact
 // 5x7 combinational font ROM, so no external memory initialization file is
@@ -20,6 +20,9 @@ module video_osd_overlay #(
     input signed [8:0] brightness,
     input [2:0] contrast_q2,
     input [1:0] active_control,
+    input [2:0] lesson_idx,
+    input audio_valid,
+    input [23:0] audio_left,audio_right,
     output reg [23:0] rgb_out
 );
 
@@ -33,22 +36,25 @@ reg [4:0]  hours;
 reg [5:0]  minutes;
 reg [5:0]  seconds;
 
-reg        scroll_frame_div;
-reg [9:0]  scroll_pos;
-
 reg [7:0]  glyph_char;
 reg [4:0]  glyph_row_bits;
 reg [4:0]  glyph_index;
 reg [3:0]  glyph_col;
 reg [3:0]  glyph_row;
-reg [10:0] ticker_sum;
-reg [9:0]  ticker_rel;
 reg [23:0] panel_color,text_color;
 reg [4:0] panel_alpha;
 wire [8:0] brightness_magnitude=brightness[8] ? -brightness : brightness;
 
 wire frame_tick;
 assign frame_tick = vs & ~vs_d;
+
+wire footer_draw;
+wire [23:0] footer_rgb;
+sound_theme_footer u_sound_theme_footer(
+    .clk(clk),.rst(rst),.vs(vs),.de(de),.x(x),.y(y),.lesson_idx(lesson_idx),
+    .audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
+    .draw(footer_draw),.rgb(footer_rgb)
+);
 
 function [7:0] decimal_ascii;
     input [3:0] digit;
@@ -95,34 +101,6 @@ function [7:0] time_char;
     end
 endfunction
 
-function [7:0] ticker_char;
-    input [4:0] index;
-    begin
-        case (index)
-            5'd0:  ticker_char = "F";
-            5'd1:  ticker_char = "P";
-            5'd2:  ticker_char = "G";
-            5'd3:  ticker_char = "A";
-            5'd4:  ticker_char = " ";
-            5'd5:  ticker_char = "H";
-            5'd6:  ticker_char = "D";
-            5'd7:  ticker_char = "M";
-            5'd8:  ticker_char = "I";
-            5'd9:  ticker_char = " ";
-            5'd10: ticker_char = "M";
-            5'd11: ticker_char = "U";
-            5'd12: ticker_char = "L";
-            5'd13: ticker_char = "T";
-            5'd14: ticker_char = "I";
-            5'd15: ticker_char = "M";
-            5'd16: ticker_char = "E";
-            5'd17: ticker_char = "D";
-            5'd18: ticker_char = "I";
-            5'd19: ticker_char = "A";
-            default: ticker_char = " ";
-        endcase
-    end
-endfunction
 
 function [7:0] parameter_char;
     input [4:0] index;
@@ -356,20 +334,6 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        scroll_frame_div <= 1'b0;
-        scroll_pos       <= 10'd0;
-    end else if (frame_tick) begin
-        scroll_frame_div <= ~scroll_frame_div;
-        if (scroll_frame_div) begin
-            if (scroll_pos >= 10'd880)
-                scroll_pos <= 10'd0;
-            else
-                scroll_pos <= scroll_pos + 10'd1;
-        end
-    end
-end
 
 always @* begin
     rgb_out        = 24'h000000;
@@ -378,8 +342,6 @@ always @* begin
     glyph_index    = 5'd0;
     glyph_col      = 4'd0;
     glyph_row      = 4'd0;
-    ticker_sum     = {1'b0,x}+{1'b0,scroll_pos};
-    ticker_rel     = 10'd0;
     panel_color    = 24'd0;
     panel_alpha    = 5'd0;
     text_color     = 24'hFFFFFF;
@@ -392,8 +354,6 @@ always @* begin
         end else if(x>=18 && x<338 && y>=62 && y<92) begin
             panel_color=(active_control==3) ? 24'h095A32 : 24'h101820;
             panel_alpha=11;
-        end else if(y>=430 && y<464) begin
-            panel_color=24'h071A2B; panel_alpha=11;
         end
 
         if(x>=30 && x<156 && y>=22 && y<43) begin
@@ -415,18 +375,12 @@ always @* begin
             if((active_control==1 && glyph_index<7) ||
                (active_control==2 && glyph_index>=8))
                 text_color=24'hFFE66D;
-        end else if(y>=440 && y<454 && ticker_sum>=640 && ticker_sum<880) begin
-            ticker_rel=ticker_sum-11'd640;
-            glyph_index=ticker_rel/12;
-            glyph_col=(ticker_rel%12)/2;
-            glyph_row=(y-10'd440)/2;
-            glyph_char=ticker_char(glyph_index);
-            text_color=24'h52E3FF;
         end
         glyph_row_bits=font5x7(glyph_char,glyph_row[2:0]);
         rgb_out=alpha_mix_rgb(rgb_in,panel_color,panel_alpha);
         if(glyph_col<5 && glyph_row<7 && glyph_row_bits[4-glyph_col])
             rgb_out=text_color;
+        if(footer_draw) rgb_out=footer_rgb;
     end
 end
 endmodule

@@ -12,6 +12,7 @@ reg raster=0;
 reg [23:0] gold [0:511];
 audio_waveform_overlay #(.NO_AUDIO_CYCLES(1024)) dut(.*);
 video_osd_overlay osd(.clk(clk),.rst(rst),.hs(hs_out),.vs(vs_out),.de(de_out),
+    .lesson_idx(3'd0),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
     .rgb_in(rgb_out),.brightness(9'sd16),.contrast_q2(3'd5),.active_control(2'd0),.rgb_out(osd_rgb));
 function automatic integer level(input logic [23:0] bits);
     integer signed v,s;
