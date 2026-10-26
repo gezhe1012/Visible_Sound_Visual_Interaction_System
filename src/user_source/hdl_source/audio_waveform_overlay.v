@@ -10,11 +10,13 @@ module audio_waveform_overlay #(
     input audio_valid,requested_visible,
     input [23:0] audio_left,audio_right,
     output hs_out,vs_out,de_out,
+    output panel_visible,
     output reg [23:0] rgb_out
 );
 reg [9:0] x,y;
 reg de_d,vs_d;
 reg visible_frame;
+assign panel_visible=visible_frame;
 wire frame_tick=vs && !vs_d;
 reg capture_bank,display_bank,display_valid,pending,capturing;
 reg [7:0] capture_index,trigger_wait;

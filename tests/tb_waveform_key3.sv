@@ -4,6 +4,7 @@ reg clk=0,rst=1,key3=1,hs=1,vs=0,de=0;
 always #5 clk=~clk;
 reg [23:0] rgb_in=0;
 wire requested_visible,hs_out,vs_out,de_out;
+wire panel_visible;
 wire [23:0] rgb_out;
 reg audio_valid=0;
 reg [23:0] audio_left=0,audio_right=0;

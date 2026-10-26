@@ -4,7 +4,7 @@ module top(
     input                       rst_n,          // Board KEY1 / A2: reset (unchanged)
     input                       key1,           // Board KEY2 / B2: next / brightness (unchanged)
     input                       key2,           // Board KEY4 / C1: autoplay / contrast (unchanged)
-    input                       key3,           // Board KEY3 / B1: waveform visibility toggle
+    input                       key3,           // Board KEY3 / B1: analysis panel toggle
 
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
@@ -56,6 +56,12 @@ wire hs_adjusted,vs_adjusted,de_adjusted;
 wire [23:0] vout_data_waveform;
 wire hs_waveform,vs_waveform,de_waveform;
 wire waveform_requested_visible;
+wire analysis_panel_visible;
+wire [23:0] vout_data_analysis;
+wire hs_analysis,vs_analysis,de_analysis;
+wire spectrum_write,spectrum_done,spectrum_ack;
+wire [7:0] spectrum_address;
+wire [6:0] spectrum_height;
 wire signed [8:0] display_brightness;
 wire [2:0] display_contrast_q2;
 wire [1:0] display_active_control;
@@ -304,9 +310,29 @@ audio_waveform_overlay u_audio_waveform_overlay (
     .hs(hs_adjusted), .vs(vs_adjusted), .de(de_adjusted),
     .rgb_in(vout_data_faded), .audio_valid(audio_valid),
     .requested_visible(waveform_requested_visible),
+    .panel_visible(analysis_panel_visible),
     .audio_left(audio_left_data), .audio_right(audio_right_data),
     .hs_out(hs_waveform), .vs_out(vs_waveform), .de_out(de_waveform),
     .rgb_out(vout_data_waveform)
+);
+
+// Passive stereo PCM tap: neither capture nor FFT can stall HDMI audio.
+audio_fft1024 u_audio_fft1024 (
+    .clk(video_clk),.rst(rst_all),.audio_valid(audio_valid),
+    .audio_left(audio_left_data),.audio_right(audio_right_data),
+    .result_ack(spectrum_ack),.spectrum_write(spectrum_write),
+    .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
+    .result_done(spectrum_done)
+);
+// Reuse the waveform's VS-latched switch, not a second KEY3 controller.
+// Its VS reaches this stage two clocks later, after panel_visible is stable.
+audio_spectrum_overlay u_audio_spectrum_overlay (
+    .clk(video_clk),.rst(rst_all),.hs(hs_waveform),.vs(vs_waveform),.de(de_waveform),
+    .rgb_in(vout_data_waveform),.panel_visible(analysis_panel_visible),
+    .audio_valid(audio_valid),.spectrum_write(spectrum_write),
+    .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
+    .result_done(spectrum_done),.result_ack(spectrum_ack),
+    .hs_out(hs_analysis),.vs_out(vs_analysis),.de_out(de_analysis),.rgb_out(vout_data_analysis)
 );
 
 // ===================== 扩展要求1：Alpha OSD、动态时间与滚动字幕 =====================
@@ -315,13 +341,13 @@ video_osd_overlay #(
 ) u_video_osd_overlay (
     .clk     (video_clk),
     .rst     (rst_all),
-    .hs      (hs_waveform),
-    .vs      (vs_waveform),
-    .de      (de_waveform),
+    .hs      (hs_analysis),
+    .vs      (vs_analysis),
+    .de      (de_analysis),
     .brightness(display_brightness),
     .contrast_q2(display_contrast_q2),
     .active_control(display_active_control),
-    .rgb_in  (vout_data_waveform),
+    .rgb_in  (vout_data_analysis),
     .rgb_out (vout_data_osd)
 );
 
@@ -427,8 +453,8 @@ audio_arc_calculate #(
 video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
     .I_clk         (video_clk),
     .I_rst         (rst_all),
-    .I_vs          (vs_waveform),
-    .I_de          (de_waveform),
+    .I_vs          (vs_analysis),
+    .I_de          (de_analysis),
     .I_rgb         (vout_data),
     .O_video_user  (axis_s_user),
     .O_video_valid (axis_s_valid),

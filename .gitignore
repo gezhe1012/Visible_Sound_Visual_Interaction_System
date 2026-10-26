@@ -12,6 +12,7 @@
 # Tool/editor temporary files
 .vs/
 .vscode/
+__pycache__/
 *.swp
 Thumbs.db
 Desktop.ini
@@ -22,6 +23,10 @@ tests/commit_work/
 tests/controls_work/
 tests/waveform_work/
 tests/science_work/
+tests/fft_work/
+tests/fft_*.hex
+tests/fft_gate_netlist.v
+tests/analysis_panel_preview.*
 tests/science_image_*.hex
 tests/science_audio_vectors.hex
 doc/science_kiosk/science_tf_64MiB.img
