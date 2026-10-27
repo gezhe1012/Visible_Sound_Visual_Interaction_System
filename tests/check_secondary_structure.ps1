@@ -26,6 +26,15 @@ try {
     $newFft=$newFft.Replace('capture_start<=state==CAP && capture_index==0 && audio_valid;','').Replace('bin_valid<=0;','')
     $newFft=$newFft.Replace('bin_valid<=1;bin_channel<=channel;bin_number<=bin_index;bin_magnitude<=magnitude;','')
     Assert-True ((Compact $oldFft) -ceq (Compact $newFft)) 'Original FFT inputs/math/states/ack protocol are exact after removing passive output taps.'
+    git diff --exit-code 8aea081 -- src/user_source/hdl_source/top_tf_hdmi_audio.v src/user_source/hdl_source/audio_fft1024.v | Out-Null
+    Assert-True ($LASTEXITCODE -eq 0) 'This enhancement does not change even one line of the board-verified top or FFT.'
+    $store='src/user_source/hdl_source/secondary_feature_store.v'
+    $oldStore=(git show "8aea081:$store") -join "`n"
+    $newStore=Get-Content -LiteralPath $store -Raw -Encoding UTF8
+    $newStore=[regex]::Replace($newStore,'(?s),\s*// Passive secondary-only observations;.*?output \[79:0\] analysis_feature','')
+    $newStore=$newStore.Replace('assign audio_stale=stale;','').Replace('assign analysis_feature=selected_feature;','')
+    $newStore=[regex]::Replace($newStore,'assign analysis_ready=feature_done.*?;','')
+    Assert-True ((Compact $oldStore) -ceq (Compact $newStore)) 'Board-verified feature storage, pitch/level math and history timing are exact after stripping passive output ports.'
     $pin='src/user_source/constraints_source/pin.adc'
     $oldPin=(git show "a0bd824:$pin") -join "`n"
     $newPin=(Get-Content -LiteralPath $pin -Encoding UTF8 | Where-Object { $_ -notmatch '^# HDMI_A:|^# CLK K1|^set_pin_assignment \{ HDMIA_' }) -join "`n"

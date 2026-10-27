@@ -1,0 +1,251 @@
+{
+  "stage": "5 - Page 3 same-block harmonics and page 4 paired PCM XY",
+  "base": "8aea081",
+  "interface_checkpoint": "20b6fe2",
+  "branch": "codex/secondary-display",
+  "phase1_board_confirmed_by_user": true,
+  "analysis_base_board_confirmed_by_user": true,
+  "new_enhanced_board_verified": false,
+  "spectrogram_implemented": true,
+  "pitch_tracker_implemented": true,
+  "optional_harmonics_implemented": true,
+  "optional_lissajous_implemented": true,
+  "tool": "TD 6.2.168116",
+  "device": "EG4S20BG256",
+  "built_at": "2026-10-27 17:16:40",
+  "bit_bytes": 634280,
+  "bit_sha256": "70193AC901F96AA8BAC1AA9329740B2C6BE55B65467091E125B7A68ED79E937B",
+  "analysis_base_bit_sha256": "70012C9ABBB67E645052D767861612EBCFB7E2193740893A1DB38CFEBD71E0F6",
+  "phase1_bit_sha256": "4A1D083194A3248E6B52E3FABC1628DE0969126B5A28329BA26D3048C5C53E99",
+  "recovery_bit_sha256": "1AC7D911661E576682AA5A4FF36CCB240F3D5897FD24C292C65E24E33672534E",
+  "resources": {
+    "lut": 14128,
+    "reg": 8098,
+    "bram": 63,
+    "dsp": 27,
+    "pll": 3
+  },
+  "delta_vs_analysis_base": {
+    "lut": -1841,
+    "reg": 229,
+    "bram": 2,
+    "dsp": 0,
+    "pll": 0
+  },
+  "setup_wns_ns": 0.466,
+  "hold_wns_ns": 0.003,
+  "sta_coverage_percent": 96.0,
+  "waterfall": {
+    "visible_columns": 96,
+    "physical_columns": 128,
+    "frequency_bands": 64,
+    "intensity_bits": 4,
+    "heat_bytes": 4096,
+    "trace_bytes": 128,
+    "sample_rate": 48000,
+    "fft_points": 1024,
+    "bin_hz": 46.875,
+    "steady_column_ms": 33.6,
+    "display_span_seconds": 3.2256,
+    "frequency_axis": "piecewise linear 0-1.5k / 1.5k-4.5k"
+  },
+  "synthesis_options": "gate opt_area high; gate pack_effort high",
+  "harmonics": {
+    "channel": "L",
+    "cached_bins": 128,
+    "amplitude_bits": 17,
+    "locator": "current FFT window measured f0, 100-1000Hz",
+    "harmonics": 5,
+    "neighbourhood": "nearest bin +/-1",
+    "height": "min(38,floor(38*Hn/H1))",
+    "normalization": "serial fractional accumulation, not dB or THD"
+  },
+  "xy": {
+    "logical_width": 64,
+    "logical_height": 64,
+    "bits_per_cell": 1,
+    "banks": 2,
+    "samples_per_plane": 512,
+    "screen_pixels": "128x128",
+    "gain": 4,
+    "pairing": "same audio_valid L/R pair",
+    "publication": "frame boundary only"
+  },
+  "source_sha256": {
+    "src/td_project/HDMI1.4b_Transmitter_v1.0.al": "A9383DC2B2A12734420BBF11B316011969EB2675CF50C64E7B18671614FDB31C",
+    "src/user_source/constraints_source/pin.adc": "C9CCE13AF703F901462C93622CF27A076A3B146E31E98F430438F6EBB7C398EB",
+    "src/user_source/constraints_source/timing.sdc": "BF16FFA27D2BE108E24CB65ADDA07501B8117721E2F88FD4F39B9C35B8A5DF66",
+    "src/user_source/hdl_source/audio_arc_calculate.v": "552D8D86AFD237666B30AE08F31247808E89EB024EFDE5EFC670B82EB617A7DC",
+    "src/user_source/hdl_source/audio_fft1024.v": "6B11C4F5543E7D1868DFBB3E85174748A991F2D7EFF1C019A245D0B803D12B32",
+    "src/user_source/hdl_source/audio_spectrum_overlay.v": "C3E6CFA424B3456F10BC1CCA15094B536D765D43222113ACB78DB700233D47A9",
+    "src/user_source/hdl_source/audio_waveform_overlay.v": "F151679C44B8E2A88C423598BFA65626AC5596A6E9288F219134F4A7F3F1A753",
+    "src/user_source/hdl_source/display_key_controls.v": "53B5F698E770232A5CD3A38E7ABE6DEB42FC5C5D63B52057517A512EDF10CCB7",
+    "src/user_source/hdl_source/fft1024_tables.v": "C593E2ED14B290DB250EA854B3D89E95F1CE07242BA60C60447FDBA4639FC0B0",
+    "src/user_source/hdl_source/hdmi_audio_tone_i2s_64fs.v": "729CB1635091B7630E5B68306E9F51FFF4E3E06BAE8CE08CC3D7323B3FB9D5CF",
+    "src/user_source/hdl_source/hdmi_audio_tone_pcm_scale.v": "0FF1AB2B39E1294C3AAE814BF5A252C47C284C2CDB9568ADF02D3C6CFD8DDD0B",
+    "src/user_source/hdl_source/hdmi_phy_warpper.v": "416B082B0987001BDBC0A7E20A557CB8FB1DCA34E25DC881E6D28A8CB3CF4300",
+    "src/user_source/hdl_source/hdmi1.4b_transmitter_core/hdmi_1_4b_transmitter_core_wrapper.enc.v": "867E0B0BDD874BC383D00918C9E1BE3FE01EDF41F343B6A0D73E262776596A63",
+    "src/user_source/hdl_source/I2S_receiver.v": "08904598B42C2E1A4836CD9FB3293BC6C791EA2F79E35C7663A33127DC97F47B",
+    "src/user_source/hdl_source/include/global_def.v": "128EEB6107D30E5D1FF7EC4408FC51EB5B3B05ED1765393311C9A403E0046105",
+    "src/user_source/hdl_source/include/sdr_as_ram.enc.v": "767DBDFBD83D42223B77DFA7DEAB42CE8216A8FD6F6CB41B7E7593D9A345BA57",
+    "src/user_source/hdl_source/include/sdr_init_ref.enc.v": "6DA5945F4AF793610D0D64C65C7E5D2D1C86ED4C11BC5FDEACD27EB03178B9F6",
+    "src/user_source/hdl_source/include/sdr_wrrd.enc.v": "C7D7FE07D75F66AA88D9F986B3006319C995162434F104F9990664B374CDFDD2",
+    "src/user_source/hdl_source/IP/afifo_16_256_sim.v": "55B81AB3AA699902B6F11FE766658B852E0740844879A942DCA81CD57B40F729",
+    "src/user_source/hdl_source/IP/afifo_16_256.v": "DAB43A76A35E21DF4064A25EDB940699B041427D70BAE89CC03C5280B7BF4BF8",
+    "src/user_source/hdl_source/IP/afifo_16_256.vhd": "50D6D10017B63E1CE5A77BAD4A80E9A3DE81402909D30CA0818674A1887EB46D",
+    "src/user_source/hdl_source/IP/afifo_16_32_256.v": "3D29B06655482184A9AD157B9BD71B79032DEBE3199168D3B4D9570FDAC31835",
+    "src/user_source/hdl_source/IP/afifo_32_16_256.v": "7C3EE41F30BE75AE686C9ABFF3A840FC5439209CDA077E4AA275EAC0DAB9F564",
+    "src/user_source/hdl_source/IP/sdram.v": "1487E8583BBF52FE6D079A2854C10EBFF2E569A3872A9088C1C9717BA14D17FE",
+    "src/user_source/hdl_source/IP/sdram.vhd": "853170E99291FB6B2B1BF3F5F20CD1DD0CC723052864147810B674E18CD70705",
+    "src/user_source/hdl_source/IP/sys_pll.v": "EA4ED09B2FF026B7B31EB76F51EF5AFA388AA552E538E02D013CC8E7464BA563",
+    "src/user_source/hdl_source/IP/sys_pll.vhd": "0BA7E030D4E3D459D6E411A037B731700F4CB259BE92B2E444B4DEBA10D301D2",
+    "src/user_source/hdl_source/IP/video_pll.v": "D5A2B3D3D0618D19619C36AF0143F8BF9338415EEF2EADD22456510ADE9C6092",
+    "src/user_source/hdl_source/IP/video_pll.vhd": "4C23A8A81B28C81BED4834E1E9A757DB01EEBD360C7FE3A7066F8F8F7B6A36C4",
+    "src/user_source/hdl_source/key_remove_shakes.v": "8832F59E7BA94BFB8CF31E4F5A772EF7177D5257A5A2532D53CBFA1D9B7F5CD9",
+    "src/user_source/hdl_source/lane_lvds_10_1.v": "DE9529321354F04837E051D0EC1681CF44783D4BE3284703A788E081147500BC",
+    "src/user_source/hdl_source/rom/i2s_rom_player_single_pll_fix64_rom_ip.v": "F8E7C9C56C6A21154580E030DADA604572D89A1E75E8945125B2EA0DD4B3094B",
+    "src/user_source/hdl_source/science_audio_i2s.v": "E1568D5EAA4B0457DE08FB4840010DF7AED77FE0E90DBA260FA2DB089E5F94BE",
+    "src/user_source/hdl_source/science_sys_pll.v": "8FB6D7E7FA286FDA92AA3437404881F459444AABB0FFA8561A3067B49B0436DB",
+    "src/user_source/hdl_source/SD/ax_debounce.v": "93AA6DD38051250CC7F777C88466AC180AFE9BCDCE7838B9EA506455D8CBC9B8",
+    "src/user_source/hdl_source/SD/bmp_bilinear_reader.v": "0D928B394498B3D0A5BD7DF05CA7617A19CA6928B030C5E1B7F8AA68327E7DF5",
+    "src/user_source/hdl_source/SD/bmp_read.v": "8B81EDEE7E1AC61E02652C9416C05F6A32768ACD5A9639365BC7BF87FA4FEBAA",
+    "src/user_source/hdl_source/SD/color_bar.v": "AFE1F56714EC58D2477BA1717E5A36C5A0DA5FE5C07D70D11AA5ACE710C4B152",
+    "src/user_source/hdl_source/SD/frame_fifo_read.v": "71270379EDB862C8C55B55B57911F5DE44BD77E14F36B49B872BE7862896802E",
+    "src/user_source/hdl_source/SD/frame_fifo_write.v": "BF35FADDC3C4623841BD54BBD7D4E3C06EEF9BA2809C6B090A5DFED9F50F3C9A",
+    "src/user_source/hdl_source/SD/frame_read_write.v": "951A9C4CE9B915183891120727DD7957DDF80DDEBEE0A104FF3E50E84430DECD",
+    "src/user_source/hdl_source/SD/sd_card_bmp.v": "2BA56A2A54E01F7BE3804A6E52A28CB4AE6C16A6309BB187FB8E00A1DD6D6D14",
+    "src/user_source/hdl_source/SD/sd_card_cmd.v": "A1A50502AFD4E8B238B0627CD5F204C04738E761D49AB48F33DA35E22BA4A5FA",
+    "src/user_source/hdl_source/SD/sd_card_sec_read_write.v": "C245C07E3B0056808D86E06AAD74348494E2A7050D493A3D4141D97CCF115203",
+    "src/user_source/hdl_source/SD/sd_card_top.v": "D5031B5B809A8DF0A2C8CCA194A511C5F74236E810CBE5E8436359F9E5F26A39",
+    "src/user_source/hdl_source/SD/sdram.v": "2D985C2477384E677C25714241E1A50206DEF8916AA03189A5B313B2D22DFC99",
+    "src/user_source/hdl_source/SD/seg_decoder.v": "4592B6E4D2E9E8B7E4AB5266D850D30E43537AB9C4157D4221E3F8DFD342DECD",
+    "src/user_source/hdl_source/SD/seg_scan.v": "08759C329C33CDB7A6070E0B46773F0A6C9C8052B51652DEC29406B9A9DAC1E3",
+    "src/user_source/hdl_source/SD/spi_master.v": "37F7A21144FA5CCA3CC5C3B5F68A5AD40B3108336B600E45A1367734AC61403C",
+    "src/user_source/hdl_source/SD/video_define.v": "77748966850A8F5AF0D77F2CDB08006088BA5E1A31B98391FBA6CC61C5247DA2",
+    "src/user_source/hdl_source/SD/video_delay.v": "F47C4B63F8BAA6D8874C87DCA5B72DFDADD19F4A107403DA98752BCE98936433",
+    "src/user_source/hdl_source/SD/video_timing_data.v": "C6F75501E98DD5995F687AAFB40455BEFFE45B426137B5089A73AC3A036F7282",
+    "src/user_source/hdl_source/secondary_audio_renderer.v": "C3E13F6B20F73073642CA193C9B537BFAD106D20EE5BCEC77E16BDF30BFBF49C",
+    "src/user_source/hdl_source/secondary_feature_store.v": "FA4BDD973582B7612FF252C086A2FA005E9906536021DE36F351429BAE5BF2F7",
+    "src/user_source/hdl_source/secondary_font5x7.v": "5D7731021ACEFB4528BDF78EA34B539421E19B5B7E4E4D153E1A057EAA8D671E",
+    "src/user_source/hdl_source/secondary_harmonics.v": "A518AC029321F173CBAB0C893A0E4839B9C67F18984A9D9095ED4C4D6DF735D1",
+    "src/user_source/hdl_source/secondary_hdmi_tx.v": "57E8A452E5466F6CF49F7C8AC077E35F7533200B3E5ECF676E77AB7B5652C555",
+    "src/user_source/hdl_source/secondary_link_pattern.v": "30BE80712D3208137958D589EAC2BF4B9A8326C6B71374D0FA045182D17E4D80",
+    "src/user_source/hdl_source/secondary_lissajous.v": "C8CCF4F1BEE2479247E91D2D924DE141642336AC1256B514720AB9EA0A7BDE72",
+    "src/user_source/hdl_source/secondary_note_thresholds.v": "9E929924E2F2BDECBD72B149836BB495887E9A499F77EB44CEB010DB9BADF960",
+    "src/user_source/hdl_source/secondary_pitch_estimator.v": "53183CAE08B799E28CA1716DB716A201927A5183BBA2500EB8CC69647901DCF2",
+    "src/user_source/hdl_source/sound_theme_footer.v": "DC6FE708FB0E80FB00613A7978FC80C12C1E20C6716219DC4629F8201C2E3379",
+    "src/user_source/hdl_source/startup_pulse.v": "396E1E56FEBB8028339E646BC2F06B83E07AB11EF840E447422FB941956741C9",
+    "src/user_source/hdl_source/test/design_top_i2s_test_pll.v": "B6396C3E90C67D7E8AAD8C83BFA8A1AA0B826DB8F74A26936549CAE57E86668C",
+    "src/user_source/hdl_source/test/i2s_test_tone_gen_pll.v": "7614D4CA84C007A568E798B7C8CBC31EADD8A064BEE53101194DF13EDB71E02F",
+    "src/user_source/hdl_source/top_tf_hdmi_audio.v": "ABAFC077A11F17965482AB8D2FF12A3EEBCFDA4AFCD339E020EE528E6B1927B0",
+    "src/user_source/hdl_source/video_fade_transition.v": "7C5464FE63FADB326753AC53FEB1FB7D44005AEAA57B6782B7AA4F8D93B66DD9",
+    "src/user_source/hdl_source/video_osd_overlay.v": "3AA71E0E4D7FB18FBF0FF45440F60748FFC7A1A7BDF302C888329B625AFEE504",
+    "src/user_source/hdl_source/video_picture_adjust.v": "78939BD5A199BB5F856D5D9383511B3A41B6C63AB931D4B7D9C336071722AB3D",
+    "src/user_source/hdl_source/video_rgb_to_axis_640x480.v": "E14E4B24E73BCCEAC1389031BD2C63A6B952AB70CBD83480AA13FE6ED031D7E1",
+    "src/user_source/hdl_source/video_source_test.v": "39CC05C9684A594D4254D11E66E97344053AB75BDB00F3F5A301643FD7AADBFC",
+    "src/user_source/hdl_source/waveform_key_control.v": "C8567BA3B1DD4DC02F04135224C6E98CAFCC7B41C1A3C14F3E4AD8C37956B1B0",
+    "src/user_source/ip_source/pll.v": "202799F886F12CFC1D837AFA932328B636C6C3DEE70167BE68C084133647B39C",
+    "src/user_source/ip_source/pll.vhd": "A8166865B5AEF9CAAEE525D4633AA1DEC4172244A7BBFF239E0D658C0CA775E4",
+    "tests/secondary_enhanced_synthesis.tcl": "70DBAE77BDF6DA8F1E222D84F4AF600A1A8E91459FC01B2635CE6C63133D1D2A"
+  },
+  "regressions": [
+    {
+      "log": "secondary_enhanced_oracle.log",
+      "pass_lines": [
+        "ALL ENHANCED ORACLE TESTS PASSED: 96 real WAV harmonic frames, same-block measured f0 locators, neighbourhood ratios, baseline renderer 8aea081"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_unit.log",
+      "pass_lines": [
+        "# ALL ENHANCED UNIT TESTS PASSED: 45 harmonic ratios/guards and 32768 exact XY bits, L-only/R-only/same/anti/quadrature/2:3/clipping/silent recovery, bank safety/frame/clear/stale/reset, bounded serial latency"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_pixels.log",
+      "pass_lines": [
+        "ALL ENHANCED RASTER COMPARISON TESTS PASSED: 1331200 protected actual WAV/FFT RGB pixels exact to board-verified preview"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_preview.log",
+      "pass_lines": [
+        "# ALL SECONDARY PITCH TESTS PASSED: 40 complete 80-bit summaries, independent frequency/note/trace/BCD/smoothing, noise/silence/edges, latency/clear",
+        "# ALL SECONDARY AUDIO PREVIEW TESTS PASSED: 30720 real lesson FFT cells, 480 80-bit features, 96 same-block harmonic summaries, PCM levels, five pages and three real timbre rasters"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_checks.log",
+      "pass_lines": [
+        "# ALL SECONDARY STORE TESTS PASSED: 8448 stereo heat cells, 128-column wrap, 96-visible guard, frame publication, R-only, page-abort/recovery, peak/mean/full-negative, timeout/reset",
+        "# ALL SECONDARY RENDERER TESTS PASSED: five frames, 1536000 pixels, 1331200 exact protected pixels vs 8aea081, independent heat/trace/level/XY/harmonic pixels, unchanged two-clock framing"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_live.log",
+      "pass_lines": [
+        "# ALL ENHANCED LIVE TESTS PASSED: 19 real I2S harmonic frames, 21 complete PCM XY planes, unchanged original PCM/FFT cadence",
+        "# ALL SECONDARY LIVE TESTS PASSED: real 25MHz/48K I2S, 89279 samples, 55 FFT blocks, 56 original capture cadences, 51 frame-atomic columns, five scenes, all pitch/stereo stages, 3 music changes"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_structure.log",
+      "pass_lines": [
+        "ALL SECONDARY STRUCTURE TESTS PASSED: protected main logic, exact A pads including paired N, unchanged clocks, global timing."
+      ]
+    },
+    {
+      "log": "secondary_enhanced_fft.log",
+      "pass_lines": [
+        "# ALL FFT1024 TESTS PASSED: 16384 complex bins, 2048 unchanged heights, 8192 passive magnitudes, 8 capture tags, 48K capture, bounded latency, backpressure/reset",
+        "# ALL SOUND ANALYSIS TESTS PASSED: KEY3 shared toggle, 921600 pixels, stereo bars, unchanged image/OSD, 1440 TLAST, 3 SOF, banks, stale/reset"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_rom.log",
+      "pass_lines": [
+        "ALL SYNTHESIZED FFT ROM TESTS PASSED: all 512 complex twiddles and 1024 Hann coefficients preserved"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_ticker.log",
+      "pass_lines": [
+        "# ALL THEME TICKER TESTS PASSED: five exact captions/fonts, 1536000 pixels, immutable outside-footer/Logo/BRI/timing, PCM/stereo/attack/release, frame-atomic switches, gradients/reset",
+        "# ALL TICKER ANIMATION TESTS PASSED: 100 RTL rasters, complete scroll/wrap, real edge glyphs at all 17 fade levels, PCM-reactive bars"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_controls.log",
+      "pass_lines": [
+        "# ALL PICTURE ADJUST TESTS PASSED: 45 parameter pairs, 256 values/channel, saturation, neutral, timing, reset (11533 cycles)",
+        "# ALL KEY CONTROL TESTS PASSED: debounce, short/hold, repeat/wrap, chord, frame snapshot, indicator and asynchronous CDC",
+        "# ALL OSD CONTROL TESTS PASSED: 45 numeric labels, highlight, Alpha, 7680 restored HOLD-strip pixels, background and full raster"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_waveform.log",
+      "pass_lines": [
+        "# ALL WAVEFORM TESTS PASSED: signed gain, saturation, trigger, silence, freeze, frame swap, timeout/recovery, 307200 RGB pixels and timing",
+        "# ALL I2S WAVEFORM TESTS PASSED: 1600 original PCM pairs, 26 transitions, 4 frame snapshots, 1055 checked captures",
+        "# ALL KEY3 WAVEFORM TESTS PASSED: default hidden, bounce/hold/release, frame-atomic on/off, 921600 raster pixels, unchanged legacy controls and reset"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_science.log",
+      "pass_lines": [
+        "# ALL AXIS FRAMING TESTS PASSED: 2 full frames, 614400 RGB pixels, 960 aligned TLAST and 2 SOF",
+        "# ALL SCIENCE FADE TESTS PASSED: five lessons atomically follow black-frame buffer swaps",
+        "# ALL SCIENCE AUDIO TESTS PASSED: 8192 independent PCM pairs, stereo routing, envelopes, 48K/I2S roundtrip, 6 FFT blocks tapped without altering playback",
+        "# ALL FRAME BANDWIDTH TESTS PASSED: 40MHz memory / 25MHz video / 100MHz writer, 6144 ordered pixels and refresh arbitration",
+        "# ALL SCIENCE CARD TESTS PASSED: real FAT32 five-page scan order and 1536000 teaching RGB pixels"
+      ]
+    },
+    {
+      "log": "secondary_enhanced_melody.log",
+      "pass_lines": [
+        "# ALL FIVE PAGE PLAYER TESTS PASSED: scan/store five, unchanged two buffers, manual 5->1, 3 complete autoplay phrases/loops, timer wait, async image/audio binding",
+        "# ALL MELODY AUDIO TESTS PASSED: 384000 bit-exact stereo pairs, 17 notes, real 48K/I2S, 238 FFT blocks and 30 moving peaks, complete/silent/re-entry/manual override"
+      ]
+    }
+  ]
+}

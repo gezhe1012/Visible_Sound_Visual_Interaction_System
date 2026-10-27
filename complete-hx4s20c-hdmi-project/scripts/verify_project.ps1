@@ -91,6 +91,8 @@ $secondaryFeaturesPath = Require-File 'src\user_source\hdl_source\secondary_feat
 $secondaryPitchPath = Require-File 'src\user_source\hdl_source\secondary_pitch_estimator.v'
 $secondaryNotesPath = Require-File 'src\user_source\hdl_source\secondary_note_thresholds.v'
 $secondaryFontPath = Require-File 'src\user_source\hdl_source\secondary_font5x7.v'
+$secondaryHarmonicsPath = Require-File 'src\user_source\hdl_source\secondary_harmonics.v'
+$secondaryXyPath = Require-File 'src\user_source\hdl_source\secondary_lissajous.v'
 $fftTablesPath = Require-File 'src\user_source\hdl_source\fft1024_tables.v'
 $axisPath = Require-File 'src\user_source\hdl_source\video_rgb_to_axis_640x480.v'
 $fadePath = Require-File 'src\user_source\hdl_source\video_fade_transition.v'
@@ -121,7 +123,7 @@ Require-Text $topPath 'secondary_hdmi_tx\s+u_secondary_hdmi_tx' 'Independent HDM
 Require-Text $secondaryPath 'secondary_audio_renderer\s+renderer' 'HDMI_A renders real audio features.'
 Require-Text $secondaryPath 'secondary_feature_store\s+features' 'Secondary history storage is instantiated.'
 Require-Text $secondaryFeaturesPath 'secondary_pitch_estimator\s+estimator' 'Pitch is estimated from raw FFT bins.'
-foreach($name in @('secondary_audio_renderer','secondary_feature_store','secondary_pitch_estimator','secondary_note_thresholds','secondary_font5x7')) {
+foreach($name in @('secondary_audio_renderer','secondary_feature_store','secondary_pitch_estimator','secondary_note_thresholds','secondary_font5x7','secondary_harmonics','secondary_lissajous')) {
     Require-Text $projectPath ($name+'\.v') ('Project references '+$name+'.')
 }
 Require-Text $pinPath 'HDMIA_CLK_P.*LOCATION = K1' 'HDMI_A clock uses handbook pin K1.'
@@ -230,7 +232,9 @@ if ($RunSynthesis) {
         } elseif (-not (Test-Path -LiteralPath $synDirectory -PathType Container)) {
             Write-Fail "Synthesis run directory not found: $synDirectory"
         } else {
-            Invoke-TdFlow $tdCommand ($flowScript -replace '\\','/') $synDirectory 'TD synthesis'
+            $synthesisFlow=Join-Path $ProjectRoot 'tests\secondary_enhanced_synthesis.tcl'
+            if(!(Test-Path -LiteralPath $synthesisFlow)) {$synthesisFlow=$flowScript}
+            Invoke-TdFlow $tdCommand ($synthesisFlow -replace '\\','/') $synDirectory 'TD synthesis'
         }
 
         if ($RunImplementation -and $script:FailureCount -eq 0) {

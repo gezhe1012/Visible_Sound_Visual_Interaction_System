@@ -23,6 +23,13 @@ wire [5:0] read_band;
 wire [3:0] heat_q;
 wire [7:0] trace_q,peak_left,peak_right,average_left,average_right;
 wire [79:0] shown_feature;
+wire analysis_ready,audio_stale;
+wire [79:0] analysis_feature;
+wire [29:0] harmonic_heights;
+wire harmonic_valid,xy_q,xy_visible;
+wire [11:0] xy_read_address;
+secondary_harmonics harmonics(.*);
+secondary_lissajous lissajous(.*);
 secondary_feature_store features(.*);
 wire axis_user,axis_valid,axis_last;
 wire [23:0] axis_data;
@@ -31,6 +38,7 @@ reg [47:0] pcm[0:491519];
 reg [3:0] expected_heat[0:30719];
 reg [79:0] expected_feature[0:479];
 reg [31:0] expected_level[0:479];
+reg [30:0] expected_harmonic[0:95];
 integer page,column,i,band,fp,pixels,lines,starts,stream_x;
 integer heat_checks=0,feature_checks=0;
 reg recording=0,saw_start=0;
@@ -45,9 +53,19 @@ always @(posedge clk) begin
         if(pixels==307200) recording=0;
     end
 end
+task save_raster(input string name);
+    @(negedge clk);fill_mode=0;
+    wait(render_tick);@(negedge clk);
+    fp=$fopen(name,"wb");$fwrite(fp,"P6\n640 480\n255\n");
+    pixels=0;lines=0;starts=0;stream_x=0;saw_start=0;recording=1;
+    wait(!recording);$fclose(fp);
+    if(lines!=480 || starts!=1) $fatal(1,"Incomplete secondary raster");
+    @(negedge clk);fill_mode=1;
+endtask
 initial begin
     $readmemh("secondary_audio_pcm.hex",pcm);$readmemh("secondary_audio_heat.hex",expected_heat);
     $readmemh("secondary_audio_feature.hex",expected_feature);$readmemh("secondary_audio_level.hex",expected_level);
+    $readmemh("enhanced_harmonics.hex",expected_harmonic);
     for(page=0;page<5;page=page+1) begin
         rst=1;lesson=3'(page);fill_mode=1;manual_tick=0;
         repeat(5) @(negedge clk);rst=0;repeat(5) @(negedge clk);
@@ -56,7 +74,9 @@ initial begin
                 @(negedge clk);audio_valid=1;{audio_left,audio_right}=pcm[(page*96+column)*1024+i];
                 @(negedge clk);audio_valid=0;repeat(2) @(negedge clk);
             end
-            wait(features.pending);@(negedge clk);manual_tick=1;@(negedge clk);manual_tick=0;repeat(2) @(negedge clk);
+            wait(features.pending);if(page==2) wait(harmonics.pending);
+            @(negedge clk);manual_tick=1;@(negedge clk);manual_tick=0;repeat(2) @(negedge clk);
+            if(page==2 && {harmonic_valid,harmonic_heights}!==expected_harmonic[column]) $fatal(1,"Real harmonic mismatch col%0d got%h want%h",column,{harmonic_valid,harmonic_heights},expected_harmonic[column]);
             if(shown_feature!==expected_feature[page*96+column]) $fatal(1,"Real FFT feature mismatch page%0d col%0d got%h expected%h",page,column,shown_feature,expected_feature[page*96+column]);
             if({peak_left,peak_right,average_left,average_right}!==expected_level[page*96+column]) $fatal(1,"Real PCM peak/mean mismatch");
             if(shown_count!==7'(column+1)) $fatal(1,"History count mismatch");
@@ -65,16 +85,14 @@ initial begin
                 heat_checks=heat_checks+1;
             end
             feature_checks=feature_checks+1;
+            if(page==2 && column==24) save_raster("enhanced_timbre_sine.ppm");
+            if(page==2 && column==48) save_raster("enhanced_timbre_triangle.ppm");
+            if(page==2 && column==80) save_raster("enhanced_timbre_square.ppm");
         end
-        @(negedge clk);fill_mode=0;
-        wait(render_tick);@(negedge clk);
-        fp=$fopen($sformatf("secondary_audio_page_%0d.ppm",page),"wb");$fwrite(fp,"P6\n640 480\n255\n");
-        pixels=0;lines=0;starts=0;stream_x=0;saw_start=0;recording=1;
-        wait(!recording);$fclose(fp);
-        if(lines!=480 || starts!=1) $fatal(1,"Incomplete secondary raster");
+        save_raster($sformatf("secondary_audio_page_%0d.ppm",page));
         $display("PASS secondary audio page%0d: 96 real FFT columns, 307200 actual RGB pixels",page);
     end
-    $display("ALL SECONDARY AUDIO PREVIEW TESTS PASSED: %0d real lesson FFT cells, %0d 80-bit features, PCM levels, 1536000 RGB pixels, 2400 TLAST, 5 SOF",heat_checks,feature_checks);
+    $display("ALL SECONDARY AUDIO PREVIEW TESTS PASSED: %0d real lesson FFT cells, %0d 80-bit features, 96 same-block harmonic summaries, PCM levels, five pages and three real timbre rasters",heat_checks,feature_checks);
     $finish;
 end
 initial begin #4000000000;$fatal(1,"Secondary FFT preview timeout");end

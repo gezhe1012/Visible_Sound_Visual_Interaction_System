@@ -22,7 +22,10 @@ module secondary_feature_store #(
     output reg [6:0] shown_head,shown_count,
     output reg [79:0] shown_feature,
     output reg shown_right,
-    output reg [7:0] peak_left,peak_right,average_left,average_right
+    output reg [7:0] peak_left,peak_right,average_left,average_right,
+    // Passive secondary-only observations; original store state is unchanged.
+    output analysis_ready,audio_stale,
+    output [79:0] analysis_feature
 );
 wire [79:0] left_feature,right_feature;
 wire feature_done;
@@ -63,6 +66,9 @@ wire [15:0] next_peak_r=abs_right>level_peak_r ? abs_right : level_peak_r;
 reg [7:0] latest_peak_l,latest_peak_r,latest_average_l,latest_average_r;
 reg [22:0] no_audio_count;
 wire stale=no_audio_count>=NO_AUDIO_CYCLES-1;
+assign audio_stale=stale;
+assign analysis_feature=selected_feature;
+assign analysis_ready=feature_done && (fft_ready || result_done) && block_valid && captured_lesson==lesson && lesson_valid && !copying && !pending;
 function [7:0] bar_length;
     input [15:0] amplitude;
     reg [18:0] value;

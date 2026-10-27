@@ -28,6 +28,10 @@ tests/secondary_work/
 tests/secondary_audio_work/
 tests/secondary_checks_work/
 tests/secondary_live_work/
+tests/enhanced_work/
+tests/enhanced_*.hex
+tests/enhanced_*.ppm
+tests/enhanced_baseline_renderer.v
 tests/secondary_audio_*.hex
 tests/secondary_audio_page_*.ppm
 tests/secondary_link_frame_*.ppm

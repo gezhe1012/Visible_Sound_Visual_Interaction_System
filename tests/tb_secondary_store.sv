@@ -16,6 +16,8 @@ wire [3:0] heat_q;
 wire [7:0] trace_q,peak_left,peak_right,average_left,average_right;
 wire [6:0] shown_head,shown_count;
 wire [79:0] shown_feature;
+wire analysis_ready,audio_stale;
+wire [79:0] analysis_feature;
 wire shown_right;
 secondary_feature_store #(.NO_AUDIO_CYCLES(128)) dut(.*);
 integer block_no,i,b,expected_head=0,expected_count=0,checks=0,distance;

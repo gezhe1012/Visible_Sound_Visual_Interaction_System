@@ -1,0 +1,1 @@
+ALL ENHANCED RASTER COMPARISON TESTS PASSED: 1331200 protected actual WAV/FFT RGB pixels exact to board-verified preview

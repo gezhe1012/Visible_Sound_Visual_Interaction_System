@@ -25,6 +25,10 @@ wire [5:0] read_band;
 wire [3:0] heat_q;
 wire [7:0] trace_q,peak_left,peak_right,average_left,average_right;
 wire [79:0] shown_feature;
+wire analysis_ready,audio_stale,harmonic_valid,xy_q,xy_visible;
+wire [79:0] analysis_feature;
+wire [29:0] harmonic_heights;
+wire [11:0] xy_read_address;
 secondary_feature_store features(
     .clk(pixel_clk),.rst(rst),.frame_tick(frame_tick),.scene_clear(scene_clear),
     .lesson(lesson),.lesson_valid(lesson_valid),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
@@ -32,12 +36,26 @@ secondary_feature_store features(
     .spectrum_write(spectrum_write),.result_done(result_done),.spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
     .read_column(read_column),.read_band(read_band),.heat_q(heat_q),.trace_q(trace_q),
     .shown_head(shown_head),.shown_count(shown_count),.shown_feature(shown_feature),.shown_right(shown_right),
-    .peak_left(peak_left),.peak_right(peak_right),.average_left(average_left),.average_right(average_right)
+    .peak_left(peak_left),.peak_right(peak_right),.average_left(average_left),.average_right(average_right),
+    .analysis_ready(analysis_ready),.analysis_feature(analysis_feature),.audio_stale(audio_stale)
+);
+secondary_harmonics harmonics(
+    .clk(pixel_clk),.rst(rst),.frame_tick(frame_tick),.scene_clear(scene_clear),.audio_stale(audio_stale),
+    .lesson(lesson),.lesson_valid(lesson_valid),.capture_start(capture_start),.bin_valid(bin_valid),
+    .bin_channel(bin_channel),.bin_number(bin_number),.bin_magnitude(bin_magnitude),
+    .shown_feature(shown_feature),.analysis_feature(analysis_feature),.analysis_ready(analysis_ready),
+    .harmonic_heights(harmonic_heights),.harmonic_valid(harmonic_valid)
+);
+secondary_lissajous lissajous(
+    .clk(pixel_clk),.rst(rst),.frame_tick(frame_tick),.scene_clear(scene_clear),.audio_stale(audio_stale),
+    .lesson(lesson),.lesson_valid(lesson_valid),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
+    .xy_read_address(xy_read_address),.xy_q(xy_q),.xy_visible(xy_visible)
 );
 secondary_audio_renderer renderer(
     .clk(pixel_clk),.rst(rst),.lesson(lesson),.lesson_valid(lesson_valid),.video_locked(locked),
     .heat_q(heat_q),.trace_q(trace_q),.shown_head(shown_head),.shown_count(shown_count),.shown_feature(shown_feature),
     .shown_right(shown_right),.peak_left(peak_left),.peak_right(peak_right),.average_left(average_left),.average_right(average_right),
+    .harmonic_heights(harmonic_heights),.harmonic_valid(harmonic_valid),.xy_q(xy_q),.xy_visible(xy_visible),.xy_read_address(xy_read_address),
     .frame_tick(frame_tick),.scene_clear(scene_clear),.read_column(read_column),.read_band(read_band),
     .axis_user(user),.axis_valid(valid),.axis_last(last),.axis_data(rgb)
 );

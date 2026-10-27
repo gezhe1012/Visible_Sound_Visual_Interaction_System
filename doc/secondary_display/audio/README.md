@@ -1,5 +1,7 @@
 # 双屏真实 FFT 瀑布图与音高轨迹
 
+后续验收补充：用户已确认本版 `8aea081` 显示正常；下面保留交付当时的工具记录与待验收表述。下一版第三页谐波/第四页 XY 专题见 [../enhanced/README.md](../enhanced/README.md)，两版 bit 分开保存。
+
 2026-10-27，基于用户已确认“副屏显示正常”的接口验证版 `20b6fe2`，在 `codex/secondary-display` 上继续开发。原恢复点 `a0bd824` 和接口验证点 `codex/secondary-link-verified` 均保留；未恢复被否定的谐波叠加版。
 
 ## 交付与证据边界

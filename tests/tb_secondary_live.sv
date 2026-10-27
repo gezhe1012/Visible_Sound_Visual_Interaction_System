@@ -44,11 +44,19 @@ wire [5:0] read_band;
 wire [3:0] heat_q;
 wire [7:0] trace_q,peak_left,peak_right,average_left,average_right;
 wire [79:0] shown_feature;
+wire analysis_ready,audio_stale;
+wire [79:0] analysis_feature;
+wire [29:0] harmonic_heights;
+wire harmonic_valid,xy_q,xy_visible;
+wire [11:0] xy_read_address;
+secondary_harmonics harmonics(.*);
+secondary_lissajous lissajous(.*);
 secondary_feature_store features(.*);
 wire axis_user,axis_valid,axis_last;
 wire [23:0] axis_data;
 secondary_audio_renderer renderer(.video_locked(1'b1),.*);
 integer page,old_head=0,first_frequency=-1,music_changes=0,last_music=-1,target,valid_checks=0;
+integer harmonic_frames=0,xy_frames=0;
 reg [1:0] captured_step=0;
 reg [4:0] captured_note=0;
 reg [2:0] captured_page=0;
@@ -56,6 +64,13 @@ reg [3:0] pitch_steps=0,stereo_steps=0;
 always @(posedge clk) if(!rst) begin
     if(capture_start) begin captured_step=lesson_step;captured_note=source.melody_note;captured_page=lesson;end
     #1;
+    if(renderer.col==1 && renderer.line==0) begin
+        if(lesson==2 && harmonic_valid) begin
+            if(harmonic_heights[5:0]!=38) $fatal(1,"Real I2S H1 normalization wrong");
+            harmonic_frames=harmonic_frames+1;
+        end
+        if(lesson==3 && xy_visible) xy_frames=xy_frames+1;
+    end
     if(shown_head!=old_head) begin
         if(renderer.col!=1 || renderer.line!=0) $fatal(1,"Live history published away from frame origin");
         old_head=shown_head;
@@ -92,7 +107,8 @@ initial begin
         if(shown_count<8 || renderer.shown_lesson!==3'(page)) $fatal(1,"Missing live page history");
         $display("PASS actual 48K/I2S secondary page%0d: %0d published columns",page,shown_count);
     end
-    if(pitch_steps!=15 || stereo_steps!=15 || music_changes<2 || valid_checks<30 || samples<85000 || blocks<50 || publications<45) $fatal(1,"Incomplete live coverage steps%h/%h changes%0d checks%0d PCM%0d FFT%0d histories%0d",pitch_steps,stereo_steps,music_changes,valid_checks,samples,blocks,publications);
+    if(pitch_steps!=15 || stereo_steps!=15 || music_changes<2 || valid_checks<30 || samples<85000 || blocks<50 || publications<45 || harmonic_frames<8 || xy_frames<8) $fatal(1,"Incomplete live coverage steps%h/%h changes%0d checks%0d PCM%0d FFT%0d histories%0d harmonic%0d XY%0d",pitch_steps,stereo_steps,music_changes,valid_checks,samples,blocks,publications,harmonic_frames,xy_frames);
+    $display("ALL ENHANCED LIVE TESTS PASSED: %0d real I2S harmonic frames, %0d complete PCM XY planes, unchanged original PCM/FFT cadence",harmonic_frames,xy_frames);
     $display("ALL SECONDARY LIVE TESTS PASSED: real 25MHz/48K I2S, %0d samples, %0d FFT blocks, %0d original capture cadences, %0d frame-atomic columns, five scenes, all pitch/stereo stages, %0d music changes",samples,blocks,cadences,publications,music_changes);
     $finish;
 end

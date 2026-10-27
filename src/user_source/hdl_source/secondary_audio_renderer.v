@@ -10,6 +10,9 @@ module secondary_audio_renderer(
     input [79:0] shown_feature,
     input shown_right,
     input [7:0] peak_left,peak_right,average_left,average_right,
+    input [29:0] harmonic_heights,
+    input harmonic_valid,xy_q,xy_visible,
+    output [11:0] xy_read_address,
     output frame_tick,scene_clear,
     output [6:0] read_column,
     output [5:0] read_band,
@@ -29,6 +32,9 @@ assign frame_tick=col==0 && line==0;
 assign scene_clear=frame_tick && (lesson!=shown_lesson || lesson_valid!=shown_valid);
 assign read_column=shown_head-7'd96+cell_x;
 assign read_band=frequency_band;
+wire narrow=shown_lesson==3;
+wire [9:0] xy_x=x-10'd432,xy_y=y-10'd192;
+assign xy_read_address={xy_y[6:1],xy_x[6:1]};
 reg [9:0] px,py;
 reg [6:0] time_cell;
 reg [2:0] sub_x;
@@ -44,6 +50,7 @@ wire [34:0] glyph;
 reg [1:0] font_scale;
 reg text_on;
 reg [4:0] char_index;
+integer harmonic;
 secondary_font5x7 font(.character(character),.bits(glyph));
 always @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -59,8 +66,8 @@ always @(posedge clk or posedge rst) begin
                 else frequency_sub<=frequency_sub+2'd1;
             end else begin frequency_sub<=0;frequency_band<=63;end
         end else col<=col+10'd1;
-        if(col<224 || col>=704) begin cell_x<=0;cell_sub<=0;end
-        else if(cell_sub==4) begin cell_sub<=0;cell_x<=cell_x+7'd1;end
+        if(col<224 || col>=(narrow ? 512 : 704)) begin cell_x<=0;cell_sub<=0;end
+        else if(cell_sub==(narrow ? 2 : 4)) begin cell_sub<=0;cell_x<=cell_x+7'd1;end
         else cell_sub<=cell_sub+3'd1;
         if(frame_tick) begin shown_lesson<=lesson;shown_valid<=lesson_valid;shown_locked<=video_locked;end
         px<=x;py<=y;time_cell<=cell_x;sub_x<=cell_sub;sub_y<=frequency_sub;
@@ -123,12 +130,24 @@ always @* begin
     if(py==58 && px>=24 && px<616) composed=24'h294858;
     if(px>=24 && px<616 && py>=136 && py<376 && ((px>=32 && px<608) || (py>=144 && py<368))) composed=24'h102A3B;
     if(px>=24 && px<616 && py>=392 && py<464 && ((px>=32 && px<608) || (py>=400 && py<456))) composed=24'h102A3B;
-    if(px>=64 && px<544 && py>=160 && py<352) begin
+    if(narrow && px>=384 && px<400 && py>=136 && py<376) composed=24'h071622;
+    if(px>=64 && px<(narrow ? 352 : 544) && py>=160 && py<352) begin
         composed=24'h0A2030;
-        if(cell_valid && sub_x<4 && sub_y<2) composed=palette(heat_q);
+        if(cell_valid && sub_x<(narrow ? 2 : 4) && sub_y<2) composed=palette(heat_q);
     end
-    if(px>=568 && px<576 && py>=160 && py<352) composed=palette(frequency_band[5:2]);
-    if(!levels_page && px>=64 && px<544 && py>=408 && py<=455) begin
+    if(((narrow && px>=360 && px<368) || (!narrow && px>=568 && px<576)) && py>=160 && py<352) composed=palette(frequency_band[5:2]);
+    if(narrow && px>=432 && px<560 && py>=192 && py<320) begin
+        composed=24'h0A2030;
+        if(px==496 || py==256) composed=24'h294858;
+        if(xy_visible && xy_q) composed=24'h5BDAC6;
+    end
+    if(shown_lesson==2) begin
+        if(px>=64 && px<544 && py==448) composed=24'h294858;
+        for(harmonic=0;harmonic<5;harmonic=harmonic+1)
+            if(harmonic_valid && px>=94+harmonic*96 && px<130+harmonic*96 && py>=448-harmonic_heights[harmonic*6+:6] && py<448)
+                composed=harmonic==0 ? 24'hE9C477 : 24'h5BDAC6;
+    end
+    if(!levels_page && shown_lesson!=2 && px>=64 && px<544 && py>=408 && py<=455) begin
         if(py==408 || py==424 || py==440 || py==455 || (time_cell[4:0]==0 && sub_x==0)) composed=24'h244455;
         if(cell_valid && trace_q[7]) begin
             if(py==current_trace_y || (sub_x==0 && time_cell!=0 && previous_trace[7] &&
@@ -181,8 +200,16 @@ always @* begin
         tx=px-464;ty=py-100;text_on=1;character=word_char("48K / 1024            ",tx[7:3]);ink=24'h91ADBD;
     end else if(px>=40 && px<232 && py>=144 && py<151) begin
         tx=px-40;ty=py-144;text_on=1;character=word_char("SPECTRAL HISTORY      ",tx[7:3]);ink=24'h91ADBD;
-    end else if(px>=464 && px<576 && py>=144 && py<151) begin
+    end else if(!narrow && px>=464 && px<576 && py>=144 && py<151) begin
         tx=px-464;ty=py-144;text_on=1;character=word_char("0-4.5K                ",tx[7:3]);ink=24'h91ADBD;
+    end else if(narrow && px>=296 && px<368 && py>=144 && py<151) begin
+        tx=px-296;ty=py-144;text_on=1;character=word_char("0-4.5K                ",tx[7:3]);ink=24'h91ADBD;
+    end else if(narrow && px>=416 && px<496 && py>=144 && py<151) begin
+        tx=px-416;ty=py-144;text_on=1;character=word_char("STEREO XY             ",tx[7:3]);ink=24'h91ADBD;
+    end else if(narrow && px>=568 && px<576 && py>=253 && py<260) begin
+        tx=px-568;ty=py-253;text_on=1;character="L";ink=24'h91ADBD;
+    end else if(narrow && px>=488 && px<496 && py>=176 && py<183) begin
+        tx=px-488;ty=py-176;text_on=1;character="R";ink=24'h91ADBD;
     end else if(px>=24 && px<56 && py>=160 && py<167) begin
         tx=px-24;ty=py-160;text_on=1;character=word_char("4.5K                  ",tx[7:3]);ink=24'h91ADBD;
     end else if(px>=24 && px<56 && py>=253 && py<260) begin
@@ -191,14 +218,21 @@ always @* begin
         tx=px-48;ty=py-344;text_on=1;character="0";ink=24'h91ADBD;
     end else if(px>=64 && px<88 && py>=360 && py<367) begin
         tx=px-64;ty=py-360;text_on=1;character=word_char("OLD                   ",tx[7:3]);ink=24'h91ADBD;
-    end else if(px>=520 && px<544 && py>=360 && py<367) begin
-        tx=px-520;ty=py-360;text_on=1;character=word_char("NOW                   ",tx[7:3]);ink=24'h91ADBD;
+    end else if(((!narrow && px>=520 && px<544) || (narrow && px>=328 && px<352)) && py>=360 && py<367) begin
+        tx=px-(narrow ? 328 : 520);ty=py-360;text_on=1;character=word_char("NOW                   ",tx[7:3]);ink=24'h91ADBD;
     end else if(px>=40 && px<232 && py>=384 && py<391) begin
         tx=px-40;ty=py-384;text_on=1;
-        character=word_char(levels_page ? (shown_lesson==3 ? "STEREO LEVEL          " : "AUDIO LEVEL           ") : "PITCH TRACE           ",tx[7:3]);ink=24'h91ADBD;
-    end else if(!levels_page && px>=32 && px<56 && py>=408 && py<415) begin
+        character=word_char(levels_page ? (shown_lesson==3 ? "STEREO LEVEL          " : "AUDIO LEVEL           ") : (shown_lesson==2 ? "HARMONICS             " : "PITCH TRACE           "),tx[7:3]);ink=24'h91ADBD;
+    end else if(shown_lesson==2 && py>=453 && py<460 && ((px>=104 && px<120) || (px>=200 && px<216) || (px>=296 && px<312) || (px>=392 && px<408) || (px>=488 && px<504))) begin
+        ty=py-453;text_on=1;ink=24'h91ADBD;
+        if(px<120) begin tx=px-104;character=tx<8 ? "H" : "1";end
+        else if(px<216) begin tx=px-200;character=tx<8 ? "H" : "2";end
+        else if(px<312) begin tx=px-296;character=tx<8 ? "H" : "3";end
+        else if(px<408) begin tx=px-392;character=tx<8 ? "H" : "4";end
+        else begin tx=px-488;character=tx<8 ? "H" : "5";end
+    end else if(!levels_page && shown_lesson!=2 && px>=32 && px<56 && py>=408 && py<415) begin
         tx=px-32;ty=py-408;text_on=1;character=word_char("1K                    ",tx[7:3]);ink=24'h91ADBD;
-    end else if(!levels_page && px>=32 && px<56 && py>=448 && py<455) begin
+    end else if(!levels_page && shown_lesson!=2 && px>=32 && px<56 && py>=448 && py<455) begin
         tx=px-32;ty=py-448;text_on=1;character=word_char("100                   ",tx[7:3]);ink=24'h91ADBD;
     end else if(levels_page && py>=400 && py<407 && ((px>=80 && px<88) || (px>=352 && px<360))) begin
         tx=px>=352 ? px-352 : px-80;ty=py-400;text_on=1;character=px>=352 ? "R" : "L";ink=24'h91ADBD;
