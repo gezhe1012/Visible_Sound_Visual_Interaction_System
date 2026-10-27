@@ -11,7 +11,11 @@ module audio_fft1024(
     output reg spectrum_write,
     output reg [7:0] spectrum_address,
     output reg [6:0] spectrum_height,
-    output reg result_done
+    output reg result_done,
+    // Passive observation only: never participates in result_ack or state.
+    output reg capture_start,bin_valid,bin_channel,
+    output reg [8:0] bin_number,
+    output reg [16:0] bin_magnitude
 );
 localparam CAP=0, LOAD_R=1,LOAD_W=2,LOAD_M=3,LOAD_S=4,LOAD_NEXT=5,
     RA=6,WA=7,RB=8,WB=9,MUL=10,ROT=11,SUM=12,WRITE_A=13,WRITE_B=14,
@@ -112,8 +116,11 @@ always @(posedge clk or posedge rst) begin
         window_product<=0; tr<=0; ti<=0; sum_a<=0; sum_b<=0;
         bin_index<=0; band_index<=0; remaining<=1; band_max<=0;
         spectrum_write<=0; spectrum_address<=0; spectrum_height<=0; result_done<=0;
+        capture_start<=0;bin_valid<=0;bin_channel<=0;bin_number<=0;bin_magnitude<=0;
     end else begin
         spectrum_write<=0; result_done<=0;
+        capture_start<=state==CAP && capture_index==0 && audio_valid;
+        bin_valid<=0;
         case(state)
             CAP: if(audio_valid) begin
                 if(capture_index==1023) begin
@@ -164,6 +171,7 @@ always @(posedge clk or posedge rst) begin
             MAG_R: state<=MAG_W;
             MAG_W: state<=MAG_L;
             MAG_L: begin
+                bin_valid<=1;bin_channel<=channel;bin_number<=bin_index;bin_magnitude<=magnitude;
                 if(remaining==1) begin
                     spectrum_write<=1; spectrum_address<={channel,band_index}; spectrum_height<=log_height(peak);
                     band_max<=0; band_index<=band_index+7'd1;

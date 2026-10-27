@@ -1,0 +1,69 @@
+// Upper equal-tempered semitone boundaries: MIDI 36(C2)..95(B6), A4=440Hz.
+// Rounded to integer Hz, compared sequentially once per FFT, not per pixel.
+module secondary_note_thresholds(input [5:0] index,output reg [14:0] upper_hz);
+always @* begin
+    case(index)
+        6'd0:upper_hz=15'd67;
+        6'd1:upper_hz=15'd71;
+        6'd2:upper_hz=15'd76;
+        6'd3:upper_hz=15'd80;
+        6'd4:upper_hz=15'd85;
+        6'd5:upper_hz=15'd90;
+        6'd6:upper_hz=15'd95;
+        6'd7:upper_hz=15'd101;
+        6'd8:upper_hz=15'd107;
+        6'd9:upper_hz=15'd113;
+        6'd10:upper_hz=15'd120;
+        6'd11:upper_hz=15'd127;
+        6'd12:upper_hz=15'd135;
+        6'd13:upper_hz=15'd143;
+        6'd14:upper_hz=15'd151;
+        6'd15:upper_hz=15'd160;
+        6'd16:upper_hz=15'd170;
+        6'd17:upper_hz=15'd180;
+        6'd18:upper_hz=15'd190;
+        6'd19:upper_hz=15'd202;
+        6'd20:upper_hz=15'd214;
+        6'd21:upper_hz=15'd226;
+        6'd22:upper_hz=15'd240;
+        6'd23:upper_hz=15'd254;
+        6'd24:upper_hz=15'd269;
+        6'd25:upper_hz=15'd285;
+        6'd26:upper_hz=15'd302;
+        6'd27:upper_hz=15'd320;
+        6'd28:upper_hz=15'd339;
+        6'd29:upper_hz=15'd359;
+        6'd30:upper_hz=15'd381;
+        6'd31:upper_hz=15'd403;
+        6'd32:upper_hz=15'd427;
+        6'd33:upper_hz=15'd453;
+        6'd34:upper_hz=15'd480;
+        6'd35:upper_hz=15'd508;
+        6'd36:upper_hz=15'd539;
+        6'd37:upper_hz=15'd571;
+        6'd38:upper_hz=15'd605;
+        6'd39:upper_hz=15'd640;
+        6'd40:upper_hz=15'd679;
+        6'd41:upper_hz=15'd719;
+        6'd42:upper_hz=15'd762;
+        6'd43:upper_hz=15'd807;
+        6'd44:upper_hz=15'd855;
+        6'd45:upper_hz=15'd906;
+        6'd46:upper_hz=15'd960;
+        6'd47:upper_hz=15'd1017;
+        6'd48:upper_hz=15'd1077;
+        6'd49:upper_hz=15'd1141;
+        6'd50:upper_hz=15'd1209;
+        6'd51:upper_hz=15'd1281;
+        6'd52:upper_hz=15'd1357;
+        6'd53:upper_hz=15'd1438;
+        6'd54:upper_hz=15'd1523;
+        6'd55:upper_hz=15'd1614;
+        6'd56:upper_hz=15'd1710;
+        6'd57:upper_hz=15'd1812;
+        6'd58:upper_hz=15'd1919;
+        6'd59:upper_hz=15'd2033;
+        default:upper_hz=0;
+    endcase
+end
+endmodule

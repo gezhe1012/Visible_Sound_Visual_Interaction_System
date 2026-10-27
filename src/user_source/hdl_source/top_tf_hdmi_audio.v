@@ -328,12 +328,17 @@ audio_waveform_overlay u_audio_waveform_overlay (
 );
 
 // Passive stereo PCM tap: neither capture nor FFT can stall HDMI audio.
+wire fft_capture_start,fft_bin_valid,fft_bin_channel;
+wire [8:0] fft_bin_number;
+wire [16:0] fft_bin_magnitude;
 audio_fft1024 u_audio_fft1024 (
     .clk(video_clk),.rst(rst_all),.audio_valid(audio_valid),
     .audio_left(audio_left_data),.audio_right(audio_right_data),
     .result_ack(spectrum_ack),.spectrum_write(spectrum_write),
     .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
-    .result_done(spectrum_done)
+    .result_done(spectrum_done),.capture_start(fft_capture_start),
+    .bin_valid(fft_bin_valid),.bin_channel(fft_bin_channel),
+    .bin_number(fft_bin_number),.bin_magnitude(fft_bin_magnitude)
 );
 // Reuse the waveform's VS-latched switch, not a second KEY3 controller.
 // Its VS reaches this stage two clocks later, after panel_visible is stable.
@@ -548,11 +553,16 @@ hdmi_phy_wrapper #(
     .O_tmds_clk_p       (HDMI_CLK_P)
 );
 
-// Stage-1 hardware gate: independent test raster, not a claimed audio feature.
+// Secondary display: passive features from the SAME PCM/FFT as HDMI_B.
 // No new PLL, SDRAM port, PCM consumer control, or path into the main output.
 secondary_hdmi_tx u_secondary_hdmi_tx (
     .pixel_clk(video_clk),.serial_clk(hdmi_5x_clk),.rst(rst_all),
     .lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
+    .audio_valid(audio_valid),.audio_left(audio_left_data),.audio_right(audio_right_data),
+    .capture_start(fft_capture_start),.bin_valid(fft_bin_valid),.bin_channel(fft_bin_channel),
+    .bin_number(fft_bin_number),.bin_magnitude(fft_bin_magnitude),
+    .spectrum_write(spectrum_write),.spectrum_address(spectrum_address),
+    .spectrum_height(spectrum_height),.result_done(spectrum_done),
     .edid_trigger(edid_trig),
     .tmds_clk_p(HDMIA_CLK_P),.tmds_d2_p(HDMIA_D2_P),
     .tmds_d1_p(HDMIA_D1_P),.tmds_d0_p(HDMIA_D0_P),

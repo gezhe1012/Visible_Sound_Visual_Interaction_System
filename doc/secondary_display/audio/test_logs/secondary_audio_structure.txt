@@ -1,0 +1,17 @@
+PASS: Main top-level logic is exactly a0bd824 after removing added HDMI_A ports, passive FFT taps and secondary instance.
+PASS: Original FFT inputs/math/states/ack protocol are exact after removing passive output taps.
+PASS: All original main-screen/key/TF constraints are unchanged.
+PASS: No clock constraint or timing exception was added.
+PASS: Original audio, wave, OSD, footer, SDRAM, IP and clocks are unmodified.
+PASS: Routed HDMI_A pad HDMIA_D1_P(n) = E4 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_D2_P = B3 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_CLK_P = K1 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_D0_P = F5 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_CLK_P(n) = J1 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_D0_P(n) = F4 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_DDC_SCL = P1 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_DDC_SDA = R1 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_D2_P(n) = D3 agrees with handbook p8.
+PASS: Routed HDMI_A pad HDMIA_D1_P = E3 agrees with handbook p8.
+PASS: Global routed setup/hold is nonnegative (0.213 / 0.003 ns).
+ALL SECONDARY STRUCTURE TESTS PASSED: protected main logic, exact A pads including paired N, unchanged clocks, global timing.

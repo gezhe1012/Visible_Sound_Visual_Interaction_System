@@ -1,0 +1,6 @@
+PASS oracle page1: 96 real stereo FFT columns / measured pitch / PCM levels
+PASS oracle page2: 96 real stereo FFT columns / measured pitch / PCM levels
+PASS oracle page3: 96 real stereo FFT columns / measured pitch / PCM levels
+PASS oracle page4: 96 real stereo FFT columns / measured pitch / PCM levels
+PASS oracle page5: 96 real stereo FFT columns / measured pitch / PCM levels
+ALL SECONDARY AUDIO ORACLE TESTS PASSED: 40 pitch summaries, 480 real lesson blocks, 30720 heat cells, note thresholds

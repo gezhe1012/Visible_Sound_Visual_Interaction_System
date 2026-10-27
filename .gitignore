@@ -25,6 +25,11 @@ tests/waveform_work/
 tests/science_work/
 tests/fft_work/
 tests/secondary_work/
+tests/secondary_audio_work/
+tests/secondary_checks_work/
+tests/secondary_live_work/
+tests/secondary_audio_*.hex
+tests/secondary_audio_page_*.ppm
 tests/secondary_link_frame_*.ppm
 tests/fft_*.hex
 tests/fft_gate_netlist.v

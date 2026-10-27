@@ -1,0 +1,382 @@
+[
+  {
+    "case": 0,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    }
+  },
+  {
+    "case": 1,
+    "left": {
+      "hz": 469,
+      "valid": true,
+      "note_index": 34,
+      "note_valid": true,
+      "trace": 19,
+      "peak": 4004
+    },
+    "right": {
+      "hz": 656,
+      "valid": true,
+      "note_index": 40,
+      "note_valid": true,
+      "trace": 29,
+      "peak": 2004
+    }
+  },
+  {
+    "case": 2,
+    "left": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 4664
+    },
+    "right": {
+      "hz": 658,
+      "valid": true,
+      "note_index": 40,
+      "note_valid": true,
+      "trace": 29,
+      "peak": 4845
+    }
+  },
+  {
+    "case": 3,
+    "left": {
+      "hz": 375,
+      "valid": true,
+      "note_index": 30,
+      "note_valid": true,
+      "trace": 14,
+      "peak": 7823
+    },
+    "right": {
+      "hz": 375,
+      "valid": true,
+      "note_index": 30,
+      "note_valid": true,
+      "trace": 14,
+      "peak": 4868
+    }
+  },
+  {
+    "case": 4,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 7
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 5
+    }
+  },
+  {
+    "case": 5,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 1135
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 1201
+    }
+  },
+  {
+    "case": 6,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 32
+    },
+    "right": {
+      "hz": 23953,
+      "valid": true,
+      "note_index": 59,
+      "note_valid": false,
+      "trace": 47,
+      "peak": 8191
+    }
+  },
+  {
+    "case": 7,
+    "left": {
+      "hz": 234,
+      "valid": true,
+      "note_index": 22,
+      "note_valid": true,
+      "trace": 6,
+      "peak": 8196
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    }
+  },
+  {
+    "case": 8,
+    "left": {
+      "hz": 223,
+      "valid": true,
+      "note_index": 21,
+      "note_valid": true,
+      "trace": 6,
+      "peak": 5244
+    },
+    "right": {
+      "hz": 329,
+      "valid": true,
+      "note_index": 28,
+      "note_valid": true,
+      "trace": 11,
+      "peak": 4462
+    }
+  },
+  {
+    "case": 9,
+    "left": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 4664
+    },
+    "right": {
+      "hz": 659,
+      "valid": true,
+      "note_index": 40,
+      "note_valid": true,
+      "trace": 29,
+      "peak": 4845
+    }
+  },
+  {
+    "case": 10,
+    "left": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 4829
+    },
+    "right": {
+      "hz": 659,
+      "valid": true,
+      "note_index": 40,
+      "note_valid": true,
+      "trace": 29,
+      "peak": 4427
+    }
+  },
+  {
+    "case": 11,
+    "left": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 3780
+    },
+    "right": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 5928
+    }
+  },
+  {
+    "case": 12,
+    "left": {
+      "hz": 264,
+      "valid": true,
+      "note_index": 24,
+      "note_valid": true,
+      "trace": 8,
+      "peak": 4359
+    },
+    "right": {
+      "hz": 329,
+      "valid": true,
+      "note_index": 28,
+      "note_valid": true,
+      "trace": 11,
+      "peak": 4377
+    }
+  },
+  {
+    "case": 13,
+    "left": {
+      "hz": 390,
+      "valid": true,
+      "note_index": 31,
+      "note_valid": true,
+      "trace": 15,
+      "peak": 4869
+    },
+    "right": {
+      "hz": 438,
+      "valid": true,
+      "note_index": 33,
+      "note_valid": true,
+      "trace": 17,
+      "peak": 4664
+    }
+  },
+  {
+    "case": 14,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    }
+  },
+  {
+    "case": 15,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 0
+    },
+    "right": {
+      "hz": 659,
+      "valid": true,
+      "note_index": 40,
+      "note_valid": true,
+      "trace": 29,
+      "peak": 4845
+    }
+  },
+  {
+    "case": 16,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 36
+    },
+    "right": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 1123
+    }
+  },
+  {
+    "case": 17,
+    "left": {
+      "hz": 0,
+      "valid": false,
+      "note_index": 0,
+      "note_valid": false,
+      "trace": 0,
+      "peak": 31
+    },
+    "right": {
+      "hz": 469,
+      "valid": true,
+      "note_index": 34,
+      "note_valid": true,
+      "trace": 19,
+      "peak": 32
+    }
+  },
+  {
+    "case": 18,
+    "left": {
+      "hz": 94,
+      "valid": true,
+      "note_index": 6,
+      "note_valid": true,
+      "trace": 0,
+      "peak": 4000
+    },
+    "right": {
+      "hz": 141,
+      "valid": true,
+      "note_index": 13,
+      "note_valid": true,
+      "trace": 2,
+      "peak": 4000
+    }
+  },
+  {
+    "case": 19,
+    "left": {
+      "hz": 23953,
+      "valid": true,
+      "note_index": 59,
+      "note_valid": false,
+      "trace": 47,
+      "peak": 8000
+    },
+    "right": {
+      "hz": 9375,
+      "valid": true,
+      "note_index": 59,
+      "note_valid": false,
+      "trace": 47,
+      "peak": 4000
+    }
+  }
+]

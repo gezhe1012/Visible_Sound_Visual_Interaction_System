@@ -14,8 +14,18 @@ try {
     $oldTop=(git show "a0bd824:$top") -join "`n"
     $newTop=Get-Content -LiteralPath $top -Raw -Encoding UTF8
     $withoutPorts=[regex]::Replace($newTop,'(?s)// Independent HDMI_A output; handbook p8\..*?inout\s+HDMIA_DDC_SDA,','')
-    $withoutSecondary=[regex]::Replace($withoutPorts,'(?s)// Stage-1 hardware gate:.*?(?=endmodule)','')
-    Assert-True ((Compact $oldTop) -ceq (Compact $withoutSecondary)) 'Main top-level logic is exactly a0bd824 after removing the added ports/secondary instance.'
+    $withoutSecondary=[regex]::Replace($withoutPorts,'(?s)// (?:Stage-1 hardware gate:|Secondary display:).*?(?=endmodule)','')
+    $withoutSecondary=[regex]::Replace($withoutSecondary,'wire fft_capture_start,fft_bin_valid,fft_bin_channel;\s*wire \[8:0\] fft_bin_number;\s*wire \[16:0\] fft_bin_magnitude;','')
+    $withoutSecondary=[regex]::Replace($withoutSecondary,',\.capture_start\(fft_capture_start\),\s*\.bin_valid\(fft_bin_valid\),\.bin_channel\(fft_bin_channel\),\s*\.bin_number\(fft_bin_number\),\.bin_magnitude\(fft_bin_magnitude\)','')
+    Assert-True ((Compact $oldTop) -ceq (Compact $withoutSecondary)) 'Main top-level logic is exactly a0bd824 after removing added HDMI_A ports, passive FFT taps and secondary instance.'
+    $fft='src/user_source/hdl_source/audio_fft1024.v'
+    $oldFft=(git show "a0bd824:$fft") -join "`n"
+    $newFft=Get-Content -LiteralPath $fft -Raw -Encoding UTF8
+    $newFft=[regex]::Replace($newFft,'(?s),\s*// Passive observation only:.*?(?=\r?\n\);)','')
+    $newFft=$newFft.Replace('capture_start<=0;bin_valid<=0;bin_channel<=0;bin_number<=0;bin_magnitude<=0;','')
+    $newFft=$newFft.Replace('capture_start<=state==CAP && capture_index==0 && audio_valid;','').Replace('bin_valid<=0;','')
+    $newFft=$newFft.Replace('bin_valid<=1;bin_channel<=channel;bin_number<=bin_index;bin_magnitude<=magnitude;','')
+    Assert-True ((Compact $oldFft) -ceq (Compact $newFft)) 'Original FFT inputs/math/states/ack protocol are exact after removing passive output taps.'
     $pin='src/user_source/constraints_source/pin.adc'
     $oldPin=(git show "a0bd824:$pin") -join "`n"
     $newPin=(Get-Content -LiteralPath $pin -Encoding UTF8 | Where-Object { $_ -notmatch '^# HDMI_A:|^# CLK K1|^set_pin_assignment \{ HDMIA_' }) -join "`n"
@@ -23,7 +33,7 @@ try {
     git diff --exit-code a0bd824 -- src/user_source/constraints_source/timing.sdc | Out-Null
     Assert-True ($LASTEXITCODE -eq 0) 'No clock constraint or timing exception was added.'
     $changed=@(git diff --name-only a0bd824 -- src/user_source)
-    Assert-True (@($changed | Where-Object { $_ -notin @($top,$pin) -and $_ -notmatch '/secondary_(link_pattern|hdmi_tx)\.v$' }).Count -eq 0) 'Original audio, FFT, wave, OSD, footer, SDRAM, IP and clocks are unmodified.'
+    Assert-True (@($changed | Where-Object { $_ -notin @($top,$pin,$fft) -and $_ -notmatch '/secondary_[a-z0-9_]+\.v$' }).Count -eq 0) 'Original audio, wave, OSD, footer, SDRAM, IP and clocks are unmodified.'
     $area=Get-Content -LiteralPath 'src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1/HDMI1.4b_Transmitter_v1.0_phy.area' -Raw
     $pads=@{'HDMIA_CLK_P'='K1';'HDMIA_CLK_P(n)'='J1';'HDMIA_D0_P'='F5';'HDMIA_D0_P(n)'='F4';
         'HDMIA_D1_P'='E3';'HDMIA_D1_P(n)'='E4';'HDMIA_D2_P'='B3';'HDMIA_D2_P(n)'='D3';'HDMIA_DDC_SCL'='P1';'HDMIA_DDC_SDA'='R1'}

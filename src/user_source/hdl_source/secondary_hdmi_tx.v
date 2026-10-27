@@ -4,6 +4,14 @@ module secondary_hdmi_tx(
     input pixel_clk,serial_clk,rst,
     input [2:0] lesson,
     input lesson_valid,edid_trigger,
+    input audio_valid,
+    input [23:0] audio_left,audio_right,
+    input capture_start,bin_valid,bin_channel,
+    input [8:0] bin_number,
+    input [16:0] bin_magnitude,
+    input spectrum_write,result_done,
+    input [7:0] spectrum_address,
+    input [6:0] spectrum_height,
     output tmds_clk_p,tmds_d2_p,tmds_d1_p,tmds_d0_p,
     output ddc_scl,
     inout ddc_sda
@@ -11,8 +19,26 @@ module secondary_hdmi_tx(
 wire user,valid,last,ready,locked;
 wire [23:0] rgb;
 wire [9:0] ch0,ch1,ch2,clock_data;
-secondary_link_pattern pattern(
+wire frame_tick,scene_clear,shown_right;
+wire [6:0] read_column,shown_head,shown_count;
+wire [5:0] read_band;
+wire [3:0] heat_q;
+wire [7:0] trace_q,peak_left,peak_right,average_left,average_right;
+wire [79:0] shown_feature;
+secondary_feature_store features(
+    .clk(pixel_clk),.rst(rst),.frame_tick(frame_tick),.scene_clear(scene_clear),
+    .lesson(lesson),.lesson_valid(lesson_valid),.audio_valid(audio_valid),.audio_left(audio_left),.audio_right(audio_right),
+    .capture_start(capture_start),.bin_valid(bin_valid),.bin_channel(bin_channel),.bin_number(bin_number),.bin_magnitude(bin_magnitude),
+    .spectrum_write(spectrum_write),.result_done(result_done),.spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
+    .read_column(read_column),.read_band(read_band),.heat_q(heat_q),.trace_q(trace_q),
+    .shown_head(shown_head),.shown_count(shown_count),.shown_feature(shown_feature),.shown_right(shown_right),
+    .peak_left(peak_left),.peak_right(peak_right),.average_left(average_left),.average_right(average_right)
+);
+secondary_audio_renderer renderer(
     .clk(pixel_clk),.rst(rst),.lesson(lesson),.lesson_valid(lesson_valid),.video_locked(locked),
+    .heat_q(heat_q),.trace_q(trace_q),.shown_head(shown_head),.shown_count(shown_count),.shown_feature(shown_feature),
+    .shown_right(shown_right),.peak_left(peak_left),.peak_right(peak_right),.average_left(average_left),.average_right(average_right),
+    .frame_tick(frame_tick),.scene_clear(scene_clear),.read_column(read_column),.read_band(read_band),
     .axis_user(user),.axis_valid(valid),.axis_last(last),.axis_data(rgb)
 );
 hdmi_1_4b_transmitter_core_wrapper #(

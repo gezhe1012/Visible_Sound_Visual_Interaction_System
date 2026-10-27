@@ -13,7 +13,7 @@ waveform_key_control #(.CLK_HZ(1000),.DEBOUNCE_MS(5)) keys(.*);
 audio_waveform_overlay wave(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.rgb_in(rgb_in),
     .audio_valid(audio_valid),.requested_visible(requested_visible),.audio_left(audio_left),.audio_right(audio_right),
     .panel_visible(panel_visible),.hs_out(wh),.vs_out(wv),.de_out(wd),.rgb_out(wrgb));
-audio_fft1024 fft(.*);
+audio_fft1024 fft(.capture_start(),.bin_valid(),.bin_channel(),.bin_number(),.bin_magnitude(),.*);
 audio_spectrum_overlay spectrum(.clk(clk),.rst(rst),.hs(wh),.vs(wv),.de(wd),.rgb_in(wrgb),
     .panel_visible(panel_visible),.audio_valid(audio_valid),.spectrum_write(spectrum_write),
     .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),.result_done(result_done),.result_ack(result_ack),

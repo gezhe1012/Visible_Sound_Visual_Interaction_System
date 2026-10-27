@@ -6,13 +6,24 @@ reg [23:0] audio_left=0,audio_right=0;
 wire spectrum_write,result_done;
 wire [7:0] spectrum_address;
 wire [6:0] spectrum_height;
+wire capture_start,bin_valid,bin_channel;
+wire [8:0] bin_number;
+wire [16:0] bin_magnitude;
 audio_fft1024 dut(.*);
 reg [31:0] inputs[0:8191],expected[0:16383];
 reg [7:0] heights[0:2047];
 integer block_index=0,i,k,complex_checked=0,height_checked=0,writes=0,cycles=0,compute_start=0;
+integer raw_checked=0,er,ei,captures=0;
 reg [31:0] old_word;
 always @(posedge clk) if(!rst) begin
     cycles=cycles+1;
+    if(capture_start) captures=captures+1;
+    if(bin_valid) begin
+        er=$signed(expected[block_index*2048+bin_channel*1024+bin_number][31:16]);
+        ei=$signed(expected[block_index*2048+bin_channel*1024+bin_number][15:0]);
+        if(bin_magnitude!==17'((er<0 ? -er : er)+(ei<0 ? -ei : ei))) $fatal(1,"Passive raw FFT tap mismatch");
+        raw_checked=raw_checked+1;
+    end
     if(dut.state==1 && dut.channel==0 && dut.load_index==0) compute_start=cycles;
     if(dut.state==16 && dut.bin_index==0) begin
         for(k=0;k<1024;k=k+1) begin
@@ -52,10 +63,10 @@ initial begin
         repeat(2) @(negedge clk);
         $display("PASS FFT stereo block %0d",block_index);
     end
-    if(complex_checked!=16384 || height_checked!=2048) $fatal(1,"Missing checks");
+    if(complex_checked!=16384 || height_checked!=2048 || raw_checked!=8192 || captures!=8) $fatal(1,"Missing checks");
     rst=1; repeat(3) @(negedge clk);
     if(spectrum_write || result_done || dut.state!=0) $fatal(1,"FFT reset failed");
-    $display("ALL FFT1024 TESTS PASSED: 16384 complex bins, 2048 heights, 48K capture, bounded latency, backpressure/reset");
+    $display("ALL FFT1024 TESTS PASSED: 16384 complex bins, 2048 unchanged heights, 8192 passive magnitudes, 8 capture tags, 48K capture, bounded latency, backpressure/reset");
     $finish;
 end
 initial begin #150000000; $fatal(1,"FFT timeout"); end
