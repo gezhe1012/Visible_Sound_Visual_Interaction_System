@@ -19,6 +19,14 @@ module top(
     output                      HDMI_DDC_SCL,
     inout                       HDMI_DDC_SDA,
 
+    // Independent HDMI_A output; handbook p8. HDMI_B above is unchanged.
+    output                      HDMIA_CLK_P,
+    output                      HDMIA_D2_P,
+    output                      HDMIA_D1_P,
+    output                      HDMIA_D0_P,
+    output                      HDMIA_DDC_SCL,
+    inout                       HDMIA_DDC_SDA,
+
     // TF card SPI
     output                      sd_ncs,
     output                      sd_dclk,
@@ -540,4 +548,14 @@ hdmi_phy_wrapper #(
     .O_tmds_clk_p       (HDMI_CLK_P)
 );
 
+// Stage-1 hardware gate: independent test raster, not a claimed audio feature.
+// No new PLL, SDRAM port, PCM consumer control, or path into the main output.
+secondary_hdmi_tx u_secondary_hdmi_tx (
+    .pixel_clk(video_clk),.serial_clk(hdmi_5x_clk),.rst(rst_all),
+    .lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
+    .edid_trigger(edid_trig),
+    .tmds_clk_p(HDMIA_CLK_P),.tmds_d2_p(HDMIA_D2_P),
+    .tmds_d1_p(HDMIA_D1_P),.tmds_d0_p(HDMIA_D0_P),
+    .ddc_scl(HDMIA_DDC_SCL),.ddc_sda(HDMIA_DDC_SDA)
+);
 endmodule

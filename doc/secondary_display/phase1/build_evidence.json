@@ -1,0 +1,86 @@
+﻿{
+    "stage":  "1 - Independent HDMI_A link test",
+    "base":  "a0bd824",
+    "branch":  "codex/secondary-display",
+    "full_secondary_features_complete":  false,
+    "physical_dual_display_verified":  false,
+    "spectrogram_implemented":  false,
+    "pitch_tracker_implemented":  false,
+    "tool":  "TD 6.2.168116",
+    "device":  "EG4S20BG256",
+    "built_at":  "2026-10-27 10:56:27",
+    "bit_bytes":  634280,
+    "bit_sha256":  "4A1D083194A3248E6B52E3FABC1628DE0969126B5A28329BA26D3048C5C53E99",
+    "recovery_bit_sha256":  "1AC7D911661E576682AA5A4FF36CCB240F3D5897FD24C292C65E24E33672534E",
+    "setup_wns_ns":  0.88,
+    "hold_wns_ns":  0.003,
+    "source_sha256":  {
+                          "src/user_source/hdl_source/secondary_link_pattern.v":  "30BE80712D3208137958D589EAC2BF4B9A8326C6B71374D0FA045182D17E4D80",
+                          "src/user_source/hdl_source/secondary_hdmi_tx.v":  "3A1E10FE6C80DB20FB83CB30ED915B1D8C7E79A510FF6F8517D67A7A8BBE6D8E",
+                          "src/user_source/hdl_source/top_tf_hdmi_audio.v":  "580DE261FC58FB1EF0289BF696298E79042EFBD97722E0D0528C03C6FCFE20BD",
+                          "src/user_source/constraints_source/pin.adc":  "C9CCE13AF703F901462C93622CF27A076A3B146E31E98F430438F6EBB7C398EB",
+                          "src/user_source/constraints_source/timing.sdc":  "BF16FFA27D2BE108E24CB65ADDA07501B8117721E2F88FD4F39B9C35B8A5DF66",
+                          "src/td_project/HDMI1.4b_Transmitter_v1.0.al":  "55F149016365728FC16B42CF4AF1770CD24CBAFBB613D9BF1CB79E7EBA5D01B3"
+                      },
+    "regressions":  [
+                        {
+                            "log":  "secondary_link_simulation.log",
+                            "pass_lines":  [
+                                               "# ALL SECONDARY LINK TESTS PASSED: 8 complete 640x480 rasters, 2457600 pixels, 3840 TLAST, 8 SOF, 524288 reference palette pixels, 5 page states, frame-atomic changes, cursor, lock, reset"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_structure.log",
+                            "pass_lines":  [
+                                               "ALL SECONDARY STRUCTURE TESTS PASSED: protected main logic, exact A pads including paired N, unchanged clocks, global timing."
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_fft_regression.log",
+                            "pass_lines":  [
+                                               "# ALL FFT1024 TESTS PASSED: 16384 complex bins, 2048 heights, 48K capture, bounded latency, backpressure/reset",
+                                               "# ALL SOUND ANALYSIS TESTS PASSED: KEY3 shared toggle, 921600 pixels, stereo bars, unchanged image/OSD, 1440 TLAST, 3 SOF, banks, stale/reset"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_ticker_regression.log",
+                            "pass_lines":  [
+                                               "# ALL THEME TICKER TESTS PASSED: five exact captions/fonts, 1536000 pixels, immutable outside-footer/Logo/BRI/timing, PCM/stereo/attack/release, frame-atomic switches, gradients/reset",
+                                               "# ALL TICKER ANIMATION TESTS PASSED: 100 RTL rasters, complete scroll/wrap, real edge glyphs at all 17 fade levels, PCM-reactive bars"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_controls_regression.log",
+                            "pass_lines":  [
+                                               "# ALL PICTURE ADJUST TESTS PASSED: 45 parameter pairs, 256 values/channel, saturation, neutral, timing, reset (11533 cycles)",
+                                               "# ALL KEY CONTROL TESTS PASSED: debounce, short/hold, repeat/wrap, chord, frame snapshot, indicator and asynchronous CDC",
+                                               "# ALL OSD CONTROL TESTS PASSED: 45 numeric labels, highlight, Alpha, 7680 restored HOLD-strip pixels, background and full raster"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_waveform_regression.log",
+                            "pass_lines":  [
+                                               "# ALL WAVEFORM TESTS PASSED: signed gain, saturation, trigger, silence, freeze, frame swap, timeout/recovery, 307200 RGB pixels and timing",
+                                               "# ALL I2S WAVEFORM TESTS PASSED: 1600 original PCM pairs, 26 transitions, 4 frame snapshots, 1055 checked captures",
+                                               "# ALL KEY3 WAVEFORM TESTS PASSED: default hidden, bounce/hold/release, frame-atomic on/off, 921600 raster pixels, unchanged legacy controls and reset"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_science_regression.log",
+                            "pass_lines":  [
+                                               "# ALL AXIS FRAMING TESTS PASSED: 2 full frames, 614400 RGB pixels, 960 aligned TLAST and 2 SOF",
+                                               "# ALL SCIENCE FADE TESTS PASSED: five lessons atomically follow black-frame buffer swaps",
+                                               "# ALL SCIENCE AUDIO TESTS PASSED: 8192 independent PCM pairs, stereo routing, envelopes, 48K/I2S roundtrip, 6 FFT blocks tapped without altering playback",
+                                               "# ALL FRAME BANDWIDTH TESTS PASSED: 40MHz memory / 25MHz video / 100MHz writer, 6144 ordered pixels and refresh arbitration",
+                                               "# ALL SCIENCE CARD TESTS PASSED: real FAT32 five-page scan order and 1536000 teaching RGB pixels"
+                                           ]
+                        },
+                        {
+                            "log":  "secondary_melody_regression.log",
+                            "pass_lines":  [
+                                               "# ALL FIVE PAGE PLAYER TESTS PASSED: scan/store five, unchanged two buffers, manual 5-\u003e1, 3 complete autoplay phrases/loops, timer wait, async image/audio binding",
+                                               "# ALL MELODY AUDIO TESTS PASSED: 384000 bit-exact stereo pairs, 17 notes, real 48K/I2S, 238 FFT blocks and 30 moving peaks, complete/silent/re-entry/manual override"
+                                           ]
+                        }
+                    ]
+}
