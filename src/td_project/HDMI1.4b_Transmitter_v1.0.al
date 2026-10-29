@@ -10,6 +10,30 @@
     </HardWare>
     <Source_Files>
         <Verilog>
+            <File Path="../user_source/hdl_source/inmp441_i2s_rx.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&amp;R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="80"/>
+                </FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/voice_analysis_source.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&amp;R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="81"/>
+                </FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/live_voice_background.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&amp;R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="82"/>
+                </FileInfo>
+            </File>
             <File Path="../user_source/hdl_source/video_source_test.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>

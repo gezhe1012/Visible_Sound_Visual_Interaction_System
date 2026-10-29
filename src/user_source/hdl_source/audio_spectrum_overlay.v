@@ -7,7 +7,7 @@ module audio_spectrum_overlay #(
 )(
     input clk,rst,hs,vs,de,
     input [23:0] rgb_in,
-    input panel_visible,audio_valid,
+    input panel_visible,audio_valid,voice_mode,
     input spectrum_write,result_done,
     input [7:0] spectrum_address,
     input [6:0] spectrum_height,
@@ -24,9 +24,14 @@ wire stale=no_audio_count>=NO_AUDIO_CYCLES-1;
 reg [6:0] left_ram[0:255],right_ram[0:255];
 reg [6:0] left_q,right_q;
 wire [9:0] graph_x=x-10'd64;
+reg [6:0] read_band_index;
+always @* begin
+    read_band_index=graph_x[8:2];
+    if(voice_mode) read_band_index={1'b0,graph_x[8:3]};
+end
 always @(posedge clk) begin
-    left_q<=left_ram[{display_bank,graph_x[8:2]}];
-    right_q<=right_ram[{display_bank,graph_x[8:2]}];
+    left_q<=left_ram[{display_bank,read_band_index}];
+    right_q<=right_ram[{display_bank,read_band_index}];
     if(spectrum_write && !rst) begin
         if(!spectrum_address[7]) left_ram[{write_bank,spectrum_address[6:0]}]<=spectrum_height;
         else right_ram[{write_bank,spectrum_address[6:0]}]<=spectrum_height;
@@ -85,6 +90,7 @@ function [34:0] glyph;
             "K":glyph={5'b10001,5'b10010,5'b10100,5'b11000,5'b10100,5'b10010,5'b10001};
             "L":glyph={5'b10000,5'b10000,5'b10000,5'b10000,5'b10000,5'b10000,5'b11111};
             "R":glyph={5'b11110,5'b10001,5'b10001,5'b11110,5'b10100,5'b10010,5'b10001};
+            "M":glyph={5'b10001,5'b11011,5'b10101,5'b10101,5'b10001,5'b10001,5'b10001};
             ".":glyph={30'd0,5'b00100};
             default:glyph=0;
         endcase
@@ -131,6 +137,7 @@ always @* begin
     composed=pixel_q; text_bits=0; text_enable=0; tx=0; ty=0;
     text_color=24'hC8DDE8; label_index=0; gx=px-10'd64;
     bar_height=gx[1] ? right_q : left_q;
+    if(voice_mode) bar_height=left_q;
     if(visible_q && px>=48 && px<592 && py>=120 && py<236) begin
         composed={2'b0,pixel_q[23:18],2'b0,pixel_q[15:10],2'b0,pixel_q[7:2]};
         if(px==48 || px==591 || py==120 || py==235) composed=24'h60849A;
@@ -139,6 +146,7 @@ always @* begin
                 composed=24'h294052;
             if(valid_q && bar_height!=0 && py>214-{3'd0,bar_height})
                 composed=gx[1] ? 24'hFFE66D : 24'h52E3FF;
+            if(voice_mode && valid_q && bar_height!=0 && py>214-{3'd0,bar_height}) composed=24'h5BDAC6;
         end
         if(py>=130 && py<137) begin
             ty=py-10'd130;
@@ -147,8 +155,10 @@ always @* begin
                 text_bits=glyph(title_char(tx[7:3]));
             end else if(px>=488 && px<496) begin
                 tx=px-10'd488; text_enable=1; text_bits=glyph("L"); text_color=24'h52E3FF;
+                if(voice_mode) text_bits=glyph("M");
             end else if(px>=536 && px<544) begin
                 tx=px-10'd536; text_enable=1; text_bits=glyph("R"); text_color=24'hFFE66D;
+                if(voice_mode) text_enable=0;
             end
         end
         if(py>=222 && py<229) begin
@@ -159,6 +169,12 @@ always @* begin
             else if(px>=432 && px<472) begin tx=px-10'd432; label_index=3; text_enable=1; end
             else if(px>=552 && px<576) begin tx=px-10'd552; label_index=4; text_enable=1; end
             if(text_enable) text_bits=glyph(axis_char(label_index,tx[5:3]));
+            if(voice_mode) begin
+                text_enable=0;text_bits=0;
+                if(px>=64 && px<72) begin tx=px-64;text_enable=1;text_bits=glyph("0");end
+                else if(px>=304 && px<336) begin tx=px-304;text_enable=1;text_bits=glyph(axis_char(1,tx[5:3]));end
+                else if(px>=544 && px<576) begin tx=px-544;text_enable=1;text_bits=glyph(axis_char(2,tx[5:3]));end
+            end
         end
         if(text_enable && tx[2:0]<5 && text_bits[34-(ty*5+tx[2:0])]) composed=text_color;
     end

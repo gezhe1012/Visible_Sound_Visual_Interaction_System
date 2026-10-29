@@ -27,14 +27,19 @@ function [5:0] caption_length;
     input [2:0] page;
     begin case(page)
         0:caption_length=27; 1:caption_length=24; 2:caption_length=28;
-        3:caption_length=20; 4:caption_length=23; default:caption_length=27;
+        3:caption_length=20; 4:caption_length=23; 5:caption_length=26; default:caption_length=27;
     endcase end
 endfunction
 function [4:0] accent_start;
     input [2:0] page;
     begin case(page)
-        1,3:accent_start=15; 2:accent_start=19; default:accent_start=18;
+        1,3:accent_start=15; 2,5:accent_start=19; default:accent_start=18;
     endcase end
+endfunction
+function [7:0] voice_caption;
+    input [4:0] index;
+    reg [207:0] word;
+    begin word="YOUR VOICE BECOMES VISIBLE";voice_caption=word[207-index*8-:8];end
 endfunction
 function [7:0] caption_char;
     input [2:0] page;
@@ -42,6 +47,7 @@ function [7:0] caption_char;
     begin
         caption_char=" ";
         case(page)
+            3'd5: caption_char=voice_caption(index);
             3'd0: case(index)
                 5'd0: caption_char="E";
                 5'd1: caption_char="X";
@@ -457,7 +463,7 @@ always @(posedge clk or posedge rst) begin
                 bars_right[i]<=approach(bars_right[i],bar_target(next_envelope_right[12:8],motion_phase+3'd6-i[2:0]));
             end
             if(lesson_idx!=caption_page) begin
-                caption_page<=(lesson_idx<=4) ? lesson_idx : 3'd0;
+                caption_page<=(lesson_idx<=5) ? lesson_idx : 3'd0;
                 scroll_char<=0; scroll_pixel<=0;
             end else if(scroll_pixel==11) begin
                 scroll_pixel<=0;

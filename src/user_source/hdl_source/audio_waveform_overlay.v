@@ -7,7 +7,7 @@ module audio_waveform_overlay #(
 )(
     input clk,rst,hs,vs,de,
     input [23:0] rgb_in,
-    input audio_valid,requested_visible,
+    input audio_valid,requested_visible,voice_mode,
     input [23:0] audio_left,audio_right,
     output hs_out,vs_out,de_out,
     output panel_visible,
@@ -38,7 +38,13 @@ function [5:0] sample_level;
     end
 endfunction
 wire [5:0] left_level=sample_level($signed(audio_left));
-wire [5:0] right_level=sample_level($signed(audio_right));
+wire [23:0] absolute_right=audio_right[23] ? (~audio_right+24'd1) : audio_right;
+reg [5:0] right_level;
+always @* begin
+    right_level=sample_level($signed(audio_right));
+    // Voice page: signed waveform above, absolute-amplitude trace below.
+    if(voice_mode) right_level=absolute_right>=24'h1f0000 ? 6'd0 : 6'd31-{1'b0,absolute_right[20:16]};
+end
 wire trigger=previous_negative && !audio_left[23];
 wire capture_accept=audio_valid && !pending && (capturing || trigger || trigger_wait==255);
 wire [23:0] capture_word={left_level,(capture_index==0 ? left_level : previous_left),
@@ -149,9 +155,20 @@ always @* begin
         if(px>=52 && px<62) begin
             if(py>=279 && py<293) begin
                 label_y=py-10'd279; label_bits=channel_glyph(0,label_y[3:1]);
+                if(voice_mode) begin // W = signed voice waveform
+                    case(label_y[3:1])
+                        0,1,2:label_bits=5'b10001;3,4:label_bits=5'b10101;
+                        5:label_bits=5'b11011;default:label_bits=5'b10001;
+                    endcase
+                end
                 if(label_bits[4-label_x[3:1]]) composed=valid_q ? 24'h52E3FF : 24'hE07070;
             end else if(py>=363 && py<377) begin
                 label_y=py-10'd363; label_bits=channel_glyph(1,label_y[3:1]);
+                if(voice_mode) begin // A = absolute amplitude, not a second mic
+                    case(label_y[3:1])
+                        0:label_bits=5'b01110;3:label_bits=5'b11111;default:label_bits=5'b10001;
+                    endcase
+                end
                 if(label_bits[4-label_x[3:1]]) composed=valid_q ? 24'hFFE66D : 24'hE07070;
             end
         end

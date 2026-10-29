@@ -5,6 +5,9 @@ module top(
     input                       key1,           // Board KEY2 / B2: next / brightness (unchanged)
     input                       key2,           // Board KEY4 / C1: autoplay / contrast (unchanged)
     input                       key3,           // Board KEY3 / B1: analysis panel toggle
+    output                      mic_sck,        // J1-31 / M15, INMP441 SCK
+    output                      mic_ws,         // J1-32 / L16, INMP441 WS
+    input                       mic_sd,         // J1-33 / N16, INMP441 SD; L/R tied low
 
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
@@ -130,6 +133,28 @@ wire        audio_i2s_dout;
 wire        audio_valid;
 wire [23:0] audio_left_data;
 wire [23:0] audio_right_data;
+wire rst_all;
+wire mic_ready,mic_valid,mic_active,mic_clipped;
+wire signed [23:0] mic_pcm;
+wire [3:0] mic_gain_shift;
+wire analysis_valid,source_clear;
+wire [23:0] analysis_left,analysis_right;
+wire voice_page=display_lesson_idx==5;
+wire analysis_reset=rst_all | source_clear;
+wire [23:0] voice_background,picture_background;
+inmp441_i2s_rx u_inmp441_i2s_rx(
+    .clk(video_clk),.rst(rst_all),.mic_sd(mic_sd),.mic_sck(mic_sck),.mic_ws(mic_ws),
+    .mic_pcm(mic_pcm),.mic_valid(mic_valid),.ready(mic_ready));
+voice_analysis_source u_voice_source(
+    .clk(video_clk),.rst(rst_all),.lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
+    .dds_valid(audio_valid),.dds_left(audio_left_data),.dds_right(audio_right_data),
+    .mic_valid(mic_valid),.mic_pcm(mic_pcm),.analysis_valid(analysis_valid),
+    .analysis_left(analysis_left),.analysis_right(analysis_right),.source_clear(source_clear),
+    .active(mic_active),.clipped(mic_clipped),.gain_shift(mic_gain_shift));
+live_voice_background u_voice_background(
+    .clk(video_clk),.rst(rst_all),.vs(vs),.de(de),.ready(mic_ready),.active(mic_active),
+    .clipped(mic_clipped),.panel_visible(waveform_requested_visible),.rgb(voice_background));
+assign picture_background=voice_page ? voice_background : vout_data_raw;
 wire        acr_valid;
 wire [19:0] acr_cts;
 wire [19:0] acr_n;
@@ -150,7 +175,6 @@ wire [9:0]  tmds_ch2_data;
 wire [9:0]  tmds_clk_data;
 
 // 统一复位：TF 图像链路 + HDMI 音频链路
-wire rst_all;
 assign rst_all = ~rst_n | ~audio_pll_lock;
 
 // 保持你原来的 TF / SDRAM / video 时钟
@@ -195,7 +219,8 @@ sd_card_bmp #(
     .SCAN_TARGET_COUNT (3'd5),
     .KEY_EVENT_MODE    (1),
     .AUTO_PLAY_SECONDS (8),
-    .WAIT_MELODY_END   (1)
+    .WAIT_MELODY_END   (1),
+    .LIVE_VOICE_PAGE   (1)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
@@ -279,7 +304,7 @@ display_key_controls u_display_key_controls (
 );
 video_picture_adjust u_video_picture_adjust (
     .clk(video_clk), .rst(rst_all), .hs(hs), .vs(vs), .de(de),
-    .rgb_in(vout_data_raw), .brightness(display_brightness),
+    .rgb_in(picture_background), .brightness(display_brightness),
     .contrast_q2(display_contrast_q2), .hs_out(hs_adjusted),
     .vs_out(vs_adjusted), .de_out(de_adjusted), .rgb_out(vout_data_adjusted)
 );
@@ -317,12 +342,12 @@ waveform_key_control u_waveform_key_control (
     .requested_visible(waveform_requested_visible)
 );
 audio_waveform_overlay u_audio_waveform_overlay (
-    .clk(video_clk), .rst(rst_all),
+    .clk(video_clk), .rst(analysis_reset),.voice_mode(voice_page),
     .hs(hs_adjusted), .vs(vs_adjusted), .de(de_adjusted),
-    .rgb_in(vout_data_faded), .audio_valid(audio_valid),
+    .rgb_in(vout_data_faded), .audio_valid(analysis_valid),
     .requested_visible(waveform_requested_visible),
     .panel_visible(analysis_panel_visible),
-    .audio_left(audio_left_data), .audio_right(audio_right_data),
+    .audio_left(analysis_left), .audio_right(analysis_right),
     .hs_out(hs_waveform), .vs_out(vs_waveform), .de_out(de_waveform),
     .rgb_out(vout_data_waveform)
 );
@@ -332,8 +357,8 @@ wire fft_capture_start,fft_bin_valid,fft_bin_channel;
 wire [8:0] fft_bin_number;
 wire [16:0] fft_bin_magnitude;
 audio_fft1024 u_audio_fft1024 (
-    .clk(video_clk),.rst(rst_all),.audio_valid(audio_valid),
-    .audio_left(audio_left_data),.audio_right(audio_right_data),
+    .clk(video_clk),.rst(analysis_reset),.audio_valid(analysis_valid),
+    .audio_left(analysis_left),.audio_right(analysis_right),
     .result_ack(spectrum_ack),.spectrum_write(spectrum_write),
     .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
     .result_done(spectrum_done),.capture_start(fft_capture_start),
@@ -343,9 +368,9 @@ audio_fft1024 u_audio_fft1024 (
 // Reuse the waveform's VS-latched switch, not a second KEY3 controller.
 // Its VS reaches this stage two clocks later, after panel_visible is stable.
 audio_spectrum_overlay u_audio_spectrum_overlay (
-    .clk(video_clk),.rst(rst_all),.hs(hs_waveform),.vs(vs_waveform),.de(de_waveform),
+    .clk(video_clk),.rst(analysis_reset),.voice_mode(voice_page),.hs(hs_waveform),.vs(vs_waveform),.de(de_waveform),
     .rgb_in(vout_data_waveform),.panel_visible(analysis_panel_visible),
-    .audio_valid(audio_valid),.spectrum_write(spectrum_write),
+    .audio_valid(analysis_valid),.spectrum_write(spectrum_write),
     .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
     .result_done(spectrum_done),.result_ack(spectrum_ack),
     .hs_out(hs_analysis),.vs_out(vs_analysis),.de_out(de_analysis),.rgb_out(vout_data_analysis)
@@ -364,7 +389,7 @@ video_osd_overlay #(
     .contrast_q2(display_contrast_q2),
     .active_control(display_active_control),
     .lesson_idx(display_lesson_idx),
-    .audio_valid(audio_valid),.audio_left(audio_left_data),.audio_right(audio_right_data),
+    .audio_valid(analysis_valid),.audio_left(analysis_left),.audio_right(analysis_right),
     .rgb_in  (vout_data_analysis),
     .rgb_out (vout_data_osd)
 );
@@ -440,7 +465,7 @@ sdram U3(
 // ===================== 音频：内部 I2S 测试音 =====================
 science_audio_i2s u_science_audio_i2s (
     .clk(video_clk), .rst(rst_all),
-    .lesson(display_lesson_idx), .enabled(transition_display_valid),
+    .lesson(display_lesson_idx), .enabled(transition_display_valid && !voice_page),
     .bclk(audio_i2s_bclk), .lrck(audio_i2s_lrck), .dout(audio_i2s_dout),
     .sample_tick(), .pcm_left(), .pcm_right(), .lesson_step(), .melody_complete(melody_complete)
 );
@@ -558,7 +583,7 @@ hdmi_phy_wrapper #(
 secondary_hdmi_tx u_secondary_hdmi_tx (
     .pixel_clk(video_clk),.serial_clk(hdmi_5x_clk),.rst(rst_all),
     .lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
-    .audio_valid(audio_valid),.audio_left(audio_left_data),.audio_right(audio_right_data),
+    .audio_valid(analysis_valid),.audio_left(analysis_left),.audio_right(analysis_right),
     .capture_start(fft_capture_start),.bin_valid(fft_bin_valid),.bin_channel(fft_bin_channel),
     .bin_number(fft_bin_number),.bin_magnitude(fft_bin_magnitude),
     .spectrum_write(spectrum_write),.spectrum_address(spectrum_address),

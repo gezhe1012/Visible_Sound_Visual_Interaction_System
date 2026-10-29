@@ -11,7 +11,7 @@ reg [23:0] audio_left=0,audio_right=0;
 integer sample_div=0,sample_number=0,request_changes=0;
 reg previous_request=0;
 waveform_key_control #(.CLK_HZ(1000),.DEBOUNCE_MS(5)) keys(.*);
-audio_waveform_overlay dut(.*);
+audio_waveform_overlay dut(.voice_mode(1'b0),.*);
 // The actual pre-existing controller stays idle while ONLY board KEY3 moves.
 wire next_toggle,auto_toggle;
 wire signed [8:0] brightness;

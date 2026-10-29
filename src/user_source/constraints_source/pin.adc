@@ -11,6 +11,10 @@
 
 #set_pin_assignment	{ I_key_in }	{ LOCATION = A2; IOSTANDARD = LVCMOS33;}
 
+# INMP441 wiring supplied by user: J1-31/32/33; 3.3V J1-29, GND J1-30.
+set_pin_assignment { mic_sck } { LOCATION = M15; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 4; PULLTYPE = NONE; }
+set_pin_assignment { mic_ws } { LOCATION = L16; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 4; PULLTYPE = NONE; }
+set_pin_assignment { mic_sd } { LOCATION = N16; IOSTANDARD = LVCMOS33; PULLTYPE = PULLDOWN; }
 set_pin_assignment	{ HDMI_DDC_SCL }	{ LOCATION = P2; IOSTANDARD = LVCMOS33;DRIVESTRENGTH = 8; PULLTYPE = PULLUP;}
 set_pin_assignment	{ HDMI_DDC_SDA }	{ LOCATION = R2; IOSTANDARD = LVCMOS33;DRIVESTRENGTH = 8; PULLTYPE = PULLUP; }
 set_pin_assignment	{ HDMI_CLK_P }	{ LOCATION = C3; IOSTANDARD = LVDS33; PULLTYPE = NONE; }

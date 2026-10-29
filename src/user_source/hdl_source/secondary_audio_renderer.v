@@ -118,6 +118,7 @@ function [7:0] page_char;
             2:page_char=word_char("TIMBRE                ",index);
             3:page_char=word_char("STEREO                ",index);
             4:page_char=word_char("MUSIC                 ",index);
+            5:page_char=word_char("LIVE VOICE            ",index);
             default:page_char=" ";
         endcase
     end
@@ -185,6 +186,7 @@ always @* begin
         endcase
     end else if(px>=192 && px<224 && py>=74 && py<81) begin
         tx=px-192;ty=py-74;text_on=1;character=word_char("F0~                   ",tx[7:3]);ink=24'h91ADBD;
+        if(shown_lesson==5) character=word_char("PK~                   ",tx[7:3]);
     end else if(px>=192 && px<272 && py>=88 && py<102) begin
         tx=px-192;ty=py-88;font_scale=1;text_on=1;char_index={2'd0,tx[6:4]};
         character=pitch_valid ? "0"+shown_feature[63-char_index*4-:4] : "-";
@@ -195,6 +197,7 @@ always @* begin
     end else if(px>=464 && px<592 && py>=80 && py<87) begin
         tx=px-464;ty=py-80;text_on=1;character=word_char(pitch_valid ? "FFT / L               " : "NO SIGNAL             ",tx[7:3]);
         if(pitch_valid && tx[7:3]==6) character=shown_right ? "R" : "L";
+        if(shown_lesson==5) character=word_char("MIC / MONO            ",tx[7:3]);
         ink=24'h91ADBD;
     end else if(px>=464 && px<592 && py>=100 && py<107) begin
         tx=px-464;ty=py-100;text_on=1;character=word_char("48K / 1024            ",tx[7:3]);ink=24'h91ADBD;

@@ -29,6 +29,11 @@ tests/secondary_audio_work/
 tests/secondary_checks_work/
 tests/secondary_live_work/
 tests/enhanced_work/
+tests/voice_work/
+tests/voice_display_work/
+tests/voice_compat_work/
+tests/voice_routed_netlist.v
+tests/voice_*.ppm
 tests/enhanced_*.hex
 tests/enhanced_*.ppm
 tests/enhanced_baseline_renderer.v

@@ -6,7 +6,8 @@ module sd_card_bmp #(
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer KEY_EVENT_MODE  = 0, // 1: video-domain short-action toggles
     parameter integer AUTO_PLAY_SECONDS = 1,
-    parameter integer WAIT_MELODY_END = 0 // only top science build enables this
+    parameter integer WAIT_MELODY_END = 0, // only top science build enables this
+    parameter integer LIVE_VOICE_PAGE = 0 // append a procedural page after five BMPs
 )(
     input                       clk,
     input                       rst,
@@ -52,6 +53,13 @@ wire             sd_sec_read_end;
 wire             bmp_data_wr_en;
 wire [23:0]      bmp_data;
 wire             sd_init_done;
+// Local initialization qualification breaks the original long high-fanout
+// sd_init_done -> scaler CE path. One startup clock only; no pixel/data delay.
+reg bmp_init_ready;
+always @(posedge clk or posedge rst) begin
+    if(rst) bmp_init_ready<=0;
+    else bmp_init_ready<=sd_init_done;
+end
 wire             bmp_ready;
 wire             bmp_load_error;
 wire             scan_done;
@@ -99,7 +107,8 @@ assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
 assign auto_tick  = (auto_cnt == (CLK_FREQ_HZ * AUTO_PLAY_SECONDS - 1));
 assign transition_lesson_idx = load_idx; // stable bundled payload until transition ack
-assign next_from_current = next_index_limited(img_idx, img_found_count);
+wire [2:0] page_count=img_found_count+((LIVE_VOICE_PAGE!=0 && img_found_count==5) ? 3'd1 : 3'd0);
+assign next_from_current = next_index_limited(img_idx, page_count);
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign transition_done_pulse = trans_done_tgl_sync[2] ^ trans_done_tgl_sync[1];
 
@@ -339,11 +348,18 @@ always @(posedge clk or posedge rst) begin
                 // 手动下一张优先：写到“非当前显示”的另一块 buffer
                 else if (scan_done && bmp_ready && display_valid && !load_busy && !transition_pending && next_req_pending && (img_found_count != 3'd0)) begin
                     load_idx         <= next_from_current;
+                    if(LIVE_VOICE_PAGE!=0 && next_from_current==5) begin
+                        // Reuse the committed buffer under a procedural RGB page.
+                        // No fake SDRAM completion and no sixth file lookup.
+                        pending_buf_idx<=disp_buf_idx;transition_buf_idx<=disp_buf_idx;
+                        transition_pending<=1;transition_start_toggle<=~transition_start_toggle;
+                    end else begin
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
                     write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
+                    end
                     source_done_seen <= 1'b0;
                     source_started_seen <= 1'b0;
                     memory_done_seen <= 1'b0;
@@ -353,11 +369,16 @@ always @(posedge clk or posedge rst) begin
                 // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
                 else if (scan_done && bmp_ready && display_valid && !load_busy && !transition_pending && auto_play_en && auto_tick && auto_advance_allowed && (img_found_count > 3'd1)) begin
                     load_idx         <= next_from_current;
+                    if(LIVE_VOICE_PAGE!=0 && next_from_current==5) begin
+                        pending_buf_idx<=disp_buf_idx;transition_buf_idx<=disp_buf_idx;
+                        transition_pending<=1;transition_start_toggle<=~transition_start_toggle;
+                    end else begin
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
                     write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
+                    end
                     source_done_seen <= 1'b0;
                     source_started_seen <= 1'b0;
                     memory_done_seen <= 1'b0;
@@ -393,7 +414,7 @@ bmp_bilinear_reader bmp_read_m0(
     .load_start             (load_start_pulse),
     .load_sector            (load_sector),
 
-    .sd_init_done           (sd_init_done),
+    .sd_init_done           (bmp_init_ready),
     .state_code             (state_code),
     .bmp_width              (bmp_width),
     .bmp_height             (bmp_height),
