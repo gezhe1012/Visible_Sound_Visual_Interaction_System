@@ -15,6 +15,16 @@ try {
     Assert-Voice ($top -match '\.SCAN_TARGET_COUNT\s*\(3.d5\)' -and $top -match '\.LIVE_VOICE_PAGE\s*\(1\)') 'Five real BMP files plus a virtual sixth page'
     Assert-Voice ($top -match '\.I_audio_valid\s*\(audio_valid\)' -and $top -match '\.I_audio_left_data\s*\(audio_left_data\)' -and $top -match '\.I_audio_right_data\s*\(audio_right_data\)') 'HDMI packetizer still consumes original decoded DDS PCM'
     Assert-Voice ($top -match '\.audio_valid\(analysis_valid\)' -and $top -match '\.audio_left\(analysis_left\)') 'Waveform/FFT/secondary use the selected analysis source'
+    Assert-Voice (([regex]::Matches($top,'\.spectrum_height\(displayed_spectrum_height\)')).Count -eq 2 -and
+        $top -match 'displayed_spectrum_height=\(voice_page && spectrum_height<7.d8\) \? 7.d0 : spectrum_height' -and
+        ([regex]::Matches($top,'\.spectrum_height\(spectrum_height\)')).Count -eq 1) 'Shared microphone-only residual floor feeds both displays; raw FFT and five DDS pages stay unmasked'
+    foreach($name in @('src/user_source/constraints_source','src/user_source/hdl_source/inmp441_i2s_rx.v','src/user_source/hdl_source/live_voice_background.v','src/user_source/hdl_source/SD')) {
+        git diff --quiet b2feea7 -- $name
+        Assert-Voice ($LASTEXITCODE -eq 0) "Noise iteration preserves interface/timing/layout: $name"
+    }
+    $baseline=(git show b2feea7:src/user_source/hdl_source/voice_analysis_source.v) -join "`n"
+    $fixture=(Get-Content tests/voice_baseline_conditioner.v -Raw).Replace("`r",'').Trim()
+    Assert-Voice ($fixture -ceq $baseline.Replace('module voice_analysis_source(','module voice_baseline_conditioner(').Trim()) 'Noise A/B fixture exactly matches b2feea7, except its module name'
     $protected=@('I2S_receiver.v','science_audio_i2s.v','audio_arc_calculate.v','audio_fft1024.v','video_osd_overlay.v','display_key_controls.v','waveform_key_control.v','video_fade_transition.v','video_picture_adjust.v','science_sys_pll.v','SD/bmp_bilinear_reader.v','SD/frame_fifo_read.v','SD/frame_read_write.v')
     foreach($name in $protected) {
         git diff --quiet 6e58891 -- "src/user_source/hdl_source/$name"

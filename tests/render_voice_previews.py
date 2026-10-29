@@ -1,9 +1,15 @@
 """Convert actual ModelSim RGB rasters into reviewable previews; no mock data."""
 from pathlib import Path
+import argparse
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'doc' / 'live_voice'
+parser = argparse.ArgumentParser()
+parser.add_argument('--noise-reduced', action='store_true')
+args = parser.parse_args()
+if args.noise_reduced:
+    OUT = OUT / 'noise_reduced'
 OUT.mkdir(parents=True, exist_ok=True)
 canvas = Image.new('RGB', (1280, 520), '#071622')
 draw = ImageDraw.Draw(canvas)
@@ -14,4 +20,9 @@ for index, name in enumerate(('main', 'secondary')):
         canvas.paste(frame, (index * 640, 40))
     draw.text((index * 640 + 18, 13), f'{name.upper()} / LIVE VOICE / RTL SIMULATION', fill='#D7E5EF')
 canvas.save(OUT / 'dual_screen_rtl.png')
+if args.noise_reduced:
+    for name in ('main', 'secondary'):
+        with Image.open(ROOT / 'tests' / f'voice_quiet_{name}.ppm') as frame:
+            assert frame.size == (640, 480)
+            frame.save(OUT / f'quiet_{name}_rtl.png')
 print('ALL VOICE PREVIEW TESTS PASSED: two complete 640x480 RTL rasters, no synthetic artwork')

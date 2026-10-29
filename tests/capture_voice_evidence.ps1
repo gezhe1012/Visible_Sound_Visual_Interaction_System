@@ -1,12 +1,16 @@
 [CmdletBinding()]
-param()
+param([switch]$NoiseReduced)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $out=Join-Path $root 'doc/live_voice'
+if($NoiseReduced) {$out=Join-Path $out 'noise_reduced'}
 $run=Join-Path $root 'src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1'
-$build=Get-Content (Join-Path $root 'voice_build.log') -Raw
+$buildLog=if($NoiseReduced) {'voice_noise_build.log'} else {'voice_build.log'}
+$bitName=if($NoiseReduced) {'HDMI_live_voice_noise_reduced.bit'} else {'HDMI_live_voice.bit'}
+$build=Get-Content (Join-Path $root $buildLog) -Raw
 if($build -match '\[FAIL\]|HDL or constraints changed|USR-8159|HDL-7225' -or $build -notmatch 'All requested checks passed\.') {throw 'Build is failing, stale or has an unresolved new constraint/implicit-net warning'}
 $logNames=@('voice_unit.log','voice_display.log','voice_compat.log','voice_structure.log','voice_regress_main.log','voice_regress_science.log','voice_regress_secondary.log','voice_regress_final.log','voice_rom.log','voice_cdc_audit.log')
+if($NoiseReduced) {$logNames=@('voice_noise_unit.log','voice_noise_display.log','voice_noise_compat.log','voice_noise_fft.log','voice_noise_controls.log','voice_noise_secondary.log','voice_noise_structure.log','voice_noise_rom.log','voice_noise_cdc.log')}
 $results=@()
 foreach($name in $logNames) {
     $body=Get-Content (Join-Path $root $name) -Raw
@@ -19,6 +23,12 @@ $sources+=Get-Item (Join-Path $root 'src/td_project/HDMI1.4b_Transmitter_v1.0.al
 $sources+=Get-Item (Join-Path $root 'tests/secondary_enhanced_synthesis.tcl')
 $sources+=Get-ChildItem (Join-Path $root 'src/td_project/al_ip') -File | Where-Object {$_.Extension -in '.v','.vhd','.ipc'}
 if(($sources | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime -gt $bit.LastWriteTime) {throw 'Stale bit'}
+if($NoiseReduced) {
+    $latestHdl=($sources | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+    foreach($name in $logNames) {
+        if((Get-Item (Join-Path $root $name)).LastWriteTime -lt $latestHdl) {throw "Stale regression: $name"}
+    }
+}
 $timing=Get-Content (Join-Path $run 'HDMI1.4b_Transmitter_v1.0_pr.timing') -Raw
 $setup=[double][regex]::Match($timing,'SWNS:\s*(-?[0-9.]+)ns').Groups[1].Value
 $hold=[double][regex]::Match($timing,'HWNS:\s*(-?[0-9.]+)ns').Groups[1].Value
@@ -31,6 +41,7 @@ foreach($file in $sources | Sort-Object FullName) {$hashes[$file.FullName.Substr
 $evidence=[ordered]@{
     base='6e58891';feature='INMP441 live voice on virtual page 6';device='EG4S20BG256';tool='TD 6.2.168116';
     built_at=$bit.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss');bit_bytes=$bit.Length;bit_sha256=(Get-FileHash $bit.FullName).Hash;
+    bit_file=$bitName;
     implementation_verified=$true;physical_microphone_verified=$false;new_bit_board_regression_verified=$false;
     resources=$resources;setup_wns_ns=$setup;hold_wns_ns=$hold;
     sta_coverage_percent=[double][regex]::Match($timing,'STA coverage\s*:\s*([0-9.]+)%').Groups[1].Value;
@@ -40,11 +51,24 @@ $evidence=[ordered]@{
     timing_changes=@('One local sd_init_done qualification register before scaler; original scaler arithmetic unchanged','Only mic_sd external pad and existing video read_req -> memory first synchronizer D are false paths; second/third stages and all data remain timed');
     source_sha256=$hashes;regressions=$results
 }
+if($NoiseReduced) {
+    $evidence.base='b2feea7'
+    $evidence.feature='Page-6 microphone visual noise reduction; original five pages preserved'
+    $evidence.analysis.quiet_gain=16
+    $evidence.analysis.noise_reduction=[ordered]@{
+        detector='mean absolute raw centered PCM';block_samples=256;noise_estimate_range_raw=@(128,1024);
+        open='max(768, 3*noise)';close='max(384, 2*noise)';attack_blocks=2;nominal_attack_ms=10.667;
+        block_alignment_attack_bound_ms=16;release_blocks=18;release_ms=96;quiet_output='valid zero PCM, not stopped sampling';
+        mic_only_display_floor_pixels=8;real_environment_calibration_verified=$false
+    }
+    $evidence.regression_scope='Reran voice/noise, real-FFT dual-screen, five-page pixel compatibility, FFT, keys, secondary store/renderer, structure, ROM and CDC. Unmodified FAT32/SDRAM/full-melody suites were not rerun; see b2feea7 evidence.'
+    $evidence.timing_changes=@('No clocks, pins, timing constraints, FIFOs, memory interfaces, HDMI audio or FFT arithmetic changed in this iteration')
+}
 New-Item -ItemType Directory -Path (Join-Path $out 'test_logs') -Force | Out-Null
-Copy-Item $bit.FullName (Join-Path $out 'HDMI_live_voice.bit')
+Copy-Item $bit.FullName (Join-Path $out $bitName)
 Copy-Item (Join-Path $run 'HDMI1.4b_Transmitter_v1.0_pr.timing') (Join-Path $out 'routed_timing.txt')
 Copy-Item (Join-Path $run 'HDMI1.4b_Transmitter_v1.0_phy.area') (Join-Path $out 'utilization.txt')
-Copy-Item (Join-Path $root 'voice_build.log') (Join-Path $out 'build_transcript.txt')
+Copy-Item (Join-Path $root $buildLog) (Join-Path $out 'build_transcript.txt')
 foreach($name in $logNames) {Copy-Item (Join-Path $root $name) (Join-Path $out ('test_logs/'+($name -replace '\.log$','.txt')))}
 $evidence | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $out 'build_evidence.json') -Encoding UTF8
 Write-Host 'ALL VOICE EVIDENCE TESTS PASSED: fresh bit, matching sources, positive timing, physical board checks explicitly pending'

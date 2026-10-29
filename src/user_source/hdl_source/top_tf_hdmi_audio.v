@@ -73,6 +73,7 @@ wire hs_analysis,vs_analysis,de_analysis;
 wire spectrum_write,spectrum_done,spectrum_ack;
 wire [7:0] spectrum_address;
 wire [6:0] spectrum_height;
+wire [6:0] displayed_spectrum_height;
 wire signed [8:0] display_brightness;
 wire [2:0] display_contrast_q2;
 wire [1:0] display_active_control;
@@ -367,11 +368,14 @@ audio_fft1024 u_audio_fft1024 (
 );
 // Reuse the waveform's VS-latched switch, not a second KEY3 controller.
 // Its VS reaches this stage two clocks later, after panel_visible is stable.
+// Remove only sub-8-pixel residual FFT dust on the microphone page. Both
+// screens receive the SAME heights; DDS pages and raw FFT bins are untouched.
+assign displayed_spectrum_height=(voice_page && spectrum_height<7'd8) ? 7'd0 : spectrum_height;
 audio_spectrum_overlay u_audio_spectrum_overlay (
     .clk(video_clk),.rst(analysis_reset),.voice_mode(voice_page),.hs(hs_waveform),.vs(vs_waveform),.de(de_waveform),
     .rgb_in(vout_data_waveform),.panel_visible(analysis_panel_visible),
     .audio_valid(analysis_valid),.spectrum_write(spectrum_write),
-    .spectrum_address(spectrum_address),.spectrum_height(spectrum_height),
+    .spectrum_address(spectrum_address),.spectrum_height(displayed_spectrum_height),
     .result_done(spectrum_done),.result_ack(spectrum_ack),
     .hs_out(hs_analysis),.vs_out(vs_analysis),.de_out(de_analysis),.rgb_out(vout_data_analysis)
 );
@@ -587,7 +591,7 @@ secondary_hdmi_tx u_secondary_hdmi_tx (
     .capture_start(fft_capture_start),.bin_valid(fft_bin_valid),.bin_channel(fft_bin_channel),
     .bin_number(fft_bin_number),.bin_magnitude(fft_bin_magnitude),
     .spectrum_write(spectrum_write),.spectrum_address(spectrum_address),
-    .spectrum_height(spectrum_height),.result_done(spectrum_done),
+    .spectrum_height(displayed_spectrum_height),.result_done(spectrum_done),
     .edid_trigger(edid_trig),
     .tmds_clk_p(HDMIA_CLK_P),.tmds_d2_p(HDMIA_D2_P),
     .tmds_d1_p(HDMIA_D1_P),.tmds_d0_p(HDMIA_D0_P),

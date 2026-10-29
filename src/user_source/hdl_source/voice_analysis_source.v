@@ -1,6 +1,10 @@
-// Microphone conditioning uses only bounded add/shift arithmetic. DC tracker
-// Q24.8, pole 1-1/1024 (~7.5Hz), gain powers of two 8..128, 24-bit saturation.
-// Gate and gain update per 1024 valid raw samples, not per video clock.
+// Microphone-only conditioning, no extra RAM/DSP/clock. DC tracker is Q24.8,
+// pole 1-1/1024 (~7.5Hz); saturated 24-bit output, gain powers of two 8..128.
+// A 256-sample mean-absolute detector ignores isolated peaks. Quiet background
+// tracking is bounded (128..1024 raw LSB), freezes on strong voice and while
+// the gate is open. Open: max(768,3*noise), close: max(384,2*noise).
+// Two attack blocks (<=10.67ms), 18 release blocks (96ms) preserve word tails.
+// Quiet gain is FIXED at 16; only qualified voice may increase it to 128.
 module voice_analysis_source(
     input clk,rst,
     input [2:0] lesson,
@@ -21,7 +25,21 @@ wire [24:0] absolute=centered[24] ? -centered : centered;
 wire signed [32:0] amplified=$signed({{8{centered[24]}},centered})<<<gain_shift;
 reg [24:0] block_peak;
 wire [24:0] next_peak=absolute>block_peak ? absolute : block_peak;
-reg [9:0] block_count;
+reg [7:0] block_count;
+reg [32:0] block_sum;
+wire [32:0] next_sum=block_sum+{8'd0,absolute};
+wire [24:0] block_mean=next_sum[32:8];
+reg [11:0] noise_floor;
+wire [13:0] triple_noise={2'd0,noise_floor}+{1'd0,noise_floor,1'b0};
+wire [13:0] double_noise={1'd0,noise_floor,1'b0};
+wire [13:0] open_level=triple_noise<14'd768 ? 14'd768 : triple_noise;
+wire [13:0] close_level=double_noise<14'd384 ? 14'd384 : double_noise;
+wire [11:0] noise_target=block_mean>1024 ? 12'd1024 :
+                                block_mean<128 ? 12'd128 : block_mean[11:0];
+wire signed [13:0] noise_error=$signed({2'd0,noise_target})-$signed({2'd0,noise_floor});
+reg attack;
+reg [4:0] release_count;
+reg [1:0] gain_count;
 reg gate_open,conditioned_valid,selected_d;
 reg [23:0] conditioned;
 wire selected=lesson_valid && lesson==5;
@@ -33,7 +51,8 @@ assign analysis_left=selected ? conditioned : dds_left;
 assign analysis_right=selected ? conditioned : dds_right;
 always @(posedge clk or posedge rst) begin
     if(rst) begin
-        dc<=0;block_peak<=0;block_count<=0;gain_shift<=5;gate_open<=0;
+        dc<=0;block_peak<=0;block_count<=0;block_sum<=0;gain_shift<=4;gate_open<=0;
+        noise_floor<=256;attack<=0;release_count<=0;gain_count<=0;
         conditioned<=0;conditioned_valid<=0;active<=0;clipped<=0;selected_d<=0;source_clear<=0;
     end else begin
         selected_d<=selected;source_clear<=selected!=selected_d;
@@ -45,12 +64,36 @@ always @(posedge clk or posedge rst) begin
             else if(amplified< -33'sd8388608) conditioned<=24'h800000;
             else conditioned<=amplified[23:0];
             block_peak<=next_peak;
-            if(block_count==1023) begin
-                block_count<=0;block_peak<=0;gate_open<=next_peak>=256;
-                active<=next_peak>=1024;clipped<=amplified_peak>8388607;
-                if(amplified_peak>4194304 && gain_shift>3) gain_shift<=gain_shift-4'd1;
-                else if(amplified_peak<1048576 && gain_shift<7) gain_shift<=gain_shift+4'd1;
-            end else block_count<=block_count+10'd1;
+            block_sum<=next_sum;
+            if(block_count==255) begin
+                block_count<=0;block_peak<=0;block_sum<=0;
+                clipped<=gate_open && amplified_peak>8388607;
+                if(!gate_open) begin
+                    gain_shift<=4;gain_count<=0;release_count<=0;active<=0;
+                    // Never learn a strong first syllable as background. Slow
+                    // bounded tracking remains live even outside page 6.
+                    if(block_mean<({11'd0,noise_floor,2'b0}) || block_mean<768)
+                        noise_floor<=$signed({2'd0,noise_floor})+(noise_error>>>3);
+                    if(block_mean>=open_level) begin
+                        if(attack) begin gate_open<=1;active<=1;gain_shift<=5;attack<=0;end
+                        else attack<=1;
+                    end else attack<=0;
+                end else begin
+                    attack<=0;
+                    if(block_mean>=close_level) release_count<=0;
+                    else if(release_count==17) begin
+                        gate_open<=0;active<=0;gain_shift<=4;release_count<=0;
+                    end else release_count<=release_count+5'd1;
+                    // AGC attacks overload quickly, but only raises gain once
+                    // per 1024 voiced samples. Never chase background upward.
+                    gain_count<=gain_count+2'd1;
+                    if(block_mean>=close_level || release_count!=17) begin
+                        if(amplified_peak>4194304 && gain_shift>3) gain_shift<=gain_shift-4'd1;
+                        else if(gain_count==3 && block_mean>=close_level && amplified_peak<1048576 && gain_shift<7)
+                            gain_shift<=gain_shift+4'd1;
+                    end
+                end
+            end else block_count<=block_count+8'd1;
         end
     end
 end
