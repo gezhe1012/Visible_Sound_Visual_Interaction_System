@@ -1,19 +1,22 @@
 [CmdletBinding()]
-param([switch]$NoiseReduced,[switch]$VoiceFocus)
+param([switch]$NoiseReduced,[switch]$VoiceFocus,[switch]$AnlogicLogo)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $out=Join-Path $root 'doc/live_voice'
-if($VoiceFocus) {$NoiseReduced=$true;$out=Join-Path $out 'voice_focus'}
+if($AnlogicLogo) {$VoiceFocus=$true;$NoiseReduced=$true;$out=Join-Path $root 'doc/logo_overlay'}
+elseif($VoiceFocus) {$NoiseReduced=$true;$out=Join-Path $out 'voice_focus'}
 elseif($NoiseReduced) {$out=Join-Path $out 'noise_reduced'}
 $run=Join-Path $root 'src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1'
 $buildLog=if($NoiseReduced) {'voice_noise_build.log'} else {'voice_build.log'}
 $bitName=if($NoiseReduced) {'HDMI_live_voice_noise_reduced.bit'} else {'HDMI_live_voice.bit'}
 if($VoiceFocus) {$buildLog='voice_focus_build.log';$bitName='HDMI_live_voice_focus.bit'}
+if($AnlogicLogo) {$buildLog='logo_build.log';$bitName='HDMI_anlogic_logo.bit'}
 $build=Get-Content (Join-Path $root $buildLog) -Raw
 if($build -match '\[FAIL\]|HDL or constraints changed|USR-8159|HDL-7225' -or $build -notmatch 'All requested checks passed\.') {throw 'Build is failing, stale or has an unresolved new constraint/implicit-net warning'}
 $logNames=@('voice_unit.log','voice_display.log','voice_compat.log','voice_structure.log','voice_regress_main.log','voice_regress_science.log','voice_regress_secondary.log','voice_regress_final.log','voice_rom.log','voice_cdc_audit.log')
 if($NoiseReduced) {$logNames=@('voice_noise_unit.log','voice_noise_display.log','voice_noise_compat.log','voice_noise_fft.log','voice_noise_controls.log','voice_noise_secondary.log','voice_noise_structure.log','voice_noise_rom.log','voice_noise_cdc.log')}
 if($VoiceFocus) {$logNames=@('voice_focus_unit.log','voice_focus_display.log','voice_focus_compat.log','voice_focus_fft.log','voice_focus_controls.log','voice_focus_secondary.log','voice_focus_structure.log','voice_focus_rom.log','voice_focus_cdc.log','voice_focus_ui.log')}
+if($AnlogicLogo) {$logNames=@('logo_unit.log','logo_display.log','logo_compat.log','logo_fft.log','logo_controls.log','logo_secondary.log','logo_structure.log','logo_rom.log','logo_cdc.log','logo_ui.log','logo_osd.log','logo_ticker.log','logo_asset.log')}
 $results=@()
 foreach($name in $logNames) {
     $body=Get-Content (Join-Path $root $name) -Raw
@@ -25,9 +28,13 @@ $sources=@(Get-ChildItem (Join-Path $root 'src/user_source') -Recurse -File | Wh
 $sources+=Get-Item (Join-Path $root 'src/td_project/HDMI1.4b_Transmitter_v1.0.al')
 $sources+=Get-Item (Join-Path $root 'tests/secondary_enhanced_synthesis.tcl')
 $sources+=Get-ChildItem (Join-Path $root 'src/td_project/al_ip') -File | Where-Object {$_.Extension -in '.v','.vhd','.ipc'}
+if($AnlogicLogo) {
+    $sources+=Get-Item (Join-Path $root 'doc/TF卡图片/logo_640x480_24bit_不翻转.bmp')
+    $sources+=Get-Item (Join-Path $root 'tests/logo_timing_implementation.tcl')
+}
 if(($sources | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime -gt $bit.LastWriteTime) {throw 'Stale bit'}
 if($NoiseReduced) {
-    $latestHdl=($sources | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+    $latestHdl=($sources | Where-Object {$_.Extension -in '.v','.vhd','.adc','.sdc','.al'} | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
     foreach($name in $logNames) {
         if((Get-Item (Join-Path $root $name)).LastWriteTime -lt $latestHdl) {throw "Stale regression: $name"}
     }
@@ -79,6 +86,14 @@ if($VoiceFocus) {
     $evidence.analysis.secondary_history_range_hz=@(0,4500)
     $evidence.analysis.noise_frontend_unchanged_from='bf35426'
     $evidence.regression_scope='Reran noise/receiver/player, serial mic real-FFT dual-screen, independent focus UI RGB/address oracle, five-page pixel compatibility, FFT/KEY3, keys, secondary store/renderer, structure, ROM/CDC. Unmodified FAT32/SDRAM/full melody suites not rerun.'
+}
+if($AnlogicLogo) {
+    $evidence.base='f915d8c'
+    $evidence.feature='Replace legacy main-screen ANLOGIC text/blue strip with the supplied red/navy logo on all six pages'
+    $evidence.logo_asset=Get-Content (Join-Path $out 'logo_asset.json') -Raw | ConvertFrom-Json
+    $evidence.logo_physical_verified=$false
+    $evidence.implementation_strategy='TD official TimingMedium placement options; normal route, hold fix and bitgen; no extra SDC exceptions or RTL changes'
+    $evidence.regression_scope='Six-page full OSD RGB comparison against f915d8c except the requested old-logo rectangle; BMP-derived golden pixels; unchanged clock/pipeline. Reran original caption/animation, keys, microphone/noise/player, serial mic real-FFT dual-screen, focus UI, five-page analysis pixel compatibility, FFT, secondary store/renderer, ROM/CDC. Unmodified FAT32/SDRAM/full melody not rerun.'
 }
 New-Item -ItemType Directory -Path (Join-Path $out 'test_logs') -Force | Out-Null
 Copy-Item $bit.FullName (Join-Path $out $bitName)

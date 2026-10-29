@@ -32,7 +32,14 @@ try {
     $priorRenderer=(git show bf35426:src/user_source/hdl_source/secondary_audio_renderer.v) -join "`n"
     $priorFixture=(Get-Content tests/voice_baseline_focus_secondary.v -Raw).Replace("`r",'').Trim()
     Assert-Voice ($priorFixture -ceq $priorRenderer.Replace('module secondary_audio_renderer(','module voice_baseline_focus_secondary(').Trim()) 'Voice-focus secondary reference exactly matches bf35426'
-    $protected=@('I2S_receiver.v','science_audio_i2s.v','audio_arc_calculate.v','audio_fft1024.v','video_osd_overlay.v','display_key_controls.v','waveform_key_control.v','video_fade_transition.v','video_picture_adjust.v','science_sys_pll.v','SD/bmp_bilinear_reader.v','SD/frame_fifo_read.v','SD/frame_read_write.v')
+    $oldLogo=(git show f915d8c:src/user_source/hdl_source/video_osd_overlay.v) -join "`n"
+    $oldLogoFixture=(Get-Content tests/voice_baseline_logo_osd.v -Raw).Replace("`r",'').Trim()
+    Assert-Voice ($oldLogoFixture -ceq $oldLogo.Replace('module video_osd_overlay #(','module voice_baseline_logo_osd #(').Trim()) 'Logo-only OSD reference exactly matches f915d8c; independent six-page pixel test covers its intentional replacement'
+    foreach($name in @('audio_spectrum_overlay.v','secondary_audio_renderer.v','sound_theme_footer.v')) {
+        git diff --quiet f915d8c -- "src/user_source/hdl_source/$name"
+        Assert-Voice ($LASTEXITCODE -eq 0) "Logo replacement preserves prior spectrum/secondary/footer implementation: $name"
+    }
+    $protected=@('I2S_receiver.v','science_audio_i2s.v','audio_arc_calculate.v','audio_fft1024.v','display_key_controls.v','waveform_key_control.v','video_fade_transition.v','video_picture_adjust.v','science_sys_pll.v','SD/bmp_bilinear_reader.v','SD/frame_fifo_read.v','SD/frame_read_write.v')
     foreach($name in $protected) {
         git diff --quiet 6e58891 -- "src/user_source/hdl_source/$name"
         Assert-Voice ($LASTEXITCODE -eq 0) "Protected original source unchanged: $name"

@@ -2,7 +2,8 @@
 param(
     [string]$ProjectRoot,
     [switch]$RunSynthesis,
-    [switch]$RunImplementation
+    [switch]$RunImplementation,
+    [string]$ImplementationFlowScript
 )
 
 $ErrorActionPreference = 'Stop'
@@ -241,7 +242,11 @@ if ($RunSynthesis) {
             if (-not (Test-Path -LiteralPath $phyDirectory -PathType Container)) {
                 Write-Fail "Implementation run directory not found: $phyDirectory"
             } else {
-                Invoke-TdFlow $tdCommand ($flowScript -replace '\\','/') $phyDirectory 'TD implementation and bitgen'
+                $implementationFlow=$flowScript
+                if($ImplementationFlowScript) {
+                    $implementationFlow=(Resolve-Path -LiteralPath (Join-Path $ProjectRoot $ImplementationFlowScript)).Path
+                }
+                Invoke-TdFlow $tdCommand ($implementationFlow -replace '\\','/') $phyDirectory 'TD implementation and bitgen'
             }
         }
     }

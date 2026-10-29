@@ -1,0 +1,1 @@
+ALL LOGO ASSET TESTS PASSED: original BMP unchanged, 48x31 upright proportional crop, two exact combinational color masks

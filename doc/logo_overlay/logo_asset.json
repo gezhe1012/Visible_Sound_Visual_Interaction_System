@@ -1,0 +1,42 @@
+{
+  "source": "doc/TF\u5361\u56fe\u7247/logo_640x480_24bit_\u4e0d\u7ffb\u8f6c.bmp",
+  "source_sha256": "F9938325DCF16100EF4CD08AB2827E1E646878AE54518CB1604DC04875DCA218",
+  "source_bbox": [
+    13,
+    63,
+    288,
+    241
+  ],
+  "bitmap_size": [
+    48,
+    31
+  ],
+  "bitmap_origin": [
+    22,
+    16
+  ],
+  "white_badge": [
+    18,
+    14,
+    74,
+    50
+  ],
+  "removed_old_panel": [
+    18,
+    14,
+    174,
+    50
+  ],
+  "palette": [
+    "FFFFFF",
+    "1C2D4E",
+    "ED1C24"
+  ],
+  "orientation": "PIL logical top-to-bottom, no mirror or flip",
+  "pixels_per_color": [
+    839,
+    393,
+    256
+  ],
+  "encoding": "two 48-bit combinational row masks; no external ROM file at runtime"
+}

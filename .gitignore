@@ -34,6 +34,8 @@ tests/voice_display_work/
 tests/voice_compat_work/
 tests/voice_routed_netlist.v
 tests/voice_*.ppm
+tests/logo_page_*.ppm
+tests/logo_expected.hex
 tests/enhanced_*.hex
 tests/enhanced_*.ppm
 tests/enhanced_baseline_renderer.v

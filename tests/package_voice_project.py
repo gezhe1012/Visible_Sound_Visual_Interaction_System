@@ -12,17 +12,22 @@ parser = argparse.ArgumentParser()
 mode = parser.add_mutually_exclusive_group()
 mode.add_argument('--noise-reduced', action='store_true')
 mode.add_argument('--voice-focus', action='store_true')
+mode.add_argument('--anlogic-logo', action='store_true')
 args = parser.parse_args()
 if args.noise_reduced:
     out = out / 'noise_reduced'
 elif args.voice_focus:
     out = out / 'voice_focus'
+elif args.anlogic_logo:
+    out = root / 'doc/logo_overlay'
 archive = out / 'INMP441_live_voice_project.zip'
 files = set()
 for folder in ('src/user_source', 'src/td_project/al_ip', 'complete-hx4s20c-hdmi-project'):
     files.update(p for p in (root / folder).rglob('*') if p.is_file() and p.suffix not in {'.log', '.tmp', '.bak', '.dmp'})
 project = root / 'src/td_project/HDMI1.4b_Transmitter_v1.0.al'
 files.add(project)
+if args.anlogic_logo:
+    files.add(root / 'doc/TF卡图片/logo_640x480_24bit_不翻转.bmp')
 for run in ('syn_1', 'phy_1'):
     for name in ('settings.cfg', 'HDMI1.4b_Transmitter_v1.0.prj'):
         files.add(root / 'src/td_project/HDMI1.4b_Transmitter_v1.0_Runs' / run / name)

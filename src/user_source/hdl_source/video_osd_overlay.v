@@ -1,13 +1,13 @@
 // Lightweight synthesizable OSD for 640x480 RGB video.
 //
 // Layers:
-//   1. Semi-transparent ANLOGIC logo panel.
+//   1. Supplied red/navy Anlogic graphic in a small white badge (all pages).
 //   2. Running HH:MM:SS timestamp.
 //   3. Page-bound theme ticker + PCM-reactive side bars (bottom band only).
 //
-// The panels use 4-bit alpha blending and the glyphs come from a compact
-// 5x7 combinational font ROM, so no external memory initialization file is
-// required.
+// Other panels retain 4-bit Alpha blending and the compact 5x7 font. The logo
+// is compiled from the user's BMP into two combinational masks, not a second
+// frame buffer. No external initialization file or new pipeline stage.
 module video_osd_overlay #(
     parameter integer PIXEL_CLK_HZ = 25_000_000
 )(
@@ -47,6 +47,11 @@ wire [8:0] brightness_magnitude=brightness[8] ? -brightness : brightness;
 
 wire frame_tick;
 assign frame_tick = vs & ~vs_d;
+wire [5:0] logo_x=x-10'd22;
+wire [4:0] logo_y=y-10'd16;
+wire [47:0] logo_red_bits=logo_red_row(logo_y);
+wire [47:0] logo_blue_bits=logo_blue_row(logo_y);
+wire logo_inside=x>=22 && x<70 && y>=16 && y<47;
 
 wire footer_draw;
 wire [23:0] footer_rgb;
@@ -63,21 +68,86 @@ function [7:0] decimal_ascii;
     end
 endfunction
 
-function [7:0] logo_char;
-    input [4:0] index;
+// LOGO_BITMAP_BEGIN
+function [47:0] logo_red_row;
+    input [4:0] row;
     begin
-        case (index)
-            4'd0: logo_char = "A";
-            4'd1: logo_char = "N";
-            4'd2: logo_char = "L";
-            4'd3: logo_char = "O";
-            4'd4: logo_char = "G";
-            4'd5: logo_char = "I";
-            4'd6: logo_char = "C";
-            default: logo_char = " ";
+        case(row)
+            5'd0: logo_red_row=48'h00003FFFFFFE;
+            5'd1: logo_red_row=48'h00003FFFFFFE;
+            5'd2: logo_red_row=48'h000000000000;
+            5'd3: logo_red_row=48'h000000000000;
+            5'd4: logo_red_row=48'h00001FFFFFFC;
+            5'd5: logo_red_row=48'h00000FFFFFF8;
+            5'd6: logo_red_row=48'h000000000000;
+            5'd7: logo_red_row=48'h000007FFFFF0;
+            5'd8: logo_red_row=48'h000007FFFFF0;
+            5'd9: logo_red_row=48'h000000000000;
+            5'd10: logo_red_row=48'h000000000000;
+            5'd11: logo_red_row=48'h000001FFFFC0;
+            5'd12: logo_red_row=48'h000001FFFF80;
+            5'd13: logo_red_row=48'h000000000000;
+            5'd14: logo_red_row=48'h000000000000;
+            5'd15: logo_red_row=48'h0000007FFF00;
+            5'd16: logo_red_row=48'h000000000000;
+            5'd17: logo_red_row=48'h000000000000;
+            5'd18: logo_red_row=48'h0000003FFC00;
+            5'd19: logo_red_row=48'h0000001FFC00;
+            5'd20: logo_red_row=48'h000000000000;
+            5'd21: logo_red_row=48'h000000000000;
+            5'd22: logo_red_row=48'h0000000FF800;
+            5'd23: logo_red_row=48'h00000007F000;
+            5'd24: logo_red_row=48'h000000000000;
+            5'd25: logo_red_row=48'h00000003C000;
+            5'd26: logo_red_row=48'h00000003C000;
+            5'd27: logo_red_row=48'h000000000000;
+            5'd28: logo_red_row=48'h000000000000;
+            5'd29: logo_red_row=48'h000000008000;
+            5'd30: logo_red_row=48'h000000000000;
+            default: logo_red_row=48'd0;
         endcase
     end
 endfunction
+function [47:0] logo_blue_row;
+    input [4:0] row;
+    begin
+        case(row)
+            5'd0: logo_blue_row=48'h000000000000;
+            5'd1: logo_blue_row=48'h000100000000;
+            5'd2: logo_blue_row=48'h000380000000;
+            5'd3: logo_blue_row=48'h000380000000;
+            5'd4: logo_blue_row=48'h0007C0000000;
+            5'd5: logo_blue_row=48'h0007C0000000;
+            5'd6: logo_blue_row=48'h000FE0000000;
+            5'd7: logo_blue_row=48'h000FE0000000;
+            5'd8: logo_blue_row=48'h001FF0000000;
+            5'd9: logo_blue_row=48'h001FF0000000;
+            5'd10: logo_blue_row=48'h003FF8000000;
+            5'd11: logo_blue_row=48'h003FF8000000;
+            5'd12: logo_blue_row=48'h007FFC000000;
+            5'd13: logo_blue_row=48'h007FFC000000;
+            5'd14: logo_blue_row=48'h00FFFE000000;
+            5'd15: logo_blue_row=48'h00FEFE000000;
+            5'd16: logo_blue_row=48'h01FC7F000000;
+            5'd17: logo_blue_row=48'h01FC7F000000;
+            5'd18: logo_blue_row=48'h03F83F800000;
+            5'd19: logo_blue_row=48'h03F83F800000;
+            5'd20: logo_blue_row=48'h07F01FC00000;
+            5'd21: logo_blue_row=48'h07F01FC00000;
+            5'd22: logo_blue_row=48'h0FE00FE00000;
+            5'd23: logo_blue_row=48'h0FE00FE00000;
+            5'd24: logo_blue_row=48'h1FC007F00000;
+            5'd25: logo_blue_row=48'h1FFF83F80000;
+            5'd26: logo_blue_row=48'h3FFFC3F80000;
+            5'd27: logo_blue_row=48'h3FFFC1F80000;
+            5'd28: logo_blue_row=48'h7FFFE1FC0000;
+            5'd29: logo_blue_row=48'h7FFFE0FC0000;
+            5'd30: logo_blue_row=48'h7FFFF0FE0000;
+            default: logo_blue_row=48'd0;
+        endcase
+    end
+endfunction
+// LOGO_BITMAP_END
 
 function [7:0] time_char;
     input [4:0] index;
@@ -347,21 +417,14 @@ always @* begin
     text_color     = 24'hFFFFFF;
     if(de) begin
         // Select one background, then use one shared Alpha mixer.
-        if(x>=18 && x<174 && y>=14 && y<50) begin
-            panel_color=24'h075AA8; panel_alpha=12;
-        end else if(x>=420 && x<622 && y>=14 && y<50) begin
+        if(x>=420 && x<622 && y>=14 && y<50) begin
             panel_color=24'h101820; panel_alpha=10;
         end else if(x>=18 && x<338 && y>=62 && y<92) begin
             panel_color=(active_control==3) ? 24'h095A32 : 24'h101820;
             panel_alpha=11;
         end
 
-        if(x>=30 && x<156 && y>=22 && y<43) begin
-            glyph_index=(x-10'd30)/18;
-            glyph_col=((x-10'd30)%18)/3;
-            glyph_row=(y-10'd22)/3;
-            glyph_char=logo_char(glyph_index);
-        end else if(x>=432 && x<588 && y>=25 && y<39) begin
+        if(x>=432 && x<588 && y>=25 && y<39) begin
             glyph_index=(x-10'd432)/12;
             glyph_col=((x-10'd432)%12)/2;
             glyph_row=(y-10'd25)/2;
@@ -380,6 +443,13 @@ always @* begin
         rgb_out=alpha_mix_rgb(rgb_in,panel_color,panel_alpha);
         if(glyph_col<5 && glyph_row<7 && glyph_row_bits[4-glyph_col])
             rgb_out=text_color;
+        // Preserve native white/red/navy contrast, especially on the dark
+        // voice page. Old blue text panel outside this badge is transparent.
+        if(x>=18 && x<74 && y>=14 && y<50) begin
+            rgb_out=24'hFFFFFF;
+            if(logo_inside && logo_red_bits[6'd47-logo_x]) rgb_out=24'hED1C24;
+            else if(logo_inside && logo_blue_bits[6'd47-logo_x]) rgb_out=24'h1C2D4E;
+        end
         if(footer_draw) rgb_out=footer_rgb;
     end
 end

@@ -131,8 +131,11 @@ task frame(input [23:0] left,right);
     repeat(3) @(negedge clk); audio_valid=0;
 endtask
 reg [23:0] picture[0:307199];
+reg [23:0] logo_gold[0:1487];
+reg [23:0] logo_expected;
 integer page,x,y,i,j,fp,outside_checked=0,footer_checked=0;
 initial begin
+    $readmemh("logo_expected.hex",logo_gold);
     repeat(5) @(negedge clk); rst=0;
     // Exhaustive exact strings, every font row, all blend levels.
     for(page=0;page<5;page=page+1) begin
@@ -163,7 +166,14 @@ initial begin
             for(x=0;x<640;x=x+1) begin
                 @(negedge clk); de=1; rgb_in=picture[(479-y)*640+x]; #2;
                 if(y<430 || y>=464) begin
-                    if(rgb_out!==baseline_rgb) $fatal(1,"Changed non-footer pixel page%0d (%0d,%0d)",page,x,y);
+                    if(x>=18 && x<174 && y>=14 && y<50) begin
+                        logo_expected=rgb_in;
+                        if(x<74) begin
+                            logo_expected=24'hFFFFFF;
+                            if(x>=22 && x<70 && y>=16 && y<47) logo_expected=logo_gold[(y-16)*48+x-22];
+                        end
+                        if(rgb_out!==logo_expected) $fatal(1,"Supplied logo mismatch in ticker regression");
+                    end else if(rgb_out!==baseline_rgb) $fatal(1,"Changed non-footer pixel page%0d (%0d,%0d)",page,x,y);
                     outside_checked=outside_checked+1;
                 end else begin
                     if(rgb_out!==pixel(x,y,rgb_in)) $fatal(1,"Footer pixel mismatch page%0d (%0d,%0d):%h/%h",page,x,y,rgb_out,pixel(x,y,rgb_in));
@@ -178,7 +188,7 @@ initial begin
     end
     if(outside_checked!=1427200 || footer_checked!=108800) $fatal(1,"Missing whole-screen checks");
     rst=1; repeat(4) @(negedge clk);
-    $display("ALL THEME TICKER TESTS PASSED: five exact captions/fonts, 1536000 pixels, immutable outside-footer/Logo/BRI/timing, PCM/stereo/attack/release, frame-atomic switches, gradients/reset");
+    $display("ALL THEME TICKER TESTS PASSED: five exact captions/fonts, 1536000 pixels, BMP logo goldens, unchanged other outside-footer/BRI/timing, PCM/stereo/attack/release, frame-atomic switches, gradients/reset");
     $finish;
 end
 initial begin #30000000; $fatal(1,"Themed ticker timeout"); end

@@ -1,5 +1,7 @@
 # INMP441 实时人声输入：第六页
 
+最新统一图形 Logo 版见 [../logo_overlay/README.md](../logo_overlay/README.md)：六页主屏移除原 ANLOGIC 字样，改用用户指定红蓝安路图形。此前各版镜像与证据继续保留。
+
 当前进一步精简的人声显示版见 [voice_focus/README.md](voice_focus/README.md)：副屏隐藏音符与 PK 读数、主屏 FFT 聚焦约 100–2000 Hz。镜像、测试和时序证据单独保存在该目录。
 
 后续静音底噪优化版见 [noise_reduced/README.md](noise_reduced/README.md)，新版 bit 与证据单独放在该子目录。本页及同目录 bit 保留原始 `b2feea7` 交付记录；当前源码已包含后续优化，请勿将这里旧版的前端参数与新版混用。
