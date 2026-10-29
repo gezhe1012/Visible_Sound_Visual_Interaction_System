@@ -1,0 +1,122 @@
+P0000 <Heading 2> 看得见的声音
+基于安路FPGA的双屏声学科普展示系统
+P0001 <Normal> 摘要	
+P0002 <List Paragraph> 面向声学教学，作品以安路HX4S20C实现独立运行的双屏科普终端。HDMI_B展示五课BMP、动态字幕并输出48 kHz、24-bit立体声，按需叠加波形与频谱；HDMI_A共享同一PCM和1024点FFT，显示瀑布、音高与幅值，并以同块H1～H5谐波条和成对L/R采样的XY点迹解释音色与声道关系。系统采用加载时双线性缩放、SDRAM双帧转场及帧边界快照，副屏不反压播放、不复制FFT，无新增PLL或SDRAM全帧缓存。最新增强版通过RTL回归及完整布局布线，全局setup裕量+0.466 ns。
+P0003 <Normal> 第一部分  作品概述
+P0004 <List Paragraph> 功能与特性
+P0005 <List Paragraph> HDMI_B展示课程图片并播放教学音频；KEY3同时开关时域波形与FFT频谱，关闭时保留图片、Logo、OSD和字幕。HDMI_A持续显示同源分析，五课依次聚焦音高、响度、音色、声道与旋律：第三课突出H1～H5谐波，第四课并列瀑布与XY，底部显示L/R幅值。手动切课与自动轮播共用同一课程状态。
+P0006 <List Paragraph> 应用领域
+P0007 <List Paragraph> 适用于中小学科学课堂、科普展陈和FPGA数字信号处理教学。同一声源同时提供听觉与可视化反馈：改变频率观察音高轨迹，改变幅度观察PK/AVG，改变波形观察谐波分布，切换声道观察XY点迹。第五课用原创旋律串联前述概念。
+P0008 <List Paragraph> 主要技术特点
+P0009 <List Paragraph> BMP解析和双线性缩放在加载阶段完成，显示阶段仅顺序读取SDRAM。48 kHz采样节拍在25 MHz域内由时钟使能产生，左右声道共用一个定点FFT，副屏不接管其应答。课程页和完整特征按帧发布，避免分析画面与音源错页。
+P0010 <List Paragraph> 主要性能指标
+P0011 <List Paragraph> 两路视频均为640×480，像素时钟25 MHz、刷新率约59.52 Hz；主屏同时输出48 kHz、24-bit立体声。1024点FFT频点间隔46.875 Hz，单块采集21.33 ms；计入计算与帧提交后，稳定瀑布列间隔约33.6 ms。主要指标见表1-1。
+T0012 TABLE rows=8 cols=2
+   R00 | 指标 || 参数
+   R01 | HDMI_B / HDMI_A || 双640×480 @ 25 MHz（约59.52 Hz）；B含48 kHz、24-bit立体声，A仅视频
+   R02 | 图像输入 || 24-bit BI_RGB BMP；宽、高各1～2048像素；拉伸缩放到640×480
+   R03 | FFT与历史 || 1024点；46.875 Hz/bin；副屏64带、96列，约33.6 ms/列、3.23 s历史
+   R04 | 音高与幅值 || 单主峰插值，音名C2～B6；轨迹100～1000 Hz；PK/AVG为峰值/平均绝对幅值
+   R05 | 第三课谐波 || 左声道H1～H5；实测频率100～1000 Hz；近邻取峰，以H1归一化
+   R06 | 第四课XY || 同一PCM有效时刻的L/R；双64×64单比特点阵；512对采样/面，显示128×128像素
+   R07 | 最新全局时序 || setup SWNS +0.466 ns；hold HWNS +0.003 ns；STA覆盖96.00%
+P0013 <Normal> 表1-1 主要性能指标
+P0014 <List Paragraph> 主要创新点
+P0015 <List Paragraph> 非侵入式共享分析。副屏直接复用主屏I2S解码PCM与FFT结果，不复制分析核心，不反压播放；增加分析视图仍沿用原PLL和SDRAM主链路。
+P0016 <List Paragraph> 同源数据的多维解释。瀑布、音高和谐波来源于实际FFT；H1～H5以同块实测频率定位，XY直接使用同时刻L/R采样，使音色结构与立体声关系具有可追溯的数据来源。
+P0017 <List Paragraph> 面向资源与稳定性的显示结构。4 KiB频谱历史采用128列环形写入、96列显示；XY用1 KiB双平面点阵代替RGB全帧。谐波定位与归一化串行计算，新增谐波和XY专用存储各占1个BRAM，不新增DSP或PLL。
+P0018 <List Paragraph> 设计流程
+P0019 <List Paragraph> 赛题与接口核对 → 建立TF/BMP及HDMI音频主链路 → 完成扩展1～5与五课素材 → 复用PCM/FFT实现副屏瀑布和音高并上板验收 → 增强第三课谐波、第四课XY → 完成回归、布局布线与新bit归档，进入板级验收。
+P0020 <Normal> 第二部分  系统组成及功能说明
+P0021 <Normal> 系统围绕“教学展示与数据分析使用同一声源”组织。图2-1区分图像主通路、音频主通路与被动分析支路。
+P0022 <List Paragraph> 
+P0023 <List Paragraph> 整体介绍
+P0024 <List Paragraph> 主屏黑场预切换完成后，提交新的课程页码并驱动对应DDS音源；副屏在自身帧边界采纳该页码，清除旧页分析的有效标志。I2S解码PCM直接送原HDMI音频链路，同时旁路供波形、FFT、幅值和XY模块使用。副屏共享现有FFT幅值与时钟，只新增特征存储和RGB绘图，不接管播放控制或FFT应答。
+P0025 <Normal>[IMG] 
+P0026 <Normal> 图2-1 双屏分工及同源PCM与FFT的复用路径
+P0027 <List Paragraph> 硬件系统介绍
+P0028 <List Paragraph> 2.2.1 硬件整体介绍
+P0029 <List Paragraph> 采用HX4S20C开发板及板载EG4S20BG256，使用板上50 MHz参考时钟、TF/SPI、SDRAM和双HDMI接口。主要工作时钟为100 MHz的SD/BMP域、40 MHz的SDRAM域及相移时钟、25 MHz的视频域、125 MHz的HDMI串行域。HDMI_B输出音视频，HDMI_A输出分析视频；副屏复用25/125 MHz时钟。
+P0030 <List Paragraph> 2.2.2 机械设计介绍
+P0031 <List Paragraph> 采用开发板和外接双显示器搭建演示终端。主显示器尺寸为15.6英寸，双声道扬声器；副显示器为10英寸。
+P0032 <Normal> 2.2.3 电路各模块介绍
+P0033 <List Paragraph> 使用板卡已有FPGA、SDRAM、TF/SPI及TMDS差分接口。按实体按键标识，KEY1复位，KEY2短按切课、长按调亮度，KEY3短按切换主屏波形与FFT整体面板，KEY4短按控制轮播、长按调对比度。各按键经消抖及同步处理；图像参数在帧边界锁存，不改变既有引脚和功能，体现按键复用性。
+P0034 <List Paragraph> 软件系统介绍
+P0035 <List Paragraph> 2.3.1 软件整体介绍
+P0036 <List Paragraph> 运行时不依赖PC或云端。FPGA读取TF卡BMP，板上DDS合成教学音频，经原I2S接收器送往播放和分析。第五课为120 BPM、8 s的17音符旋律；自动轮播等待乐句完成，手动切课可打断。PC仅用于准备、构建及下载烧录。
+P0037 <Normal> 2.3.2 软件各模块介绍
+P0038 <List Paragraph> HDL按图像、音频和显示分析划分。表2-1给出输入输出关系；关键算法与数据提交机制随后说明。
+T0039 TABLE rows=7 cols=4
+   R00 | 模块 || 关键输入 || 主要处理 || 关键输出
+   R01 | TF/BMP || 扇区数据、BMP头 || 校验格式/偏移/行补齐；原图为640×480，800×600，960×720，1024×768，1280×960，加载时双线性缩放 || 640×480像素流
+   R02 | 缓冲/转场 || 像素流、课程请求 || 双帧缓冲；淡出16帧、黑场至少2帧、淡入16帧；帧边界提交 || 稳定帧、已提交页码
+   R03 | DDS / I2S || 课程页、采样使能 || 板上合成不同教学音与完整音乐旋律；原I2S接收器解码 || 48 kHz立体声PCM
+   R04 | 共享FFT || 高16位L/R PCM || 周期Hann窗；1024点定点Radix-2 DIT；时分复用 || 原始幅值、128带高度
+   R05 | 历史/音高 || FFT幅值、课程标记 || 低频64带历史；峰值插值、音名映射；PK/AVG || 瀑布、轨迹与幅值条等可视化元素
+   R06 | 谐波 / XY || 同块幅值与频率；成对PCM || H1～H5串行提取；XY后台采集与帧边界换面 || 第三/四课增强视觉性交互
+P0040 <Normal> 表2-1 软件模块输入、处理与输出
+P0041 <List Paragraph> FFT与定点幅值。FFT硬件需权衡吞吐率、存储与运算资源[7–9]。本设计截取24-bit PCM的高16位，乘Q0.15周期Hann窗后执行10级Radix-2 DIT[5–6]，每级除以2并饱和，左右声道时分复用。原始幅值取|Re|+|Im|，再聚合为每声道128个频带并作近似对数高度映射，供主屏频谱及副屏历史复用。
+P0042 <List Paragraph> 
+P0043 <Normal>                        
+P0044 <List Paragraph> 图像与流时序。BMP读取器解析宽高、上下行方向、像素偏移及4字节行补齐[4]，用两行缓存与8-bit小数权重分时完成水平、垂直插值。素材连续扇区存放，不等同于通用碎片化文件读取器。亮度/对比度采用定点乘加并饱和到0～255；RGB与有效信号同步流水。AXI行尾TLAST与每行第640个有效像素同拍，SOF仅标记帧首有效像素。
+P0045 <List Paragraph> 历史与音高。副屏沿用现有前64个频带：前32带每带1 bin，后32带每带2 bin，频轴分段线性覆盖约0～4.5 kHz；L/R频带取较大值并量化为16级热度。128列中显示96列，后台在不可见列写完64带后提交新列指针。音高搜索bin 2～511，作单次三点抛物线插值和幅值门限判定，映射音名；稳定相邻帧小幅变化时才平均。运用相关插值方法[10–11]，本设计不执行迭代精估计，也不将整数Hz显示误认为1 Hz分辨率。
+P0046 <List Paragraph> 第三课同块谐波。secondary_harmonics保存左声道前128个17-bit原始幅值，以同一FFT块的实测频率定位H1～H5，各取最近频点及±1 bin的最大值，再以H1归一化为0～38像素柱高。仅在100～1000 Hz及有效幅值条件下发布。常数减法定位、38次分数累加替代宽位变量除法，处理上界650个25 MHz时钟周期（26 μs），无需额外DSP；未用DDS设定值或理想波形比例生成柱图。
+P0047 <List Paragraph> 第四课真实XY。secondary_lissajous对同一audio_valid的L/R PCM取高8位，以固定增益映射、对称裁剪到64×64坐标，R正方向向上。后台逐点清屏后采集512对有效样本（10.67 ms），完整后等待帧边界切换；两个单比特平面共1 KiB。显示时每点放大为2×2像素。单左/单右呈水平/竖直点迹，L440 Hz与R660 Hz呈约2∶3图形；不是从FFT幅值推造相位或绘制预设椭圆。
+P0048 <List Paragraph> 一致性与异常处理。频谱历史按列、谐波按整组、XY按完整平面发布，副屏保持原两拍RGB及SOF/TLAST流水。切课立即失效旧页结果；约250 ms无PCM时隐藏当前特征，恢复后重新采集。连续有效的零PCM属于正常静音，XY保留中心点。主屏Logo、数值OSD、渐隐滚动字幕和两端随PCM律动的条形效果保持原链路。
+P0049 <Normal>[IMG] 
+P0050 <Normal> 图2-2 同块特征关联与帧边界发布机制
+P0051 <Normal> 第三部分  完成情况及性能参数
+P0052 <Normal> 本节将实物系统、RTL画面、回归结果与实现报告分别列示；板级验收不由仿真截图替代。
+P0053 <List Paragraph> 整体介绍
+P0054 <List Paragraph> 实体系统由HX4S20C、TF素材卡及两路HDMI显示器组成。实物正面及斜45°照片尚未归档。
+P0055 <List Paragraph> 工程成果
+P0056 <List Paragraph> 3.2.1 机械成果
+P0057 <List Paragraph> 作品使用开发板作为实体载体，不含独立机械结构或机壳。
+P0058 <List Paragraph> 3.2.2 电路成果
+P0059 <List Paragraph> 完成板载TF/SPI、SDRAM及双HDMI接口的系统级集成，未制作自定义SCH或PCB。新增副屏沿用既有时钟和主音频链路；最新双屏增强bit与源码清单、构建报告一同归档。
+P0060 <List Paragraph> 3.2.3 软件成果
+P0061 <List Paragraph> 图3-1展示五课副屏界面，图3-2放大第三课方波阶段与第四课双声道阶段。画面由真实PCM输入、实际RTL FFT及绘图逻辑生成，属于光栅仿真结果，不是实机照片；画面Hz数值为估计值，非DDS设定值。
+P0062 <Normal>[IMG] 
+P0063 <Normal> 图3-1 最新五课副屏界面概览（RTL仿真）
+P0064 <Normal>[IMG] 
+P0065 <Normal> 图3-2 同源PCM驱动的谐波条与真实立体声XY点迹（RTL仿真）
+P0066 <List Paragraph> 特性成果
+P0067 <List Paragraph> 基础功能、扩展1～5与双屏分析集成于同一工程。表3-1给出赛题功能、量化结果与验证状态，表3-2给出bit对应的资源及时序。
+T0068 TABLE rows=8 cols=3
+   R00 | 成果项 || 实现与量化结果 || 验证状态
+   R01 | 基础与扩展1～4 || BMP/SDRAM/HDMI、手动与轮播、Alpha OSD/字幕、淡入淡出、双线性缩放、亮度/对比度 || 已集成；原功能RTL验证保持通过
+   R02 | 扩展5与副屏基线 || KEY3联动波形与FFT；副屏真实瀑布、音高、PK/AVG与课程同步 || 已集成；原功能RTL验证保持通过
+   R03 | 谐波 / XY增强 || 96块同块谐波参考；45项谐波比例/边界；8种输入、32,768个XY点阵位逐位核对 || RTL通过；上板已确认
+   R04 | 原显示保护 || 5帧共1,536,000像素；其中1,331,200个受保护像素与已验收基线逐位相同 || 覆盖RGB及两拍SOF/TLAST，不替代物理HDMI测试
+   R05 | 实时与场景回归 || 实速率48 kHz I2S：89,279对PCM、55块FFT；新增19组谐波、21个XY平面持续发布 || 工具验证；五课切换与原PCM/FFT节拍保持
+   R06 | 素材与旋律 || 5幅图共1,536,000教学像素；完整8 s旋律384,000对PCM、17音符；238块FFT || BMP、旋律、主屏面板及控制回归通过
+   R07 | 完整实现 || TD 6.2.168116完成综合、布局布线、bitgen；综合网表审计保留512个复数旋转因子与1024个Hann系数 || 工程bit与报告一致
+P0069 <Normal> 表3-1 赛题功能、量化结果与验证状态
+P0070 <List Paragraph> 完整实现结果。表3-2来自同一次全工程布局布线。
+T0071 TABLE rows=6 cols=3
+   R00 | 资源或检查项 || 最终结果 || 说明
+   R01 | LUT / REG || 14,128/19,600（72.08%） / 8,098/19,600（41.32%） || 面积映射与高打包策略；不与旧策略作单变量增量比较
+   R02 | BRAM / DSP / PLL || 63/64（98.44%） / 27/29（93.10%） / 3/4 || BRAM余1块；新增谐波和XY各1块专用BRAM
+   R03 | 全局setup / hold || SWNS +0.466 ns / STNS 0 / HWNS +0.003 ns / HTNS 0 || 慢角、快角检查；STA覆盖96.00%
+   R04 | 主要时钟组setup || 视频 +1.986 ns；SD +0.466 ns / SDRAM +1.055 ns；串行 +6.227 ns || 25 / 100 / 40 / 125 MHz
+   R05 | 构建策略 || opt_area high / pack_effort high || 实现全部时序约束
+P0072 <Normal> 表3-2 bit资源占用与布局布线时序
+P0073 <Normal> 第四部分  总结
+P0074 <List Paragraph> 
+P0075 <List Paragraph> 
+P0076 <List Paragraph> 可扩展之处
+P0077 <List Paragraph> 完成上板验收后，可评估复音识别、校准幅值或外部采集。当前BRAM为63/64、DSP为27/29，需先压缩存储或复用RAM再扩展。现阶段不宣称复音识别、THD测量或声压校准。
+P0078 <List Paragraph> 心得体会
+P0079 <Normal> BMP加载时缩放、音频旁路分析和完整结果按帧发布，使新增功能不改变既有播放节拍。独立整数参考与逐像素回归核对功能，布局布线检查资源及时序；新模块与原主链路一并回归通过后，再以对应bit完成板级验收。这使功能扩展有明确的验证依据。
+P0080 <Normal> 第五部分  参考文献
+P0081 <Normal> [1] 安路科技. FPGA创新设计竞赛：FPGA创新设计赛题一[Z]. 2026.
+P0082 <Normal> [2] 安路科技. HX4S20C开发板使用手册（HDL-2410）[Z]. 2024.
+P0083 <Normal> [3] 安路科技. HDMI 1.4b Transmitter IP用户手册（APUG092）[Z].
+P0084 <Normal> [4] Microsoft. Bitmap Storage[EB/OL]. (2022-11-19)[2026-10-27]. https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-storage.
+P0085 <Normal> [5] Cooley J W, Tukey J W. An Algorithm for the Machine Calculation of Complex Fourier Series[J]. Mathematics of Computation, 1965, 19(90): 297–301.
+P0086 <Normal> [6] Harris F J. On the Use of Windows for Harmonic Analysis with the Discrete Fourier Transform[J]. Proceedings of the IEEE, 1978, 66(1): 51–83.
+P0087 <Normal> [7] Garrido M. A Survey on Pipelined FFT Hardware Architectures[J]. Journal of Signal Processing Systems, 2022, 94: 1345–1364. DOI:10.1007/s11265-021-01655-1.
+P0088 <Normal> [8] Kaya Z, Garrido M, Takala J. Memory-Based FFT Architecture With Optimized Number of Multiplexers and Memory Usage[J]. IEEE Transactions on Circuits and Systems II: Express Briefs, 2023, 70(8): 3084–3088. DOI:10.1109/TCSII.2023.3245823.
+P0089 <Normal> [9] Yang C, Wu J, Xiang S, et al. A High-Throughput and Flexible Architecture Based on a Reconfigurable Mixed-Radix FFT With Twiddle Factor Compression and Conflict-Free Access[J]. IEEE Transactions on Very Large Scale Integration (VLSI) Systems, 2023, 31(10): 1472–1485. DOI:10.1109/TVLSI.2023.3298943.
+P0090 <Normal> [10] Wei M, Zhang A, Qi L, et al. An Efficient Frequency Estimator for a Complex Exponential Signal Based on Interpolation of Selectable DTFT Samples[J]. Sensors, 2022, 22(3): 861. DOI:10.3390/s22030861.
+P0091 <Normal> [11] Togni A, Zannoni M, Tortora P. Accurate Frequency Estimation Through Iterative Parabolic Interpolations[J]. Signal Processing, 2025, 237: 110094. DOI:10.1016/j.sigpro.2025.110094.
