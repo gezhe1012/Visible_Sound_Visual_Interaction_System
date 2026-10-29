@@ -1,0 +1,50 @@
+PASS: Exclusive microphone pad mic_sck=M15
+PASS: Exclusive microphone pad mic_ws=L16
+PASS: Exclusive microphone pad mic_sd=N16
+PASS: Five real BMP files plus a virtual sixth page
+PASS: HDMI packetizer still consumes original decoded DDS PCM
+PASS: Waveform/FFT/secondary use the selected analysis source
+PASS: Shared microphone-only residual floor feeds both displays; raw FFT and five DDS pages stay unmasked
+PASS: Noise iteration preserves interface/timing/layout: src/user_source/constraints_source
+PASS: Noise iteration preserves interface/timing/layout: src/user_source/hdl_source/inmp441_i2s_rx.v
+PASS: Noise iteration preserves interface/timing/layout: src/user_source/hdl_source/live_voice_background.v
+PASS: Noise iteration preserves interface/timing/layout: src/user_source/hdl_source/SD
+PASS: Noise A/B fixture exactly matches b2feea7, except its module name
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: voice_analysis_source.v
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: inmp441_i2s_rx.v
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: top_tf_hdmi_audio.v
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: secondary_feature_store.v
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: secondary_pitch_estimator.v
+PASS: Voice-focus iteration preserves acquisition/analysis/control chain: audio_waveform_overlay.v
+PASS: Voice-focus secondary reference exactly matches bf35426
+PASS: Protected original source unchanged: I2S_receiver.v
+PASS: Protected original source unchanged: science_audio_i2s.v
+PASS: Protected original source unchanged: audio_arc_calculate.v
+PASS: Protected original source unchanged: audio_fft1024.v
+PASS: Protected original source unchanged: video_osd_overlay.v
+PASS: Protected original source unchanged: display_key_controls.v
+PASS: Protected original source unchanged: waveform_key_control.v
+PASS: Protected original source unchanged: video_fade_transition.v
+PASS: Protected original source unchanged: video_picture_adjust.v
+PASS: Protected original source unchanged: science_sys_pll.v
+PASS: Protected original source unchanged: SD/bmp_bilinear_reader.v
+PASS: Protected original source unchanged: SD/frame_fifo_read.v
+PASS: Protected original source unchanged: SD/frame_read_write.v
+PASS: PLL/IP/vendor sources are unchanged
+PASS: Microphone exception starts only at the external SD pad
+PASS: Exactly two narrow exceptions: microphone pad and held-request first synchronizer D; no clock-group or data-path cut
+PASS: Dedicated two-stage SD sampler; no fabric clock domain
+PASS: Project references inmp441_i2s_rx in src/td_project/HDMI1.4b_Transmitter_v1.0.al
+PASS: Project references inmp441_i2s_rx in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/syn_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Project references inmp441_i2s_rx in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Project references voice_analysis_source in src/td_project/HDMI1.4b_Transmitter_v1.0.al
+PASS: Project references voice_analysis_source in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/syn_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Project references voice_analysis_source in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Project references live_voice_background in src/td_project/HDMI1.4b_Transmitter_v1.0.al
+PASS: Project references live_voice_background in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/syn_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Project references live_voice_background in src/td_project/HDMI1.4b_Transmitter_v1.0_Runs/phy_1/HDMI1.4b_Transmitter_v1.0.prj
+PASS: Routed pad confirmed: mic_sck=M15
+PASS: Routed pad confirmed: mic_ws=L16
+PASS: Routed pad confirmed: mic_sd=N16
+PASS: Routed setup/hold passed: 0.169 / 0.004 ns
+ALL VOICE STRUCTURE TESTS PASSED: protected DDS/audio/video/IP, five assets plus sixth page, single analysis chain, explicit microphone pins and sampler

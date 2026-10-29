@@ -9,10 +9,14 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 out = root / 'doc/live_voice'
 parser = argparse.ArgumentParser()
-parser.add_argument('--noise-reduced', action='store_true')
+mode = parser.add_mutually_exclusive_group()
+mode.add_argument('--noise-reduced', action='store_true')
+mode.add_argument('--voice-focus', action='store_true')
 args = parser.parse_args()
 if args.noise_reduced:
     out = out / 'noise_reduced'
+elif args.voice_focus:
+    out = out / 'voice_focus'
 archive = out / 'INMP441_live_voice_project.zip'
 files = set()
 for folder in ('src/user_source', 'src/td_project/al_ip', 'complete-hx4s20c-hdmi-project'):

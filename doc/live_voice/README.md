@@ -1,5 +1,7 @@
 # INMP441 实时人声输入：第六页
 
+当前进一步精简的人声显示版见 [voice_focus/README.md](voice_focus/README.md)：副屏隐藏音符与 PK 读数、主屏 FFT 聚焦约 100–2000 Hz。镜像、测试和时序证据单独保存在该目录。
+
 后续静音底噪优化版见 [noise_reduced/README.md](noise_reduced/README.md)，新版 bit 与证据单独放在该子目录。本页及同目录 bit 保留原始 `b2feea7` 交付记录；当前源码已包含后续优化，请勿将这里旧版的前端参数与新版混用。
 
 本版在 `6e58891` 上集成，原五张 BMP 无须更换。第六页由逻辑生成背景，复用原有波形、1024 点 FFT 和副屏瀑布图。工具证据见同目录 `build_evidence.json`、`routed_timing.txt` 与 `test_logs/`。新功能的实机麦克风/双屏验收尚待用户完成；RTL 预览不是上板照片。

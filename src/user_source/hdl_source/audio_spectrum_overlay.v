@@ -24,10 +24,17 @@ wire stale=no_audio_count>=NO_AUDIO_CYCLES-1;
 reg [6:0] left_ram[0:255],right_ram[0:255];
 reg [6:0] left_q,right_q;
 wire [9:0] graph_x=x-10'd64;
+// Microphone view: uniformly stretch FFT bin centers 2..43 (93.75..2015.625
+// Hz) over the SAME 512 pixels. Read the existing log-band RAM; bins >=32
+// retain its original two-bin maxima. Constant 42 = 32+8+2, no DSP/divider.
+wire [14:0] voice_scaled_x=({6'd0,graph_x[8:0]}<<5)+
+                            ({6'd0,graph_x[8:0]}<<3)+({6'd0,graph_x[8:0]}<<1);
+wire [5:0] voice_bin=6'd2+voice_scaled_x[14:9];
+wire [6:0] voice_band=voice_bin<32 ? {1'b0,voice_bin} : 7'd16+{2'd0,voice_bin[5:1]};
 reg [6:0] read_band_index;
 always @* begin
     read_band_index=graph_x[8:2];
-    if(voice_mode) read_band_index={1'b0,graph_x[8:3]};
+    if(voice_mode) read_band_index=voice_band;
 end
 always @(posedge clk) begin
     left_q<=left_ram[{display_bank,read_band_index}];
@@ -127,6 +134,21 @@ function [7:0] axis_char;
         endcase
     end
 endfunction
+function [7:0] voice_axis_char;
+    input [2:0] label_index;
+    input [2:0] index;
+    begin
+        voice_axis_char=" ";
+        if(label_index==0) case(index)
+            0:voice_axis_char="0";1:voice_axis_char=".";
+            2:voice_axis_char="1";3:voice_axis_char="K";
+        endcase
+        else case(index)
+            0:voice_axis_char=label_index==1 ? "1" : "2";
+            1:voice_axis_char="K";
+        endcase
+    end
+endfunction
 reg [23:0] composed,text_color;
 reg [34:0] text_bits;
 reg [9:0] tx,ty,gx;
@@ -171,9 +193,10 @@ always @* begin
             if(text_enable) text_bits=glyph(axis_char(label_index,tx[5:3]));
             if(voice_mode) begin
                 text_enable=0;text_bits=0;
-                if(px>=64 && px<72) begin tx=px-64;text_enable=1;text_bits=glyph("0");end
-                else if(px>=304 && px<336) begin tx=px-304;text_enable=1;text_bits=glyph(axis_char(1,tx[5:3]));end
-                else if(px>=544 && px<576) begin tx=px-544;text_enable=1;text_bits=glyph(axis_char(2,tx[5:3]));end
+                if(px>=64 && px<96) begin tx=px-64;label_index=0;text_enable=1;end
+                else if(px>=288 && px<304) begin tx=px-288;label_index=1;text_enable=1;end
+                else if(px>=560 && px<576) begin tx=px-560;label_index=2;text_enable=1;end
+                if(text_enable) text_bits=glyph(voice_axis_char(label_index,tx[5:3]));
             end
         end
         if(text_enable && tx[2:0]<5 && text_bits[34-(ty*5+tx[2:0])]) composed=text_color;

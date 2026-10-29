@@ -244,6 +244,10 @@ always @* begin
     end else if(levels_page && px>=32 && px<56 && py>=440 && py<447) begin
         tx=px-32;ty=py-440;text_on=1;character=word_char("AVG                   ",tx[7:3]);ink=24'h91ADBD;
     end
+    // Live voice is an analysis view, not a tuner: remove note, PK~ number
+    // and HZ together, including their no-signal placeholders. Keep every
+    // other pixel/position and the underlying waterfall/trace data intact.
+    if(shown_lesson==5 && px>=40 && px<320 && py>=74 && py<108) text_on=0;
     if(text_on) case(font_scale)
         0:if(tx[2:0]<5 && ty<7 && glyph[34-(ty*5+tx[2:0])]) composed=ink;
         1:if(tx[3:1]<5 && ty[3:1]<7 && glyph[34-(ty[3:1]*5+tx[3:1])]) composed=ink;

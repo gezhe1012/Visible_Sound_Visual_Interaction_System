@@ -25,6 +25,13 @@ try {
     $baseline=(git show b2feea7:src/user_source/hdl_source/voice_analysis_source.v) -join "`n"
     $fixture=(Get-Content tests/voice_baseline_conditioner.v -Raw).Replace("`r",'').Trim()
     Assert-Voice ($fixture -ceq $baseline.Replace('module voice_analysis_source(','module voice_baseline_conditioner(').Trim()) 'Noise A/B fixture exactly matches b2feea7, except its module name'
+    foreach($name in @('voice_analysis_source.v','inmp441_i2s_rx.v','top_tf_hdmi_audio.v','secondary_feature_store.v','secondary_pitch_estimator.v','audio_waveform_overlay.v')) {
+        git diff --quiet bf35426 -- "src/user_source/hdl_source/$name"
+        Assert-Voice ($LASTEXITCODE -eq 0) "Voice-focus iteration preserves acquisition/analysis/control chain: $name"
+    }
+    $priorRenderer=(git show bf35426:src/user_source/hdl_source/secondary_audio_renderer.v) -join "`n"
+    $priorFixture=(Get-Content tests/voice_baseline_focus_secondary.v -Raw).Replace("`r",'').Trim()
+    Assert-Voice ($priorFixture -ceq $priorRenderer.Replace('module secondary_audio_renderer(','module voice_baseline_focus_secondary(').Trim()) 'Voice-focus secondary reference exactly matches bf35426'
     $protected=@('I2S_receiver.v','science_audio_i2s.v','audio_arc_calculate.v','audio_fft1024.v','video_osd_overlay.v','display_key_controls.v','waveform_key_control.v','video_fade_transition.v','video_picture_adjust.v','science_sys_pll.v','SD/bmp_bilinear_reader.v','SD/frame_fifo_read.v','SD/frame_read_write.v')
     foreach($name in $protected) {
         git diff --quiet 6e58891 -- "src/user_source/hdl_source/$name"
