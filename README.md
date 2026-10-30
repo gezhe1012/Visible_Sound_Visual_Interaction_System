@@ -44,7 +44,7 @@
 ## 运行工程
 
 1. 使用 **Anlogic TD 6.2** 打开 [工程入口](src/td_project/HDMI1.4b_Transmitter_v1.0.al)。当前归档构建版本为 TD 6.2.168116，器件为 EG4S20BG256。
-2. 按[素材说明](doc/science_kiosk/第五页音乐扩展说明.md)准备 FAT32 TF 卡，将 [五张 BMP](doc/science_kiosk/bmp/) 按课程顺序连续存放。第六页背景由逻辑生成，无需新增 BMP；音频由 FPGA 合成，无需复制 WAV。
+2. 按[素材说明](doc/science_kiosk/第五页音乐扩展说明.md)准备 FAT32 TF 卡，将 [五张 BMP](doc/science_kiosk/bmp/) 按五页课程顺序连续存放。第六页是实时人声输入；音频由 FPGA 合成。
 3. 连接双屏与麦克风，下载当前 [六页统一 Logo 版 bit](doc/logo_overlay/HDMI_anlogic_logo.bit)，或由工程重新构建后下载。
 4. 使用 KEY2 切换六页，KEY3 开启分析面板，KEY4 开启自动轮播。
 
