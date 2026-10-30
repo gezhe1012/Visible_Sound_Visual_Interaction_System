@@ -15,6 +15,18 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.section import WD_SECTION
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+import re
+
+NBSP = "\u00a0"
+_GROUPED = re.compile(r"(?<=\d)[ ](?=\d{3}(?!\d))")
+_UNIT = re.compile(
+    r"(?<=\d)[ ](?=(?:ms|μs|ns|ps|s|Hz|kHz|MHz|GHz|bit|kbit|Kb|KiB|MiB|MB|GB|"
+    r"dBFS|dB|FS|px|fps|lane|V|mA|W))")
+
+
+def nb(text):
+    """千位分组空格与“数值+单位”之间的空格改为不换行空格，避免数字与单位被拆行。"""
+    return _UNIT.sub(NBSP, _GROUPED.sub(NBSP, text))
 
 BODY_FONT_CN = "宋体"
 BODY_FONT_EN = "Times New Roman"
@@ -69,7 +81,7 @@ def body(doc, text, indent=True, size=12.0, bold=False, align=None,
     _set_para_format(p, first_indent_chars=2 if indent else 0, left_cm=left_cm,
                      space_after=space_after,
                      align=align if align is not None else WD_ALIGN_PARAGRAPH.JUSTIFY)
-    r = p.add_run(text)
+    r = p.add_run(nb(text))
     _set_run_font(r, size=size, bold=bold)
     return p
 
@@ -81,7 +93,7 @@ def rich(doc, segments, indent=True, size=12.0, align=None, space_after=0.0):
                      space_after=space_after,
                      align=align if align is not None else WD_ALIGN_PARAGRAPH.JUSTIFY)
     for text, bold in segments:
-        r = p.add_run(text)
+        r = p.add_run(nb(text))
         _set_run_font(r, size=size, bold=bold)
     return p
 
@@ -138,8 +150,9 @@ def caption(doc, text):
 
 def figure(doc, path, width_cm=13.5, caption_text=None):
     p = doc.add_paragraph()
+    # 图片段落用单倍行距，否则 1.5 倍行距会把图片行高放大 1.5 倍，导致分页空页
     _set_para_format(p, first_indent_chars=0, space_before=6, space_after=2,
-                     align=WD_ALIGN_PARAGRAPH.CENTER)
+                     line=1.0, align=WD_ALIGN_PARAGRAPH.CENTER)
     p.paragraph_format.keep_with_next = True
     run = p.add_run()
     run.add_picture(path, width=Cm(width_cm))
@@ -172,6 +185,12 @@ def _shade(cell, hexcolor):
 
 def table(doc, header, rows, widths_cm=None, size=9.5, caption_text=None,
           first_col_bold=False, header_fill='F2F2F2'):
+    # 表题置于表格上方（GB/T 7713 规范），避免表题被挤到下一页而与表格分离
+    if caption_text:
+        cp = caption(doc, caption_text)
+        cp.paragraph_format.space_before = Pt(8)
+        cp.paragraph_format.space_after = Pt(3)
+        cp.paragraph_format.keep_with_next = True
     t = doc.add_table(rows=1, cols=len(header))
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
     t.autofit = False
@@ -183,7 +202,7 @@ def table(doc, header, rows, widths_cm=None, size=9.5, caption_text=None,
             p = c.paragraphs[0]
             _set_para_format(p, first_indent_chars=0, line=1.0, space_before=1,
                              space_after=1, align=align)
-            r = p.add_run(str(v))
+            r = p.add_run(nb(str(v)))
             _set_run_font(r, size=size, bold=bold)
 
     _fill(t.rows[0].cells, header, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -197,22 +216,43 @@ def table(doc, header, rows, widths_cm=None, size=9.5, caption_text=None,
                 r.font.bold = True
 
     if widths_cm:
-        for row in t.rows:
-            for c, w in zip(row.cells, widths_cm):
-                c.width = Cm(w)
+        # 固定布局：同时设置网格列宽与单元格宽，避免渲染器按内容重新分配
+        tblPr = t._tbl.tblPr
+        layout = OxmlElement('w:tblLayout')
+        layout.set(qn('w:type'), 'fixed')
+        tblPr.append(layout)
+        tblW = tblPr.find(qn('w:tblW'))
+        if tblW is None:
+            tblW = OxmlElement('w:tblW')
+            tblPr.append(tblW)
+        tblW.set(qn('w:type'), 'dxa')
+        tblW.set(qn('w:w'), str(int(sum(widths_cm) * 567)))
+        for j, w in enumerate(widths_cm):
+            t.columns[j].width = Cm(w)
+            for row in t.rows:
+                row.cells[j].width = Cm(w)
     # 表头跨页重复
     tr = t.rows[0]._tr
     trPr = tr.get_or_add_trPr()
     th = OxmlElement('w:tblHeader')
     trPr.append(th)
-    if caption_text:
-        caption(doc, caption_text)
+    # 行内不跨页拆分，避免出现“编号列空一行”的断行
+    for row in t.rows:
+        rpr = row._tr.get_or_add_trPr()
+        cs = OxmlElement('w:cantSplit')
+        rpr.append(cs)
+    # 末行与表题保持同页，避免表题被挤到下一页
     return t
 
 
 def add_page_number_footer(section):
     footer = section.footer
-    p = footer.paragraphs[0]
+    footer.is_linked_to_previous = False
+    if footer.paragraphs:
+        p = footer.paragraphs[0]
+    else:
+        p = footer.add_paragraph()
+    p.text = ""
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     fld_begin = OxmlElement('w:fldChar')
     fld_begin.set(qn('w:fldCharType'), 'begin')
