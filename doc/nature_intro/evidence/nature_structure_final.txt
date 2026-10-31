@@ -1,0 +1,103 @@
+Project root: G:\BaiduNetdiskDownload\7_lab_ex_2026_nosoft\lab_ex5_i2s
+
+== Required project files ==
+[PASS] 赛题解析一.pptx
+[PASS] src\td_project\HDMI1.4b_Transmitter_v1.0.al
+[PASS] src\user_source\hdl_source\top_tf_hdmi_audio.v
+[PASS] src\user_source\hdl_source\SD\sd_card_bmp.v
+[PASS] src\user_source\hdl_source\SD\bmp_bilinear_reader.v
+[PASS] src\user_source\hdl_source\display_key_controls.v
+[PASS] src\user_source\hdl_source\video_picture_adjust.v
+[PASS] src\user_source\hdl_source\audio_waveform_overlay.v
+[PASS] src\user_source\hdl_source\waveform_key_control.v
+[PASS] src\user_source\hdl_source\science_audio_i2s.v
+[PASS] src\user_source\hdl_source\science_sys_pll.v
+[PASS] src\user_source\hdl_source\audio_fft1024.v
+[PASS] src\user_source\hdl_source\audio_spectrum_overlay.v
+[PASS] src\user_source\hdl_source\secondary_hdmi_tx.v
+[PASS] src\user_source\hdl_source\secondary_link_pattern.v
+[PASS] src\user_source\hdl_source\secondary_audio_renderer.v
+[PASS] src\user_source\hdl_source\secondary_feature_store.v
+[PASS] src\user_source\hdl_source\secondary_pitch_estimator.v
+[PASS] src\user_source\hdl_source\secondary_note_thresholds.v
+[PASS] src\user_source\hdl_source\secondary_font5x7.v
+[PASS] src\user_source\hdl_source\secondary_harmonics.v
+[PASS] src\user_source\hdl_source\secondary_lissajous.v
+[PASS] src\user_source\hdl_source\fft1024_tables.v
+[PASS] src\user_source\hdl_source\video_rgb_to_axis_640x480.v
+[PASS] src\user_source\hdl_source\video_fade_transition.v
+[PASS] src\user_source\hdl_source\video_osd_overlay.v
+[PASS] src\user_source\hdl_source\sound_theme_footer.v
+[PASS] src\user_source\hdl_source\hdmi_audio_tone_i2s_64fs.v
+[PASS] src\user_source\constraints_source\pin.adc
+[PASS] src\user_source\constraints_source\timing.sdc
+
+== Structural checks ==
+[PASS] Top module is present.
+[PASS] TF/BMP controller is present.
+[PASS] Bilinear BMP loader is present.
+[PASS] Bilinear loader is instantiated.
+[PASS] Tang Dynasty project references bilinear loader.
+[PASS] Display key controls are instantiated.
+[PASS] Brightness/contrast processor is instantiated.
+[PASS] PCM waveform overlay is present.
+[PASS] PCM waveform overlay is instantiated.
+[PASS] 1024-point stereo FFT is instantiated.
+[PASS] Spectrum shares the waveform visibility snapshot.
+[PASS] Shared frame-latched panel visibility is connected.
+[PASS] Project references the FFT.
+[PASS] Project references the spectrum overlay.
+[PASS] Project references the independent HDMI_A transmitter.
+[PASS] Project references the stage-1 secondary link test.
+[PASS] Independent HDMI_A transmitter is instantiated.
+[PASS] HDMI_A renders real audio features.
+[PASS] Secondary history storage is instantiated.
+[PASS] Pitch is estimated from raw FFT bins.
+[PASS] Project references secondary_audio_renderer.
+[PASS] Project references secondary_feature_store.
+[PASS] Project references secondary_pitch_estimator.
+[PASS] Project references secondary_note_thresholds.
+[PASS] Project references secondary_font5x7.
+[PASS] Project references secondary_harmonics.
+[PASS] Project references secondary_lissajous.
+[PASS] HDMI_A clock uses handbook pin K1.
+[PASS] HDMI_A DDC is separate from the main screen.
+[PASS] Project references FFT coefficient ROMs.
+[PASS] Tang Dynasty project references PCM waveform overlay.
+[PASS] KEY3 waveform toggle control is instantiated.
+[PASS] Science lesson audio is instantiated.
+[PASS] Science build scans five teaching BMP files.
+[PASS] Autoplay waits for the complete melody.
+[PASS] Melody completion handshake is present.
+[PASS] Project references science lesson audio.
+[PASS] Safe SDRAM clock configuration is active.
+[PASS] SDRAM clock uses the 40MHz divider.
+[PASS] Tang Dynasty project references KEY3 controller.
+[PASS] Board KEY3 is constrained to handbook pin B1.
+[PASS] Tang Dynasty project references key controls.
+[PASS] Tang Dynasty project references picture processor.
+[PASS] Fade transition module is present.
+[PASS] OSD overlay module is present.
+[PASS] Fade transition is instantiated in top.
+[PASS] OSD overlay is instantiated in top.
+[PASS] Bottom-only page-bound PCM-reactive ticker is instantiated.
+[PASS] Project references the themed footer.
+[PASS] Tang Dynasty project references fade module.
+[PASS] Tang Dynasty project references OSD module.
+[PASS] HDMI DDC constraint is present.
+[PASS] TF-card constraint is present.
+[PASS] KEY1 constraint is present.
+[PASS] KEY2 constraint is present.
+
+== BMP test assets ==
+[PASS] A_工程适配版.bmp: 640x480, 24-bit, uncompressed
+[PASS] logo_640x480_24bit_不翻转.bmp: 640x480, 24-bit, uncompressed
+[PASS] 苹果_640x480_24bit_显示正常_工程适配版.bmp: 640x480, 24-bit, uncompressed
+[PASS] 草莓_640x480_24bit_显示正常_工程适配版.bmp: 640x480, 24-bit, uncompressed
+[PASS] 西瓜_640x480_24bit_显示正常_工程适配版.bmp: 640x480, 24-bit, uncompressed
+
+== Bitstream freshness ==
+[PASS] Bitstream is newer than the latest HDL file (nature_intro_controls.v).
+
+== Result ==
+All requested checks passed.

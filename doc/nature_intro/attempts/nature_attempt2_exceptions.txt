@@ -1,0 +1,191 @@
+Created by          : Tang Dynasty v6.2.168116
+                    : Copyright (c) 2012-2025 Anlogic Inc.
+Generated           : Sat Oct 31 17:50:52 2026
+
+Top Model           : top
+Device              : EG4S20BG256
+Speed               : NA
+STA coverage        : 95.98%
+Constraint File     : G:/BaiduNetdiskDownload/7_lab_ex_2026_nosoft/lab_ex5_i2s/src/user_source/constraints_source/timing.sdc;
+Confidence          : Routed
+Check Corner        : Both (Slow and Fast)
+CRPR Enabled        : Yes
+Report Scheme       : 10 end point(s) per path group, 1 path(s) per end point
+
+
+Check Status
+-------------
+
+Corner   | Max      Min     
+------------------------------------
+Slow     | yes      yes     
+Fast     | yes      yes     
+
+MCP/SMD Summary
+--------------------
+
+		Max Check
+		--------------------
+		     Total    Dominated     Shadowed      Ignored   Constraint
+		         2            2            0            0   set_max_delay 10 -from [get_clocks {video_clk}] -to [get_ports {mic_sck mic_ws}]
+		        18            0           18            0   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 24.700
+		        54           36           18            0   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 999.700
+		        18           18            0            0   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 9.700
+
+		Min Check
+		--------------------
+		     Total    Dominated     Shadowed      Ignored   Constraint
+
+Status of timing exceptions
+--------------------------------------------------
+
+MCP/SMD Details
+--------------------
+
+
+Constraint     :   set_max_delay 10 -from [get_clocks {video_clk}] -to [get_ports {mic_sck mic_ws}]
+Check Type     :   Max
+--------------------------------------------------------------------------------
+Total Paths    :            2
+Dominated      :            2,        100.0%
+
+
+Constraint     :   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 24.700
+Check Type     :   Max
+--------------------------------------------------------------------------------
+Total Paths    :           18
+Dominated      :            0,          0.0%
+Shadowed       :           18,        100.0%
+               :           18, by set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 999.700
+
+
+Constraint     :   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 999.700
+Check Type     :   Max
+--------------------------------------------------------------------------------
+Total Paths    :           54
+Dominated      :           36,         66.7%
+Shadowed       :           18,         33.3%
+               :           18, by set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 9.700
+
+
+Constraint     :   set_max_delay -from [get_regs -nowarn {*/primary_addr_gray_reg[*]}] -to [get_regs -nowarn {*/sync_r1[*]}] -datapath_only 9.700
+Check Type     :   Max
+--------------------------------------------------------------------------------
+Total Paths    :           18
+Dominated      :           18,        100.0%
+
+
+Details on timing exceptions
+--------------------------------------------------
+
+Timing details for constraint:
+	set_max_delay 10 -from [get_clocks {video_clk}] -to [get_ports {mic_sck mic_ws}]
+--------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+Path Group     :     
+set_max_delay 10 -from [get_clocks {video_clk}] -to [get_ports {mic_sck mic_ws}]
+
+Type           :     SMD
+
+Statistics:
+Max            : SWNS      3.179ns, STNS      0.000ns,         0 Viol Endpoints,         2 Total Endpoints,         2 Paths Analyzed
+Min            : HWNS      0.000ns, HTNS      0.000ns,         0 Viol Endpoints,         0 Total Endpoints,         0 Paths Analyzed
+----------------------------------------------------------------------------------------------------
+
+Max Paths
+----------------------------------------------------------------------------------------------------
+Slack               : 3.179ns
+Begin Point         : mic_sck_syn_4.osclk (rising edge triggered by clock video_clk  { rise@0.000000ns  fall@20.000000ns  period=40.000000 })
+End Point           : mic_sck
+Check Type          : setup
+Process             : slow
+Budget              : 10.000ns
+Data Path Delay     : 5.161ns (cell 5.161ns (100%), net 0.000ns (0%))
+Clock Skew          : 1.660ns
+Logic Level         : 0
+Max Fanout          : 1
+Clock Uncertainty   : 0.000ns (sdc uncertainty: 0.000ns, default uncertainty: 0.000ns)
+
+Delay Type          Location             Incr           Path   Level  Netlist Info
+--------------------------------------------------------------------  ---------------
+source latency                          0.000          0.000               
+port                R7                  0.000          0.000          pin: clk
+hierarchy                               0.000          0.000          pin: clk_syn_2.ipad
+PAD                 x020y071            1.660          1.660          pin: clk_syn_2.di
+net (fo=26)         x040y071            0.000          1.660          net: clk_dup_1,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(3)
+                                                                      pin: video_pll_m0/pll_inst.refclk
+PLL                 x040y071           -2.201         -0.541          pin: video_pll_m0/pll_inst.clkc[0]
+net (fo=1)                              0.000         -0.541          net: video_pll_m0/clk0_buf,  ../../../user_source/hdl_source/ip/video_pll.v(35)
+                                                                      pin: video_pll_m0/bufg_feedback.clki
+GCLK                x039y070z2          0.000         -0.541          pin: video_pll_m0/bufg_feedback.clko
+net (fo=3701)                           2.201          1.660          net: video_clk,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(54)
+                                                                      pin: mic_sck_syn_4.osclk
+--------------------------------------------------------------------  ---------------
+PAD (clk2q)         x000y044            5.161    f     6.821          pin: mic_sck_syn_4.opad
+net (fo=1)          M15                 0.000          6.821          net: mic_sck,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(8)
+                                                                      pin: mic_sck
+--------------------------------------------------------------------  ---------------
+Arrival                                                6.821               
+
+constraint delay                       10.000         10.000               
+--------------------------------------------------------------------  ---------------
+output              M15                 0.000         10.000               
+clock uncertainty                       0.000         10.000               
+clock pessimism                         0.000         10.000               
+--------------------------------------------------------------------  ---------------
+Required                                              10.000               
+--------------------------------------------------------------------  ---------------
+Slack                                                  3.179               
+
+Slack               : 3.179ns
+Begin Point         : mic_ws_syn_4.osclk (rising edge triggered by clock video_clk  { rise@0.000000ns  fall@20.000000ns  period=40.000000 })
+End Point           : mic_ws
+Check Type          : setup
+Process             : slow
+Budget              : 10.000ns
+Data Path Delay     : 5.161ns (cell 5.161ns (100%), net 0.000ns (0%))
+Clock Skew          : 1.660ns
+Logic Level         : 0
+Max Fanout          : 1
+Clock Uncertainty   : 0.000ns (sdc uncertainty: 0.000ns, default uncertainty: 0.000ns)
+
+Delay Type          Location             Incr           Path   Level  Netlist Info
+--------------------------------------------------------------------  ---------------
+source latency                          0.000          0.000               
+port                R7                  0.000          0.000          pin: clk
+hierarchy                               0.000          0.000          pin: clk_syn_2.ipad
+PAD                 x020y071            1.660          1.660          pin: clk_syn_2.di
+net (fo=26)         x040y071            0.000          1.660          net: clk_dup_1,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(3)
+                                                                      pin: video_pll_m0/pll_inst.refclk
+PLL                 x040y071           -2.201         -0.541          pin: video_pll_m0/pll_inst.clkc[0]
+net (fo=1)                              0.000         -0.541          net: video_pll_m0/clk0_buf,  ../../../user_source/hdl_source/ip/video_pll.v(35)
+                                                                      pin: video_pll_m0/bufg_feedback.clki
+GCLK                x039y070z2          0.000         -0.541          pin: video_pll_m0/bufg_feedback.clko
+net (fo=3701)                           2.201          1.660          net: video_clk,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(54)
+                                                                      pin: mic_ws_syn_4.osclk
+--------------------------------------------------------------------  ---------------
+PAD (clk2q)         x000y014            5.161    f     6.821          pin: mic_ws_syn_4.opad
+net (fo=1)          L16                 0.000          6.821          net: mic_ws,  ../../../user_source/hdl_source/top_tf_hdmi_audio.v(9)
+                                                                      pin: mic_ws
+--------------------------------------------------------------------  ---------------
+Arrival                                                6.821               
+
+constraint delay                       10.000         10.000               
+--------------------------------------------------------------------  ---------------
+output              L16                 0.000         10.000               
+clock uncertainty                       0.000         10.000               
+clock pessimism                         0.000         10.000               
+--------------------------------------------------------------------  ---------------
+Required                                              10.000               
+--------------------------------------------------------------------  ---------------
+Slack                                                  3.179               
+
+
+
+Min Paths
+----------------------------------------------------------------------------------------------------
+
+
+
+

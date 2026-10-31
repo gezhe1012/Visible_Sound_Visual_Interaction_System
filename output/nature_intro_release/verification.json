@@ -1,0 +1,170 @@
+{
+  "base_commit": "7b58cea",
+  "feature": "startup-only nature photo/WAV layers; original six pages preserved",
+  "setup_wns_ns": 0.163,
+  "hold_wns_ns": 0.003,
+  "sta_coverage_percent": 96.02,
+  "resources": {
+    "lut": 16841,
+    "reg": 9507,
+    "bram": 64,
+    "dsp": 26,
+    "pll": 3
+  },
+  "bit_file": "HDMI_nature_intro.bit",
+  "bit_sha256": "acc5235e973805f6ee6bd9a38c6f867fc051df3bb764d12d00cbbec8343b9cc6",
+  "bit_bytes": 634280,
+  "material_zip": "nature_intro_materials.zip",
+  "material_sha256": "af11e0badfd1b261e19fac92eeda3f4513c22f176b8349353ccef8e5bb1ee21f",
+  "physical_board_verified": false,
+  "build_log": "doc\\nature_intro\\evidence\\nature_intro_implementation8.txt",
+  "regressions": {
+    "nature_regressions_final.txt": [
+      "# ALL NATURE CONTROL TESTS PASSED: manual, autoplay, PCM ack, held-key quarantine, legacy keys",
+      "# ALL NATURE ADDRESS TESTS PASSED: 132 full frames with stalls, all four layers, every slide position, aligned BL4 groups",
+      "# ALL NATURE LOADER TESTS PASSED: four bank preload, out-of-order IDs, source/memory completion, bus handoff, old-card fallback",
+      "# ALL NATURE WAV TESTS PASSED: four real PCM streams, 2400 signed samples, 100/25MHz FIFO, clean exit, bad header muted/acknowledged",
+      "# ALL NATURE BANDWIDTH TESTS PASSED: 1536000 ordered pixels, 40/25MHz, 4205 refreshes, all four banks and legacy bypass",
+      "# ALL NATURE CARD TESTS PASSED: four actual BMP packages, manifest identity, original five-page order, 1228800 pixels",
+      "# ALL NATURE PREVIEW TESTS PASSED: four 640x480 compositions, original logo/time/parameters, Chinese ticker, original footer bars"
+    ],
+    "nature_controls_final.txt": [
+      "# ALL NATURE CONTROL TESTS PASSED: manual, autoplay, PCM ack, held-key quarantine, legacy keys"
+    ],
+    "nature_sdram_contract.txt": [
+      "# ALL NATURE SDRAM CONTRACT TESTS PASSED: vendor encrypted controller, 512 writes, 256 reads; aligned layer jumps; negative control detects 24 unsafe resampling addresses"
+    ],
+    "nature_legacy_controls.txt": [
+      "# ALL PICTURE ADJUST TESTS PASSED: 45 parameter pairs, 256 values/channel, saturation, neutral, timing, reset (11533 cycles)",
+      "# ALL KEY CONTROL TESTS PASSED: debounce, short/hold, repeat/wrap, chord, frame snapshot, indicator and asynchronous CDC",
+      "# ALL OSD CONTROL TESTS PASSED: 45 numeric labels, highlight, Alpha, 7680 restored HOLD-strip pixels, background and full raster"
+    ],
+    "nature_legacy_voice.txt": [
+      "# ALL VOICE INPUT TESTS PASSED: 2049 exact signed words, 60ns slave delay, 32-bit slots, 64 clocks/frame, 48K average, 160ns minimum half-period, DDS isolation, gain, clipping, DC gate",
+      "# ALL SIX PAGE PLAYER TESTS PASSED: three manual loops, two autoplay loops, five BMPs, virtual sixth page, two buffers, frame-bound fade and return",
+      "# ALL VOICE NOISE TESTS PASSED: old quiet nonzero=74556, new=0; adaptive quiet floor=639; weak voice attack=511 samples (10.65ms); peak=449664; 80ms tail=3837 nonzero; sustained voice, gain cap, valid cadence, five DDS pages"
+    ],
+    "nature_legacy_science.txt": [
+      "# ALL AXIS FRAMING TESTS PASSED: 2 full frames, 614400 RGB pixels, 960 aligned TLAST and 2 SOF",
+      "# ALL SCIENCE FADE TESTS PASSED: five lessons atomically follow black-frame buffer swaps",
+      "# ALL SCIENCE AUDIO TESTS PASSED: 8192 independent PCM pairs, stereo routing, envelopes, 48K/I2S roundtrip, 6 FFT blocks tapped without altering playback",
+      "# ALL FRAME BANDWIDTH TESTS PASSED: 40MHz memory / 25MHz video / 100MHz writer, 6144 ordered pixels and refresh arbitration",
+      "# ALL SCIENCE CARD TESTS PASSED: real FAT32 five-page scan order and 1536000 teaching RGB pixels"
+    ],
+    "nature_legacy_waveform.txt": [
+      "# ALL WAVEFORM TESTS PASSED: signed gain, saturation, trigger, silence, freeze, frame swap, timeout/recovery, 307200 RGB pixels and timing",
+      "# ALL I2S WAVEFORM TESTS PASSED: 1600 original PCM pairs, 26 transitions, 4 frame snapshots, 1055 checked captures",
+      "# ALL KEY3 WAVEFORM TESTS PASSED: default hidden, bounce/hold/release, frame-atomic on/off, 921600 raster pixels, unchanged legacy controls and reset"
+    ],
+    "nature_legacy_fft.txt": [
+      "# ALL FFT1024 TESTS PASSED: 16384 complex bins, 2048 unchanged heights, 8192 passive magnitudes, 8 capture tags, 48K capture, bounded latency, backpressure/reset",
+      "# ALL SOUND ANALYSIS TESTS PASSED: KEY3 shared toggle, 921600 pixels, stereo bars, unchanged image/OSD, 1440 TLAST, 3 SOF, banks, stale/reset"
+    ],
+    "nature_legacy_ticker.txt": [
+      "ALL LOGO ASSET TESTS PASSED: original BMP unchanged, 48x31 upright proportional crop, two exact combinational color masks",
+      "# ALL THEME TICKER TESTS PASSED: five exact captions/fonts, 1536000 pixels, BMP logo goldens, unchanged other outside-footer/BRI/timing, PCM/stereo/attack/release, frame-atomic switches, gradients/reset",
+      "# ALL TICKER ANIMATION TESTS PASSED: 100 RTL rasters, complete scroll/wrap, real edge glyphs at all 17 fade levels, PCM-reactive bars"
+    ],
+    "nature_legacy_secondary.txt": [
+      "# ALL ENHANCED UNIT TESTS PASSED: 45 harmonic ratios/guards and 32768 exact XY bits, L-only/R-only/same/anti/quadrature/2:3/clipping/silent recovery, bank safety/frame/clear/stale/reset, bounded serial latency"
+    ],
+    "nature_legacy_pixel_compat.txt": [
+      "# ALL VOICE COMPATIBILITY TESTS PASSED: 4608000 five-page active pixels exact to 6e58891, waveform, amplitude, stereo FFT, acknowledgement, footer, secondary harmonic/XY layouts and framing"
+    ],
+    "nature_legacy_logo.txt": [
+      "# ALL LOGO OSD TESTS PASSED: six pages, 1843200 pixels, 1809504 exact pixels outside replaced ROI vs f915d8c, 8928 BMP-derived icon pixels, 12096 white-badge pixels, 21600 old-text/blue-panel pixels restored, timer/BRI/CON/footer/blanking preserved"
+    ],
+    "nature_legacy_scaler.txt": [
+      "# ALL SCALER TESTS PASSED (8 complete frames)"
+    ],
+    "nature_cdc_connectivity_final.txt": [
+      "ALL NATURE CDC CONNECTIVITY TESTS PASSED: 36 geometry/mode FFs, first-stage bounds present, later stages not excepted"
+    ],
+    "nature_rom_final.txt": [
+      "ALL SYNTHESIZED FFT ROM TESTS PASSED: all 512 complex twiddles and 1024 Hann coefficients preserved"
+    ]
+  },
+  "source_sha256": {
+    "src/td_project/HDMI1.4b_Transmitter_v1.0.al": "d95edfde147154faea8df8de9b07bc446f69d97d29d6313a4e8a250d7e352427",
+    "src/user_source/constraints_source/pin.adc": "cd5cffde434c5d878d6e9b0012cdc63b28d64e517694bbba98fcfd744f458cea",
+    "src/user_source/constraints_source/timing.sdc": "205377a13e50ef80014e5da5376b533193222080f71d974f9270ae86f7913ae0",
+    "src/user_source/hdl_source/audio_arc_calculate.v": "552d8d86afd237666b30ae08f31247808e89eb024efde5efc670b82eb617a7dc",
+    "src/user_source/hdl_source/audio_fft1024.v": "6b11c4f5543e7d1868dfbb3e85174748a991f2d7eff1c019a245d0b803d12b32",
+    "src/user_source/hdl_source/audio_spectrum_overlay.v": "83e84eb300f39f7c0b98552063bfbad93da6b71528d076c1c40c17e2600e4805",
+    "src/user_source/hdl_source/audio_waveform_overlay.v": "c6a35547494035cd02f713c695beb6e2bf7e52157c58f063026d3d7c61918f8b",
+    "src/user_source/hdl_source/display_key_controls.v": "53b5f698e770232a5cd3a38e7abe6deb42fc5c5d63b52057517a512edf10ccb7",
+    "src/user_source/hdl_source/fft1024_tables.v": "c593e2ed14b290db250ea854b3d89e95f1ce07242ba60c60447fdba4639fc0b0",
+    "src/user_source/hdl_source/hdmi1.4b_transmitter_core/hdmi_1_4b_transmitter_core_wrapper.enc.v": "867e0b0bdd874bc383d00918c9e1be3fe01edf41f343b6a0d73e262776596a63",
+    "src/user_source/hdl_source/hdmi_audio_tone_i2s_64fs.v": "729cb1635091b7630e5b68306e9f51fff4e3e06bae8ce08cc3d7323b3fb9d5cf",
+    "src/user_source/hdl_source/hdmi_audio_tone_pcm_scale.v": "0ff1ab2b39e1294c3aae814bf5a252c47c284c2cdb9568adf02d3c6cfd8ddd0b",
+    "src/user_source/hdl_source/hdmi_phy_warpper.v": "416b082b0987001bdbc0a7e20a557cb8fb1dca34e25dc881e6d28a8cb3cf4300",
+    "src/user_source/hdl_source/I2S_receiver.v": "08904598b42c2e1a4836cd9fb3293bc6c791ea2f79e35c7663a33127dc97f47b",
+    "src/user_source/hdl_source/include/global_def.v": "128eeb6107d30e5d1ff7ec4408fc51eb5b3b05ed1765393311c9a403e0046105",
+    "src/user_source/hdl_source/include/sdr_as_ram.enc.v": "767dbdfbd83d42223b77dfa7deab42ce8216a8fd6f6cb41b7e7593d9a345ba57",
+    "src/user_source/hdl_source/include/sdr_init_ref.enc.v": "6da5945f4af793610d0d64c65c7e5d2d1c86ed4c11bc5fdeacd27eb03178b9f6",
+    "src/user_source/hdl_source/include/sdr_wrrd.enc.v": "c7d7fe07d75f66aa88d9f986b3006319c995162434f104f9990664b374cdfdd2",
+    "src/user_source/hdl_source/inmp441_i2s_rx.v": "86b0dbe5b47042924d125e090209ba4ba1c3108500c3ffa2c538a6b54686ceee",
+    "src/user_source/hdl_source/IP/afifo_16_256.v": "dab43a76a35e21df4064a25edb940699b041427d70bae89cc03c5280b7bf4bf8",
+    "src/user_source/hdl_source/IP/afifo_16_256.vhd": "50d6d10017b63e1ce5a77bad4a80e9a3de81402909d30ca0818674a1887eb46d",
+    "src/user_source/hdl_source/IP/afifo_16_256_sim.v": "55b81ab3aa699902b6f11fe766658b852e0740844879a942dca81cd57b40f729",
+    "src/user_source/hdl_source/IP/afifo_16_32_256.v": "3d29b06655482184a9ad157b9bd71b79032debe3199168d3b4d9570fdac31835",
+    "src/user_source/hdl_source/IP/afifo_32_16_256.v": "7c3ee41f30be75ae686c9abff3a840fc5439209cda077e4aa275eac0dab9f564",
+    "src/user_source/hdl_source/IP/sdram.v": "1487e8583bbf52fe6d079a2854c10ebff2e569a3872a9088c1c9717ba14d17fe",
+    "src/user_source/hdl_source/IP/sdram.vhd": "853170e99291fb6b2b1bf3f5f20cd1dd0cc723052864147810b674e18cd70705",
+    "src/user_source/hdl_source/IP/sys_pll.v": "ea4ed09b2ff026b7b31eb76f51ef5afa388aa552e538e02d013cc8e7464ba563",
+    "src/user_source/hdl_source/IP/sys_pll.vhd": "0ba7e030d4e3d459d6e411a037b731700f4cb259be92b2e444b4deba10d301d2",
+    "src/user_source/hdl_source/IP/video_pll.v": "d5a2b3d3d0618d19619c36af0143f8bf9338415eef2eadd22456510ade9c6092",
+    "src/user_source/hdl_source/IP/video_pll.vhd": "4c23a8a81b28c81bed4834e1e9a757db01eebd360c7fe3a7066f8f8f7b6a36c4",
+    "src/user_source/hdl_source/key_remove_shakes.v": "8832f59e7ba94bfb8cf31e4f5a772ef7177d5257a5a2532d53cbfa1d9b7f5cd9",
+    "src/user_source/hdl_source/lane_lvds_10_1.v": "de9529321354f04837e051d0ec1681cf44783d4be3284703a788e081147500bc",
+    "src/user_source/hdl_source/live_voice_background.v": "3b496dc6e36f2c85f2555417fa6f447a55f409c5f9c24ba1d9882188507485c2",
+    "src/user_source/hdl_source/nature_intro_address.v": "0c686ba8ce55699537ec8b4c1fb17c7c505c1d8a82707190129adbfea7551a0a",
+    "src/user_source/hdl_source/nature_intro_controls.v": "be55a7abd26dd095b7620a18f5f657ae808fa15d8a179a521dc27cf1f81ede68",
+    "src/user_source/hdl_source/rom/i2s_rom_player_single_pll_fix64_rom_ip.v": "f8e7c9c56c6a21154580e030dada604572d89a1e75e8945125b2ea0dd4b3094b",
+    "src/user_source/hdl_source/science_audio_i2s.v": "e1568d5eaa4b0457de08fb4840010df7aed77fe0e90dba260fa2db089e5f94be",
+    "src/user_source/hdl_source/science_sys_pll.v": "8fb6d7e7fa286fda92aa3437404881f459444aabb0ffa8561a3067b49b0436db",
+    "src/user_source/hdl_source/SD/ax_debounce.v": "93aa6dd38051250cc7f777c88466ac180afe9bcdce7838b9ea506455d8cbc9b8",
+    "src/user_source/hdl_source/SD/bmp_bilinear_reader.v": "4c5d9137e3d878fd02ffc36f1f1f777443d20c70c3a7acc8fdfc0ba4fe421d6e",
+    "src/user_source/hdl_source/SD/bmp_read.v": "8b81edee7e1ac61e02652c9416c05f6a32768acd5a9639365bc7bf87fa4febaa",
+    "src/user_source/hdl_source/SD/color_bar.v": "afe1f56714ec58d2477ba1717e5a36c5a0da5fe5c07d70d11aa5ace710c4b152",
+    "src/user_source/hdl_source/SD/frame_fifo_read.v": "a283d789a65225b1b5a581cdb5993b6db19843698ffcfeaf42c2c3f486d62e35",
+    "src/user_source/hdl_source/SD/frame_fifo_write.v": "bf35faddc3c4623841bd54bbd7d4e3c06eef9ba2809c6b090a5dfed9f50f3c9a",
+    "src/user_source/hdl_source/SD/frame_read_write.v": "d14106afad81c5a0b8e9da366cff3fc770a10041c91ddc51bd325c99d1f21f08",
+    "src/user_source/hdl_source/SD/nature_intro_loader.v": "6c30189c6c481770054f19a9cb6ed575c33f3d03991f98affc7d1632c53b4d98",
+    "src/user_source/hdl_source/SD/nature_wav_player.v": "48a17bbf2b9806111fbb104dd33b90c8f7a40f6763d543529fe377f0a03a45e2",
+    "src/user_source/hdl_source/SD/sd_card_bmp.v": "08ad3d6108d77f8f05cf56f830ecc480eb8ce11da9090f5cb00655e377156d80",
+    "src/user_source/hdl_source/SD/sd_card_cmd.v": "a1a50502afd4e8b238b0627cd5f204c04738e761d49ab48f33da35e22ba4a5fa",
+    "src/user_source/hdl_source/SD/sd_card_sec_read_write.v": "c245c07e3b0056808d86e06aad74348494e2a7050d493a3d4141d97ccf115203",
+    "src/user_source/hdl_source/SD/sd_card_top.v": "d5031b5b809a8df0a2c8cca194a511c5f74236e810cbe5e8436359f9e5f26a39",
+    "src/user_source/hdl_source/SD/sdram.v": "2d985c2477384e677c25714241e1a50206def8916aa03189a5b313b2d22dfc99",
+    "src/user_source/hdl_source/SD/seg_decoder.v": "4592b6e4d2e9e8b7e4ab5266d850d30e43537ab9c4157d4221e3f8dfd342decd",
+    "src/user_source/hdl_source/SD/seg_scan.v": "08759c329c33cdb7a6070e0b46773f0a6c9c8052b51652dec29406b9a9dac1e3",
+    "src/user_source/hdl_source/SD/spi_master.v": "37f7a21144fa5cca3cc5c3b5f68a5ad40b3108336b600e45a1367734ac61403c",
+    "src/user_source/hdl_source/SD/video_define.v": "77748966850a8f5af0d77f2cdb08006088ba5e1a31b98391fba6cc61c5247da2",
+    "src/user_source/hdl_source/SD/video_delay.v": "f47c4b63f8baa6d8874c87dca5b72dfdadd19f4a107403da98752bce98936433",
+    "src/user_source/hdl_source/SD/video_timing_data.v": "c6f75501e98dd5995f687aafb40455beffe45b426137b5089a73ac3a036f7282",
+    "src/user_source/hdl_source/secondary_audio_renderer.v": "22acdfb4723e91900d422ec6e31d6b545c8f3533ec56ff71b33f4680d75dc283",
+    "src/user_source/hdl_source/secondary_feature_store.v": "fa4bdd973582b7612ff252c086a2fa005e9906536021de36f351429bae5bf2f7",
+    "src/user_source/hdl_source/secondary_font5x7.v": "5d7731021acefb4528bdf78ea34b539421e19b5b7e4e4d153e1a057eaa8d671e",
+    "src/user_source/hdl_source/secondary_harmonics.v": "a518ac029321f173cbab0c893a0e4839b9c67f18984a9d9095ed4c4d6df735d1",
+    "src/user_source/hdl_source/secondary_hdmi_tx.v": "c7980c240d313523d9bee85e2324f4c12f6eddc16ed1eb23d0cecbc1d74b0132",
+    "src/user_source/hdl_source/secondary_link_pattern.v": "30be80712d3208137958d589eac2bf4b9a8326c6b71374d0fa045182d17e4d80",
+    "src/user_source/hdl_source/secondary_lissajous.v": "c8ccf4f1bee2479247e91d2d924de141642336ac1256b514720ab9ea0a7bde72",
+    "src/user_source/hdl_source/secondary_note_thresholds.v": "9e929924e2f2bdecbd72b149836bb495887e9a499f77eb44ceb010db9badf960",
+    "src/user_source/hdl_source/secondary_pitch_estimator.v": "53183cae08b799e28ca1716db716a201927a5183bba2500eb8cc69647901dcf2",
+    "src/user_source/hdl_source/sound_theme_footer.v": "56ce9103b2ffc30db420bd2a654e06f783913fbd7f7f4db69dc0b9f59865e813",
+    "src/user_source/hdl_source/startup_pulse.v": "396e1e56febb8028339e646bc2f06b83e07ab11ef840e447422fb941956741c9",
+    "src/user_source/hdl_source/test/design_top_i2s_test_pll.v": "b6396c3e90c67d7e8aad8c83bfa8a1aa0b826db8f74a26936549cae57e86668c",
+    "src/user_source/hdl_source/test/i2s_test_tone_gen_pll.v": "7614d4ca84c007a568e798b7c8cbc31eadd8a064bee53101194df13edb71e02f",
+    "src/user_source/hdl_source/top_tf_hdmi_audio.v": "69ecd846b8f436e23016e6ddd10c52f9328c031a1de3cd006c4cbfc8c126b775",
+    "src/user_source/hdl_source/video_fade_transition.v": "7c5464fe63fadb326753ac53feb1fb7d44005aeaa57b6782b7aa4f8d93b66dd9",
+    "src/user_source/hdl_source/video_osd_overlay.v": "6807406a95eabeb850e57a23ddd7645e66f10e458866b73c44624e96cc6b5acb",
+    "src/user_source/hdl_source/video_picture_adjust.v": "78939bd5a199bb5f856d5d9383511b3a41b6c63ab931d4b7d9c336071722ab3d",
+    "src/user_source/hdl_source/video_rgb_to_axis_640x480.v": "e14e4b24e73bcceac1389031bd2c63a6b952ab70cbd83480aa13fe6ed031d7e1",
+    "src/user_source/hdl_source/video_source_test.v": "39cc05c9684a594d4254d11e66e97344053ab75bdb00f3f5a301643fd7aadbfc",
+    "src/user_source/hdl_source/voice_analysis_source.v": "f019c48f84e016d26cb8195e06b026a11559350b2b263ee7bf4e0efe5f570103",
+    "src/user_source/hdl_source/waveform_key_control.v": "c8567ba3b1dd4dc02f04135224c6e98cafcc7b41c1a3c14f3e4ad8c37956b1b0",
+    "src/user_source/ip_source/pll.v": "202799f886f12cfc1d837afa932328b636c6c3dee70167be68c084133647b39c",
+    "src/user_source/ip_source/pll.vhd": "a8166865b5aef9caaee525d4633aa1dec4172244a7bbff239e0d658c0ca775e4"
+  }
+}

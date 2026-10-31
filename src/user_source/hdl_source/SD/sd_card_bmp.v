@@ -7,13 +7,19 @@ module sd_card_bmp #(
     parameter integer KEY_EVENT_MODE  = 0, // 1: video-domain short-action toggles
     parameter integer AUTO_PLAY_SECONDS = 1,
     parameter integer WAIT_MELODY_END = 0, // only top science build enables this
-    parameter integer LIVE_VOICE_PAGE = 0 // append a procedural page after five BMPs
+    parameter integer LIVE_VOICE_PAGE = 0, // append a procedural page after five BMPs
+    parameter integer NATURE_INTRO = 0
 )(
     input                       clk,
     input                       rst,
     input                       key_next,
     input                       key_auto,
     input                       melody_complete, // sticky video-domain level
+    input                       video_clk,audio_tick,
+    input                       intro_exit,intro_autoplay,intro_audio_request,
+    input [1:0]                 intro_audio_photo,
+    output                      intro_owner,intro_assets_ready,intro_audio_ack,
+    output [23:0]               intro_pcm,
     output [3:0]                state_code,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
@@ -28,7 +34,7 @@ module sd_card_bmp #(
     output [2:0]                transition_lesson_idx,
 
     input                       write_finish_toggle,
-    output reg [1:0]            write_buf_idx,
+    output [1:0]                write_buf_idx,
     output reg [1:0]            disp_buf_idx,
 
     output                      write_req,
@@ -47,6 +53,19 @@ wire key_auto_press;
 
 wire             sd_sec_read;
 wire [31:0]      sd_sec_read_addr;
+wire bmp_sector_read,wav_sector_read;
+wire [31:0] bmp_sector_address,wav_sector_address;
+wire intro_scan_start,intro_load_start;
+wire [31:0] intro_load_sector;
+wire [1:0] intro_write_bank,found_photo;
+wire [31:0] found_wav_offset,found_samples;
+wire [31:0] wav0,wav1,wav2,wav3,count0,count1,count2,count3;
+wire wav_idle,initial_auto;
+reg [1:0] legacy_write_buf_idx;
+wire wav_owns= NATURE_INTRO!=0 && intro_owner && intro_assets_ready;
+assign write_buf_idx=intro_owner ? intro_write_bank : legacy_write_buf_idx;
+assign sd_sec_read=wav_owns ? wav_sector_read : bmp_sector_read;
+assign sd_sec_read_addr=wav_owns ? wav_sector_address : bmp_sector_address;
 wire [7:0]       sd_sec_read_data;
 wire             sd_sec_read_data_valid;
 wire             sd_sec_read_end;
@@ -197,7 +216,7 @@ always @(posedge clk or posedge rst) begin
         img_idx               <= 2'd0;
         load_idx              <= 2'd0;
         pending_buf_idx       <= 2'd0;
-        write_buf_idx         <= 2'd0;
+        legacy_write_buf_idx  <= 2'd0;
         disp_buf_idx          <= 2'd0;
         img_sector0           <= 32'd0;
         img_sector1           <= 32'd0;
@@ -228,7 +247,7 @@ always @(posedge clk or posedge rst) begin
             img_idx               <= 2'd0;
             load_idx              <= 2'd0;
             pending_buf_idx       <= 2'd0;
-            write_buf_idx         <= 2'd0;
+            legacy_write_buf_idx  <= 2'd0;
             disp_buf_idx          <= 2'd0;
             img_sector0           <= 32'd0;
             img_sector1           <= 32'd0;
@@ -244,7 +263,7 @@ always @(posedge clk or posedge rst) begin
             display_valid         <= 1'b0;
             transition_start_toggle <= 1'b0;
             transition_buf_idx      <= 2'd0;
-        end else begin
+        end else if(!intro_owner) begin
             // Keep five file addresses, but still only TWO SDRAM frame buffers.
             if (scan_found_valid) begin
                 case (img_found_count)
@@ -293,13 +312,13 @@ always @(posedge clk or posedge rst) begin
                 scan_start_pulse      <= 1'b1;
                 scan_kicked           <= 1'b1;
                 first_image_committed <= 1'b0;
-                auto_play_en          <= 1'b0;
+                auto_play_en          <= (NATURE_INTRO!=0) ? initial_auto : 1'b0;
                 auto_cnt              <= 32'd0;
                 img_found_count       <= 3'd0;
                 img_idx               <= 2'd0;
                 load_idx              <= 2'd0;
                 pending_buf_idx       <= 2'd0;
-                write_buf_idx         <= 2'd0;
+                legacy_write_buf_idx  <= 2'd0;
                 disp_buf_idx          <= 2'd0;
                 next_req_pending      <= 1'b0;
                 display_valid         <= 1'b0;
@@ -336,7 +355,7 @@ always @(posedge clk or posedge rst) begin
                     load_idx         <= 2'd0;
                     load_sector      <= img_sector0;
                     pending_buf_idx  <= 2'd0;
-                    write_buf_idx    <= 2'd0;
+                    legacy_write_buf_idx <= 2'd0;
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     source_done_seen <= 1'b0;
@@ -356,7 +375,7 @@ always @(posedge clk or posedge rst) begin
                     end else begin
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
+                    legacy_write_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     end
@@ -375,7 +394,7 @@ always @(posedge clk or posedge rst) begin
                     end else begin
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
+                    legacy_write_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     end
@@ -397,22 +416,24 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-bmp_bilinear_reader bmp_read_m0(
+bmp_bilinear_reader #(.INTRO_SUPPORT(NATURE_INTRO)) bmp_read_m0(
     .clk                    (clk),
     .rst                    (rst),
     .ready                  (bmp_ready),
 
-    .scan_start             (scan_start_pulse),
+    .scan_start             (intro_owner ? intro_scan_start : scan_start_pulse),
     .scan_start_sector      (SCAN_START_SECTOR),
     .scan_max_sector        (SCAN_MAX_SECTOR),
-    .scan_target_count      (SCAN_TARGET_COUNT),
+    .scan_target_count      (intro_owner ? 3'd4 : SCAN_TARGET_COUNT),
+    .scan_intro             (intro_owner),
+    .intro_photo(found_photo),.intro_wav_offset(found_wav_offset),.intro_samples(found_samples),
     .scan_done              (scan_done),
     .scan_found_valid       (scan_found_valid),
     .scan_found_sector      (scan_found_sector),
     .scan_found_total       (scan_found_total),
 
-    .load_start             (load_start_pulse),
-    .load_sector            (load_sector),
+    .load_start             (intro_owner ? intro_load_start : load_start_pulse),
+    .load_sector            (intro_owner ? intro_load_sector : load_sector),
 
     .sd_init_done           (bmp_init_ready),
     .state_code             (state_code),
@@ -422,14 +443,42 @@ bmp_bilinear_reader bmp_read_m0(
     .write_req_ack          (write_req_ack),
     .write_ready            (write_ready),
     .load_error             (bmp_load_error),
-    .sd_sec_read            (sd_sec_read),
-    .sd_sec_read_addr       (sd_sec_read_addr),
+    .sd_sec_read            (bmp_sector_read),
+    .sd_sec_read_addr       (bmp_sector_address),
     .sd_sec_read_data       (sd_sec_read_data),
     .sd_sec_read_data_valid (sd_sec_read_data_valid),
     .sd_sec_read_end        (sd_sec_read_end),
     .bmp_data_wr_en         (bmp_data_wr_en),
     .bmp_data               (bmp_data)
 );
+
+nature_intro_loader #(.ENABLE(NATURE_INTRO)) u_intro_loader(
+    .clk(clk),.rst(rst),.initialized(bmp_init_ready),.reader_ready(bmp_ready),.load_error(bmp_load_error),
+    .scan_done(scan_done),.found_valid(scan_found_valid),.found_sector(scan_found_sector),
+    .wav_offset(found_wav_offset),.samples(found_samples),.found_photo(found_photo),
+    .write_finish_toggle(write_finish_toggle),.exit_async(intro_exit),.autoplay_async(intro_autoplay),
+    .wav_idle(wav_idle),.owner(intro_owner),.assets_ready(intro_assets_ready),
+    .scan_start(intro_scan_start),.load_start(intro_load_start),.load_sector(intro_load_sector),.write_bank(intro_write_bank),
+    .wav0(wav0),.wav1(wav1),.wav2(wav2),.wav3(wav3),
+    .count0(count0),.count1(count1),.count2(count2),.count3(count3),.initial_auto(initial_auto)
+);
+generate if(NATURE_INTRO!=0) begin:g_intro_audio
+nature_wav_player u_wav(
+    .sd_clk(clk),.video_clk(video_clk),.rst(rst),.enabled(intro_assets_ready),.exit_async(intro_exit),
+    .request_async(intro_audio_request),.photo_async(intro_audio_photo),
+    .wav0(wav0),.wav1(wav1),.wav2(wav2),.wav3(wav3),
+    .count0(count0),.count1(count1),.count2(count2),.count3(count3),
+    .ack_toggle(intro_audio_ack),.idle(wav_idle),.sector_request(wav_sector_read),.sector_address(wav_sector_address),
+    .sector_data(sd_sec_read_data),.byte_valid(sd_sec_read_data_valid && wav_owns),.sector_end(sd_sec_read_end && wav_owns),
+    .sample_tick(audio_tick),.pcm(intro_pcm),.underrun()
+);
+end else begin:g_no_intro_audio
+    assign wav_idle=1'b1;
+    assign wav_sector_read=1'b0;
+    assign wav_sector_address=32'd0;
+    assign intro_audio_ack=1'b0;
+    assign intro_pcm=24'd0;
+end endgenerate
 
 sd_card_top sd_card_top_m0(
     .clk                    (clk),

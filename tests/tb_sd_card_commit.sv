@@ -16,6 +16,8 @@ reg write_req_ack=0;
 integer cycle=0,loads=0,load_at=-1,commits=0,transition_at=-1;
 reg transition_seen=0;
 sd_card_bmp #(.CLK_FREQ_HZ(1000)) dut(.*,
+    .video_clk(clk),.audio_tick(1'b0),.intro_exit(1'b0),.intro_autoplay(1'b0),.intro_audio_request(1'b0),.intro_audio_photo(2'd0),
+    .intro_owner(),.intro_assets_ready(),.intro_audio_ack(),.intro_pcm(),
     .bmp_width(16'd640),.bmp_height(16'd480),.write_ready(1'b1),.SD_MISO(1'b1));
 always @(posedge clk) begin
     cycle<=cycle+1;
@@ -63,7 +65,8 @@ end
 initial begin #100000; $fatal(1,"Controller timeout loads=%0d commits=%0d",loads,commits); end
 endmodule
 
-module bmp_bilinear_reader(
+module bmp_bilinear_reader #(parameter INTRO_SUPPORT=0)(
+    input scan_intro,output [1:0] intro_photo,output [31:0] intro_wav_offset,intro_samples,
     input clk,rst, output reg ready,
     input scan_start,input [31:0] scan_start_sector,scan_max_sector,
     input [2:0] scan_target_count,

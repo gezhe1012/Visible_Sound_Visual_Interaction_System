@@ -9,7 +9,10 @@ param(
 
     [switch]$NoPush,
 
-    [switch]$AllowEmpty
+    [switch]$AllowEmpty,
+
+    # Optional scoped checkpoint; preserve unrelated work and staged changes.
+    [string[]]$Paths
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,16 +31,25 @@ if (-not $SkipVerify) {
     }
 }
 
-git add -A
+if ($Paths) {
+    foreach ($entry in $Paths) {
+        $resolved=(Resolve-Path -LiteralPath (Join-Path $projectRoot $entry)).Path
+        if(-not $resolved.StartsWith($projectRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {
+            throw "Checkpoint path is outside this project: $entry"
+        }
+    }
+    git add -- $Paths
+} else { git add -A }
+if ($LASTEXITCODE -ne 0) {throw 'Unable to stage checkpoint paths.'}
 if (-not $AllowEmpty) {
-    git diff --cached --quiet
+    if($Paths) {git diff --cached --quiet -- $Paths} else {git diff --cached --quiet}
     if ($LASTEXITCODE -eq 0) {
         Write-Output 'No staged changes; nothing to save.'
         exit 0
     }
 }
 
-git commit -m $Message
+if($Paths) {git commit --only -m $Message -- $Paths} else {git commit -m $Message}
 if ($LASTEXITCODE -ne 0) {
     throw "Git commit failed."
 }

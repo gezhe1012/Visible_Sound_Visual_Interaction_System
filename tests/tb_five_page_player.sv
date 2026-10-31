@@ -80,7 +80,8 @@ end
 initial begin #400000000; $fatal(1,"Five-page timeout page%0d loads%0d",dut.img_idx,loads); end
 endmodule
 
-module bmp_bilinear_reader(
+module bmp_bilinear_reader #(parameter INTRO_SUPPORT=0)(
+    input scan_intro,output [1:0] intro_photo,output [31:0] intro_wav_offset,intro_samples,
     input clk,rst,output reg ready,input scan_start,input [31:0] scan_start_sector,scan_max_sector,
     input [2:0] scan_target_count,output reg scan_done,scan_found_valid,
     output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,

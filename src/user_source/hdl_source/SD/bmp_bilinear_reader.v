@@ -1,11 +1,14 @@
 // Load-time bilinear scaler. Fixed 640x480 output, bottom row first.
 // BMP files must occupy contiguous sectors, as in the original example.
 module bmp_bilinear_reader #(
-    parameter MAX_SOURCE_WIDTH=2048, MAX_SOURCE_HEIGHT=2048
+    parameter MAX_SOURCE_WIDTH=2048, MAX_SOURCE_HEIGHT=2048, INTRO_SUPPORT=0
 )(
     input clk, rst, output ready,
     input scan_start, input [31:0] scan_start_sector, scan_max_sector,
     input [2:0] scan_target_count,
+    input scan_intro,
+    output [1:0] intro_photo,
+    output [31:0] intro_wav_offset,intro_samples,
     output reg scan_done, scan_found_valid,
     output reg [31:0] scan_found_sector, output reg [2:0] scan_found_total,
     input load_start, input [31:0] load_sector,
@@ -50,6 +53,13 @@ reg [28:0] watchdog;
 reg [31:0] absolute_height, parsed_stride, expected_file_end;
 reg [24:0] required_bytes;
 reg header_match;
+reg [63:0] intro_tag;
+reg [7:0] intro_id;
+reg [31:0] wav_offset,sample_count;
+reg intro_marker,tagged_intro,scan_selected;
+assign intro_photo=intro_id[1:0];
+assign intro_wav_offset=wav_offset;
+assign intro_samples=sample_count;
 reg [11:0] physical_row;
 reg [24:0] row_product;
 reg [10:0] source_last_x,source_last_y;
@@ -69,7 +79,7 @@ always @(posedge clk or posedge rst) begin
     if(rst) begin
         absolute_height<=0; parsed_stride<=0; required_bytes<=0;
         expected_file_end<=0; header_match<=0;
-        file_sectors<=0; next_match<=0;
+        file_sectors<=0; next_match<=0;intro_marker<=0;tagged_intro<=0;scan_selected<=0;
     end else begin
         absolute_height<=height[31] ? (~height+32'd1) : height;
         parsed_stride<=(({20'd0,width[11:0]}*32'd3)+32'd3)&32'hfffffffc;
@@ -77,6 +87,13 @@ always @(posedge clk or posedge rst) begin
         expected_file_end<=pixel_offset+{7'd0,required_bytes};
         file_sectors<=(file_len+32'd511)>>9;
         next_match<=scan_sector+file_sectors;
+        // Manifest ends at byte 72, long before sector end. Register both
+        // classification and mode selection instead of adding a 100MHz
+        // pixel-offset/tag comparison directly to the scanner's state input.
+        intro_marker<=intro_tag==64'h4f52544e494c4e41;
+        tagged_intro<=intro_marker && pixel_offset>=128 && intro_id<4;
+        // A malformed intro ID must NEVER fall through into the teaching list.
+        scan_selected<=(INTRO_SUPPORT==0) || (scan_intro ? tagged_intro : !intro_marker);
         header_match<=magic0=="B" && magic1=="M" &&
             dib_size>=40 && dib_size<=124 && planes==1 && bit_count==24 && compression==0 &&
             width>=1 && width<=MAX_SOURCE_WIDTH &&
@@ -114,9 +131,17 @@ always @(posedge clk or posedge rst) begin
     if(rst) begin
         header_byte<=0; magic0<=0; magic1<=0; file_len<=0; pixel_offset<=0;
         dib_size<=0; width<=0; height<=0; planes<=0; bit_count<=0; compression<=0;
+        intro_tag<=0;intro_id<=0;wav_offset<=0;sample_count<=0;
     end else if(state==SCAN || state==HEADER) begin
         if(sd_sec_read_data_valid) begin
             header_byte<=header_byte+10'd1;
+            if(header_byte>=54 && header_byte<62)
+                intro_tag[(header_byte-54)*8+:8]<=sd_sec_read_data;
+            if(header_byte==62) intro_id<=sd_sec_read_data;
+            if(header_byte>=64 && header_byte<68)
+                wav_offset[(header_byte-64)*8+:8]<=sd_sec_read_data;
+            if(header_byte>=68 && header_byte<72)
+                sample_count[(header_byte-68)*8+:8]<=sd_sec_read_data;
             case(header_byte)
                 0: magic0<=sd_sec_read_data;
                 1: magic1<=sd_sec_read_data;
@@ -202,10 +227,12 @@ always @(posedge clk or posedge rst) begin
                 if(sd_sec_read_end) begin
                     sd_sec_read<=0; state<=SCAN_GAP;
                     if(header_match) begin
-                        scan_found_valid<=1; scan_found_sector<=scan_sector;
-                        scan_found_total<=scan_found_total+3'd1;
+                        if(scan_selected) begin
+                            scan_found_valid<=1; scan_found_sector<=scan_sector;
+                            scan_found_total<=scan_found_total+3'd1;
+                        end
                         scan_sector<=next_match; sd_sec_read_addr<=next_match;
-                        if(scan_found_total+3'd1>=scan_target_count || next_match>scan_max_sector) begin
+                        if((scan_selected && scan_found_total+3'd1>=scan_target_count) || next_match>scan_max_sector) begin
                             scan_done<=1; state<=IDLE;
                         end
                     end else if(scan_sector>=scan_max_sector) begin scan_done<=1; state<=IDLE; end

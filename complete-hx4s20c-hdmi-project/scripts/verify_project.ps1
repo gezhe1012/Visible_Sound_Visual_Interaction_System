@@ -57,7 +57,7 @@ function Invoke-TdFlow([string]$TdCommand, [string]$FlowScript, [string]$RunDire
         $exitCode = $LASTEXITCODE
         $output | ForEach-Object { Write-Host $_ }
 
-        $fatalText = $output | Select-String -Pattern '\bERROR\b|\bFATAL\b|couldn.t read file|Script error|return -code error'
+        $fatalText = $output | Select-String -Pattern '\bERROR\b|\bFATAL\b|couldn.t read file|Script error|return -code error|USR-8159|USR-8012|HDL-7225'
         $flowCompleted = $output | Select-String -Pattern 'start command "export_flow_status'
         if (($exitCode -ne 0) -or $fatalText -or -not $flowCompleted) {
             Write-Fail "$Label failed (exit code $exitCode)."
@@ -107,7 +107,7 @@ Write-Host "`n== Structural checks ==" -ForegroundColor Cyan
 Require-Text $topPath '^\s*module\s+top\b' 'Top module is present.'
 Require-Text $sdBmpPath '^\s*module\s+sd_card_bmp\b' 'TF/BMP controller is present.'
 Require-Text $scalerPath '^\s*module\s+bmp_bilinear_reader\b' 'Bilinear BMP loader is present.'
-Require-Text $sdBmpPath 'bmp_bilinear_reader\s+bmp_read_m0' 'Bilinear loader is instantiated.'
+Require-Text $sdBmpPath 'bmp_bilinear_reader\s*(#\([^;]*?\)\s*)?bmp_read_m0' 'Bilinear loader is instantiated.'
 Require-Text $projectPath 'bmp_bilinear_reader\.v' 'Tang Dynasty project references bilinear loader.'
 Require-Text $topPath 'u_display_key_controls' 'Display key controls are instantiated.'
 Require-Text $topPath 'u_video_picture_adjust' 'Brightness/contrast processor is instantiated.'
@@ -120,7 +120,7 @@ Require-Text $projectPath 'audio_fft1024\.v' 'Project references the FFT.'
 Require-Text $projectPath 'audio_spectrum_overlay\.v' 'Project references the spectrum overlay.'
 Require-Text $projectPath 'secondary_hdmi_tx\.v' 'Project references the independent HDMI_A transmitter.'
 Require-Text $projectPath 'secondary_link_pattern\.v' 'Project references the stage-1 secondary link test.'
-Require-Text $topPath 'secondary_hdmi_tx\s+u_secondary_hdmi_tx' 'Independent HDMI_A transmitter is instantiated.'
+Require-Text $topPath 'secondary_hdmi_tx\s*(#\([^;]*?\)\s*)?u_secondary_hdmi_tx' 'Independent HDMI_A transmitter is instantiated.'
 Require-Text $secondaryPath 'secondary_audio_renderer\s+renderer' 'HDMI_A renders real audio features.'
 Require-Text $secondaryPath 'secondary_feature_store\s+features' 'Secondary history storage is instantiated.'
 Require-Text $secondaryFeaturesPath 'secondary_pitch_estimator\s+estimator' 'Pitch is estimated from raw FFT bins.'

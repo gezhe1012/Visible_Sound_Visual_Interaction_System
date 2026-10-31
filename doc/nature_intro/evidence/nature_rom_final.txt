@@ -1,0 +1,5 @@
+PASS synthesized ramread0: 512 coefficients, bits 18..31
+PASS synthesized ramread0: 512 coefficients, bits 0..17
+PASS synthesized ramread1: 1024 coefficients, bits 9..15
+PASS synthesized ramread1: 1024 coefficients, bits 0..8
+ALL SYNTHESIZED FFT ROM TESTS PASSED: all 512 complex twiddles and 1024 Hann coefficients preserved

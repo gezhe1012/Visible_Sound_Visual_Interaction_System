@@ -63,4 +63,10 @@ tests/extension4_osd_preview.*
 tests/transcript
 tests/vsim.wlf
 tests/modelsim.ini
+tests/nature_work/
+tests/nature_sdram_work/
+tests/nature_gate_netlist.v
+tests/nature_routed_netlist.v
+tests/nature_stage_*.ppm
+output/nature_intro_recovery/
 

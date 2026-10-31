@@ -1,0 +1,3 @@
+PASS nature_gate_netlist.v: 18 geometry/mode FFs, independent two-stage paths
+PASS nature_routed_netlist.v: 18 geometry/mode FFs, independent two-stage paths
+ALL NATURE CDC CONNECTIVITY TESTS PASSED: 36 geometry/mode FFs, first-stage bounds present, later stages not excepted

@@ -6,10 +6,12 @@ module frame_fifo_read
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,
 	parameter FIFO_DEPTH             = 512,
-	parameter BURST_SIZE             = 128
+	parameter BURST_SIZE             = 128,
+    parameter INTRO_SUPPORT          = 0
 )               
 (
-	input                            rst,                  
+	input                            rst,
+    input                            intro_map,
 	input                            mem_clk,                    // external memory controller user interface clock
 	input							 Sdr_init_done,
 	input							 Sdr_init_ref_vld,
@@ -77,7 +79,8 @@ assign rd_vld = (state == S_READ_BURST && burst_cnt >= BURST_SIZE);
 assign O_rd_busy = (state == S_READ_BURST);//读指令期间
 //burst_cnt代表发送的读指令
 //但rd_burst_finish需要在发送完十个时钟后拉高，此时数据全部读出
-assign rd_burst_finish = (rd_vld && rd_delay == 4'd10);
+wire [3:0] read_tail=(INTRO_SUPPORT!=0 && intro_map) ? 4'd13 : 4'd10;
+assign rd_burst_finish = (rd_vld && rd_delay == read_tail);
 assign read_finish = (state == S_END) ? 1'b1 : 1'b0;             //read finish at state 'S_END'
 assign App_rd_en = App_rd_en_d0;
 always@(posedge mem_clk or posedge rst)
@@ -110,7 +113,7 @@ begin
 	if(rst || App_rd_en)begin
         rd_delay <= 4'd0;
     end
-    else if(rd_delay < 4'd10)begin
+    else if(rd_delay < 4'd13)begin
     	rd_delay <= rd_delay + 1'b1;
     end
 end

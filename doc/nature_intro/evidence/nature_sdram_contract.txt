@@ -1,0 +1,61 @@
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# do run_nature_sdram.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 18:30:02 on Oct 31,2026
+# vlog -work nature_sdram_work "+define+SIMULATION" "+incdir+../src/user_source/hdl_source/include" "+incdir+../src/td_project" ../src/user_source/hdl_source/include/sdr_init_ref.enc.v ../src/user_source/hdl_source/include/sdr_wrrd.enc.v ../src/user_source/hdl_source/include/sdr_as_ram.enc.v ../src/user_source/hdl_source/SD/sdram.v tb_nature_sdram_contract.sv 
+# -- Compiling module sdr_init_ref
+# ** Warning: (vlog-2121) ../src/user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vlog-2121) <protected>(<protected>): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# -- Compiling module sdr_as_ram
+# -- Compiling module sdram
+# -- Compiling module tb_nature_sdram_contract
+# 
+# Top level modules:
+# 	tb_nature_sdram_contract
+# End time: 18:30:02 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 3
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 18:30:02 on Oct 31,2026
+# vlog -work nature_sdram_work F:/Anlogic/TD_6.2.1_Engineer_6.2.168.116/sim_release/eg4/eg_phy_sdram_2m_32.v 
+# -- Compiling module EG_PHY_SDRAM_2M_32
+# 
+# Top level modules:
+# 	EG_PHY_SDRAM_2M_32
+# End time: 18:30:02 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_sdram_work nature_sdram_work.tb_nature_sdram_contract 
+# Start time: 18:30:03 on Oct 31,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_sdram_contract(fast)
+# Loading work.sdram(fast)
+# Loading work.sdr_as_ram(fast)
+# Loading work.sdr_init_ref(fast)
+# Loading work.EG_PHY_SDRAM_2M_32(fast)
+# SDRAM mode: CAS=3 burst=4
+# WRITE idx=0 data=5a000000 t=          3278550000
+# WRITE idx=256 data=5a000004 t=          3278650000
+# READ idx=0 data=5a000000 t=          3294650000
+# READ idx=256 data=5a000004 t=          3294750000
+# ALL NATURE SDRAM CONTRACT TESTS PASSED: vendor encrypted controller, 512 writes, 256 reads; aligned layer jumps; negative control detects 24 unsafe resampling addresses
+# ** Note: $finish    : tb_nature_sdram_contract.sv(84)
+#    Time: 3304150 ns  Iteration: 1  Instance: /tb_nature_sdram_contract
+# End time: 18:30:04 on Oct 31,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

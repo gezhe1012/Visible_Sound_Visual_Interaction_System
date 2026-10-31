@@ -78,6 +78,14 @@ wire signed [8:0] display_brightness;
 wire [2:0] display_contrast_q2;
 wire [1:0] display_active_control;
 wire next_key_toggle,auto_key_toggle;
+wire teaching_next_toggle,teaching_auto_toggle,teaching_key3;
+wire intro_active,intro_visible,intro_exit,intro_autoplay;
+wire intro_owner,intro_assets_ready,intro_audio_request,intro_audio_ack;
+wire [1:0] intro_photo,intro_audio_photo;
+wire [5:0] intro_slide;
+wire [23:0] intro_pcm;
+wire [23:0] hdmi_audio_left=intro_active ? intro_pcm : audio_left_data;
+wire [23:0] hdmi_audio_right=intro_active ? intro_pcm : audio_right_data;
 wire        sd_display_valid;
 
 // OSD / transition extension signals
@@ -148,14 +156,14 @@ inmp441_i2s_rx u_inmp441_i2s_rx(
     .mic_pcm(mic_pcm),.mic_valid(mic_valid),.ready(mic_ready));
 voice_analysis_source u_voice_source(
     .clk(video_clk),.rst(rst_all),.lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
-    .dds_valid(audio_valid),.dds_left(audio_left_data),.dds_right(audio_right_data),
+    .dds_valid(audio_valid && !intro_active),.dds_left(audio_left_data),.dds_right(audio_right_data),
     .mic_valid(mic_valid),.mic_pcm(mic_pcm),.analysis_valid(analysis_valid),
     .analysis_left(analysis_left),.analysis_right(analysis_right),.source_clear(source_clear),
     .active(mic_active),.clipped(mic_clipped),.gain_shift(mic_gain_shift));
 live_voice_background u_voice_background(
     .clk(video_clk),.rst(rst_all),.vs(vs),.de(de),.ready(mic_ready),.active(mic_active),
     .clipped(mic_clipped),.panel_visible(waveform_requested_visible),.rgb(voice_background));
-assign picture_background=voice_page ? voice_background : vout_data_raw;
+assign picture_background=(!intro_active && voice_page) ? voice_background : vout_data_raw;
 wire        acr_valid;
 wire [19:0] acr_cts;
 wire [19:0] acr_n;
@@ -221,12 +229,17 @@ sd_card_bmp #(
     .KEY_EVENT_MODE    (1),
     .AUTO_PLAY_SECONDS (8),
     .WAIT_MELODY_END   (1),
-    .LIVE_VOICE_PAGE   (1)
+    .LIVE_VOICE_PAGE   (1),
+    .NATURE_INTRO      (1)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
-    .key_next          (next_key_toggle),
-    .key_auto          (auto_key_toggle),
+    .key_next          (teaching_next_toggle),
+    .key_auto          (teaching_auto_toggle),
+    .video_clk(video_clk),.audio_tick(audio_valid),
+    .intro_exit(intro_exit),.intro_autoplay(intro_autoplay),
+    .intro_audio_request(intro_audio_request),.intro_audio_photo(intro_audio_photo),
+    .intro_owner(intro_owner),.intro_assets_ready(intro_assets_ready),.intro_audio_ack(intro_audio_ack),.intro_pcm(intro_pcm),
     .melody_complete   (melody_complete),
     .state_code        (state_code),
     .bmp_width         (16'd640),
@@ -303,6 +316,15 @@ display_key_controls u_display_key_controls (
     .brightness(display_brightness), .contrast_q2(display_contrast_q2),
     .active_control(display_active_control)
 );
+nature_intro_controls u_nature_intro_controls(
+    .clk(video_clk),.rst(rst_all),.vs(vs_0),.key3(key3),
+    .next_toggle(next_key_toggle),.auto_toggle(auto_key_toggle),
+    .assets_ready_async(intro_assets_ready),.owner_async(intro_owner),.audio_ack_async(intro_audio_ack),
+    .teaching_valid(transition_display_valid),.active(intro_active),.visible(intro_visible),
+    .exit_request(intro_exit),.photo(intro_photo),.slide(intro_slide),
+    .audio_request(intro_audio_request),.audio_photo(intro_audio_photo),.autoplay(intro_autoplay),
+    .teaching_next(teaching_next_toggle),.teaching_auto(teaching_auto_toggle),.teaching_key3(teaching_key3)
+);
 video_picture_adjust u_video_picture_adjust (
     .clk(video_clk), .rst(rst_all), .hs(hs), .vs(vs), .de(de),
     .rgb_in(picture_background), .brightness(display_brightness),
@@ -332,14 +354,14 @@ video_fade_transition #(
 assign fade_r_product = vout_data_adjusted[23:16] * transition_fade_level;
 assign fade_g_product = vout_data_adjusted[15:8]  * transition_fade_level;
 assign fade_b_product = vout_data_adjusted[7:0]   * transition_fade_level;
-assign vout_data_faded = transition_display_valid ?
+assign vout_data_faded = intro_active ? (intro_visible ? vout_data_adjusted : 24'h000000) : transition_display_valid ?
                          {fade_r_product[11:4], fade_g_product[11:4], fade_b_product[11:4]} :
                          24'h000000;
 
 // Extension 5: listen to the existing video-clock PCM stream, without changing
 // the I2S generator/receiver, ACR or HDMI audio ports. Waveform is outside fade.
 waveform_key_control u_waveform_key_control (
-    .clk(video_clk), .rst(rst_all), .key3(key3),
+    .clk(video_clk), .rst(rst_all), .key3(teaching_key3),
     .requested_visible(waveform_requested_visible)
 );
 audio_waveform_overlay u_audio_waveform_overlay (
@@ -392,8 +414,9 @@ video_osd_overlay #(
     .brightness(display_brightness),
     .contrast_q2(display_contrast_q2),
     .active_control(display_active_control),
-    .lesson_idx(display_lesson_idx),
-    .audio_valid(analysis_valid),.audio_left(analysis_left),.audio_right(analysis_right),
+    .lesson_idx(intro_active ? 3'd6 : display_lesson_idx),
+    .audio_valid(intro_active ? audio_valid : analysis_valid),
+    .audio_left(intro_active ? intro_pcm : analysis_left),.audio_right(intro_active ? intro_pcm : analysis_right),
     .rgb_in  (vout_data_analysis),
     .rgb_out (vout_data_osd)
 );
@@ -403,10 +426,12 @@ assign vout_data = vout_data_osd;
 frame_read_write #(
     .WRITE_V_FLIP     (1),
     .FRAME_WIDTH      (640),
-    .FRAME_HEIGHT     (480)
+    .FRAME_HEIGHT     (480),
+    .INTRO_SUPPORT    (1)
 ) frame_read_write_m0(
     .mem_clk           (ext_mem_clk),
     .rst               (rst_all),
+    .intro_active(intro_active && intro_visible),.intro_photo(intro_photo),.intro_slide(intro_slide),
     .Sdr_init_done     (Sdr_init_done),
     .Sdr_init_ref_vld  (Sdr_init_ref_vld),
     .Sdr_busy          (Sdr_busy),
@@ -422,8 +447,8 @@ frame_read_write #(
     .read_finish       (),
     .read_addr_0       (BUF0_ADDR),
     .read_addr_1       (BUF1_ADDR),
-    .read_addr_2       (24'd0),
-    .read_addr_3       (24'd0),
+    .read_addr_2       (FRAME_PIXELS*2),
+    .read_addr_3       (FRAME_PIXELS*3),
     .read_addr_index   (video_disp_buf_idx),
     .read_len          (FRAME_PIXELS),
     .read_en           (video_read_en),
@@ -441,8 +466,8 @@ frame_read_write #(
     .write_finish      (frame_write_finish),
     .write_addr_0      (BUF0_ADDR),
     .write_addr_1      (BUF1_ADDR),
-    .write_addr_2      (24'd0),
-    .write_addr_3      (24'd0),
+    .write_addr_2      (FRAME_PIXELS*2),
+    .write_addr_3      (FRAME_PIXELS*3),
     .write_addr_index  (write_buf_idx),
     .write_len         (FRAME_PIXELS),
     .write_en          (sd_card_write_en),
@@ -469,7 +494,7 @@ sdram U3(
 // ===================== 音频：内部 I2S 测试音 =====================
 science_audio_i2s u_science_audio_i2s (
     .clk(video_clk), .rst(rst_all),
-    .lesson(display_lesson_idx), .enabled(transition_display_valid && !voice_page),
+    .lesson(display_lesson_idx), .enabled(transition_display_valid && !voice_page && !intro_active),
     .bclk(audio_i2s_bclk), .lrck(audio_i2s_lrck), .dout(audio_i2s_dout),
     .sample_tick(), .pcm_left(), .pcm_right(), .lesson_step(), .melody_complete(melody_complete)
 );
@@ -550,8 +575,8 @@ hdmi_1_4b_transmitter_core_wrapper #(
     .O_axis_s_ready     (axis_s_ready),
 
     .I_audio_valid      (audio_valid),
-    .I_audio_left_data  (audio_left_data),
-    .I_audio_right_data (audio_right_data),
+    .I_audio_left_data  (hdmi_audio_left),
+    .I_audio_right_data (hdmi_audio_right),
     .I_acr_valid        (acr_valid),
     .I_acr_cts          (acr_cts),
     .I_acr_n            (acr_n),
@@ -584,9 +609,10 @@ hdmi_phy_wrapper #(
 
 // Secondary display: passive features from the SAME PCM/FFT as HDMI_B.
 // No new PLL, SDRAM port, PCM consumer control, or path into the main output.
-secondary_hdmi_tx u_secondary_hdmi_tx (
+secondary_hdmi_tx #(.INTRO_BLANKING(1)) u_secondary_hdmi_tx (
     .pixel_clk(video_clk),.serial_clk(hdmi_5x_clk),.rst(rst_all),
     .lesson(display_lesson_idx),.lesson_valid(transition_display_valid),
+    .blank(intro_active),
     .audio_valid(analysis_valid),.audio_left(analysis_left),.audio_right(analysis_right),
     .capture_start(fft_capture_start),.bin_valid(fft_bin_valid),.bin_channel(fft_bin_channel),
     .bin_number(fft_bin_number),.bin_magnitude(fft_bin_magnitude),

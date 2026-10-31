@@ -23,11 +23,90 @@ wire [23:0] abs_left=audio_left[23] ? (~audio_left+24'd1) : audio_left;
 wire [23:0] abs_right=audio_right[23] ? (~audio_right+24'd1) : audio_right;
 wire [23:0] peak_left_next=(audio_valid && abs_left>peak_left) ? abs_left : peak_left;
 wire [23:0] peak_right_next=(audio_valid && abs_right>peak_right) ? abs_right : peak_right;
+function [11:0] nature_glyph;
+    input [2:0] character;
+    input [3:0] row;
+    begin
+        nature_glyph=0;
+        case({character,row})
+            7'd1:nature_glyph=12'h040;
+            7'd2:nature_glyph=12'h040;
+            7'd3:nature_glyph=12'h040;
+            7'd4:nature_glyph=12'h040;
+            7'd5:nature_glyph=12'hffe;
+            7'd6:nature_glyph=12'h040;
+            7'd7:nature_glyph=12'h0a0;
+            7'd8:nature_glyph=12'h0a0;
+            7'd9:nature_glyph=12'h110;
+            7'd10:nature_glyph=12'h110;
+            7'd11:nature_glyph=12'h208;
+            7'd12:nature_glyph=12'hc06;
+            7'd17:nature_glyph=12'h040;
+            7'd18:nature_glyph=12'h080;
+            7'd19:nature_glyph=12'h7fc;
+            7'd20:nature_glyph=12'h404;
+            7'd21:nature_glyph=12'h404;
+            7'd22:nature_glyph=12'h7fc;
+            7'd23:nature_glyph=12'h404;
+            7'd24:nature_glyph=12'h404;
+            7'd25:nature_glyph=12'h7fc;
+            7'd26:nature_glyph=12'h404;
+            7'd27:nature_glyph=12'h404;
+            7'd28:nature_glyph=12'h7fc;
+            7'd33:nature_glyph=12'h214;
+            7'd34:nature_glyph=12'h392;
+            7'd35:nature_glyph=12'h490;
+            7'd36:nature_glyph=12'h6fe;
+            7'd37:nature_glyph=12'h910;
+            7'd38:nature_glyph=12'h528;
+            7'd39:nature_glyph=12'h228;
+            7'd40:nature_glyph=12'h444;
+            7'd41:nature_glyph=12'h882;
+            7'd43:nature_glyph=12'h524;
+            7'd44:nature_glyph=12'h892;
+            7'd49:nature_glyph=12'h210;
+            7'd50:nature_glyph=12'h410;
+            7'd51:nature_glyph=12'hf9e;
+            7'd52:nature_glyph=12'h8a2;
+            7'd53:nature_glyph=12'h8c2;
+            7'd54:nature_glyph=12'h892;
+            7'd55:nature_glyph=12'hf8a;
+            7'd56:nature_glyph=12'h88a;
+            7'd57:nature_glyph=12'h882;
+            7'd58:nature_glyph=12'h882;
+            7'd59:nature_glyph=12'hf82;
+            7'd60:nature_glyph=12'h88c;
+            7'd65:nature_glyph=12'h040;
+            7'd66:nature_glyph=12'hffe;
+            7'd67:nature_glyph=12'h040;
+            7'd68:nature_glyph=12'h7fc;
+            7'd70:nature_glyph=12'h7fc;
+            7'd71:nature_glyph=12'h444;
+            7'd72:nature_glyph=12'h444;
+            7'd73:nature_glyph=12'h7fc;
+            7'd74:nature_glyph=12'h404;
+            7'd75:nature_glyph=12'h400;
+            7'd76:nature_glyph=12'h800;
+            7'd81:nature_glyph=12'h040;
+            7'd82:nature_glyph=12'h7fc;
+            7'd83:nature_glyph=12'h208;
+            7'd84:nature_glyph=12'h110;
+            7'd85:nature_glyph=12'hffe;
+            7'd87:nature_glyph=12'h7fc;
+            7'd88:nature_glyph=12'h404;
+            7'd89:nature_glyph=12'h7fc;
+            7'd90:nature_glyph=12'h404;
+            7'd91:nature_glyph=12'h7fc;
+            7'd92:nature_glyph=12'h404;
+            default:nature_glyph=0;
+        endcase
+    end
+endfunction
 function [5:0] caption_length;
     input [2:0] page;
     begin case(page)
         0:caption_length=27; 1:caption_length=24; 2:caption_length=28;
-        3:caption_length=20; 4:caption_length=23; 5:caption_length=26; default:caption_length=27;
+        3:caption_length=20; 4:caption_length=23; 5:caption_length=26; 6:caption_length=6; default:caption_length=27;
     endcase end
 endfunction
 function [4:0] accent_start;
@@ -463,7 +542,7 @@ always @(posedge clk or posedge rst) begin
                 bars_right[i]<=approach(bars_right[i],bar_target(next_envelope_right[12:8],motion_phase+3'd6-i[2:0]));
             end
             if(lesson_idx!=caption_page) begin
-                caption_page<=(lesson_idx<=5) ? lesson_idx : 3'd0;
+                caption_page<=(lesson_idx<=6) ? lesson_idx : 3'd0;
                 scroll_char<=0; scroll_pixel<=0;
             end else if(scroll_pixel==11) begin
                 scroll_pixel<=0;
@@ -486,6 +565,7 @@ reg [2:0] bar_index,bar_column;
 reg [4:0] height,edge_alpha,breath_alpha,alpha;
 reg [6:0] text_index;
 reg [4:0] font_bits;
+reg [11:0] nature_bits;
 reg [3:0] font_row,font_column;
 reg is_right,gold;
 reg [12:0] env;
@@ -493,7 +573,7 @@ always @* begin
     draw=0; rgb=24'h0F1E30;
     corner_distance=0; corner_cut=0; side_x=0; edge_distance=0;
     bar_index=0; bar_column=0; height=0; edge_alpha=16; breath_alpha=9; alpha=0;
-    text_index=cursor_char-7'd38; font_bits=0; font_row=(y-10'd440)>>1;
+    text_index=cursor_char-7'd38; font_bits=0;nature_bits=0; font_row=(y-10'd440)>>1;
     font_column={1'b0,cursor_pixel[3:1]}; is_right=0; gold=0; env=0;
     if(de && y>=430 && y<464 && x>=8 && x<632) begin
         corner_distance=(y<447) ? y-10'd430 : 10'd463-y;
@@ -525,7 +605,10 @@ always @* begin
             alpha=(edge_alpha<breath_alpha) ? edge_alpha : breath_alpha;
             font_bits=font5x7(caption_char(caption_page,text_index[4:0]),font_row[2:0]);
             gold=text_index>=accent_start(caption_page);
-            if(font_column<5 && font_bits[4-font_column]) rgb=footer_color(alpha,gold);
+            if(caption_page==6) begin
+                nature_bits=nature_glyph(text_index[2:0],y-10'd440);
+                if(cursor_pixel<12 && nature_bits[11-cursor_pixel]) rgb=footer_color(alpha,1'b0);
+            end else if(font_column<5 && font_bits[4-font_column]) rgb=footer_color(alpha,gold);
         end
     end
 end

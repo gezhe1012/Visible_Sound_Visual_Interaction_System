@@ -21,6 +21,7 @@ reg [7:0] card[0:2097151];
 localparam BASE=4096;
 
 bmp_bilinear_reader dut(.*,
+    .scan_intro(1'b0),.intro_photo(),.intro_wav_offset(),.intro_samples(),
     .sd_init_done(1'b1),.bmp_width(16'd640),.bmp_height(16'd480));
 
 function integer source_channel(input integer px,py,ch);

@@ -1,9 +1,10 @@
 // Independent video-only instance of the EXISTING vendor HDMI transmitter.
 // Pixel/serial clocks are shared with HDMI_B; no additional PLL or audio path.
-module secondary_hdmi_tx(
+module secondary_hdmi_tx #(parameter INTRO_BLANKING=0)(
     input pixel_clk,serial_clk,rst,
     input [2:0] lesson,
     input lesson_valid,edid_trigger,
+    input blank,
     input audio_valid,
     input [23:0] audio_left,audio_right,
     input capture_start,bin_valid,bin_channel,
@@ -18,6 +19,12 @@ module secondary_hdmi_tx(
 );
 wire user,valid,last,ready,locked;
 wire [23:0] rgb;
+reg blank_frame;
+// Keep the secondary TMDS timing/lock alive, changing only active RGB at SOF.
+always @(posedge pixel_clk or posedge rst) begin
+    if(rst) blank_frame<=INTRO_BLANKING!=0;
+    else if(frame_tick) blank_frame<=INTRO_BLANKING!=0 && blank;
+end
 wire [9:0] ch0,ch1,ch2,clock_data;
 wire frame_tick,scene_clear,shown_right;
 wire [6:0] read_column,shown_head,shown_count;
@@ -67,7 +74,7 @@ hdmi_1_4b_transmitter_core_wrapper #(
 ) transmitter(
     .I_pixel_clk(pixel_clk),.I_rst(rst),.I_edid_read_trig(edid_trigger),
     .O_edid_read_valid(),.O_edid_read_data(),
-    .I_axis_s_user(user),.I_axis_s_valid(valid),.I_axis_s_last(last),.I_axis_s_data(rgb),.O_axis_s_ready(ready),
+    .I_axis_s_user(user),.I_axis_s_valid(valid),.I_axis_s_last(last),.I_axis_s_data(blank_frame ? 24'd0 : rgb),.O_axis_s_ready(ready),
     .I_audio_valid(1'b0),.I_audio_left_data(24'd0),.I_audio_right_data(24'd0),
     .I_acr_valid(1'b0),.I_acr_cts(20'd0),.I_acr_n(20'd0),
     .O_video_locked(locked),.O_ddc_scl(ddc_scl),.IO_ddc_sda(ddc_sda),

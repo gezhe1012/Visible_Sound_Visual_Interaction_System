@@ -1,0 +1,8 @@
+PASS nature_gate_netlist.v: 18 geometry/mode FFs, independent two-stage paths
+Traceback (most recent call last):
+  File "G:\BaiduNetdiskDownload\7_lab_ex_2026_nosoft\lab_ex5_i2s\tests\verify_nature_cdc_netlist.py", line 56, in <module>
+    audit(ROOT/'tests/nature_routed_netlist.v',True)
+  File "G:\BaiduNetdiskDownload\7_lab_ex_2026_nosoft\lab_ex5_i2s\tests\verify_nature_cdc_netlist.py", line 42, in audit
+    assert first in drivers,(file.name,'missing first',first)
+           ^^^^^^^^^^^^^^^^
+AssertionError: ('nature_routed_netlist.v', 'missing first', 'frame_read_write_m0/g_intro_map$u_address/p0[0]')

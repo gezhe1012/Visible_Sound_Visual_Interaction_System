@@ -42,16 +42,26 @@ rename_clock -name {ext_mem_clk_sft} -source [get_ports {clk}] -master_clock {cl
 rename_clock -name {video_clk}   -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[0]}]
 rename_clock -name {hdmi_5x_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[1]}]
 set_max_delay 10 -from [get_clocks {video_clk}] -to [get_ports {mic_sck mic_ws}]
-# Existing held-until-ack request -> THREE memory-domain synchronizer stages.
-# Only the first stage D is asynchronous. Match its pre/post-pack data pin;
-# never cut d0->d1, d1->d2, the ack, address payload, or any memory data path.
-# Elaborated behavioral RTL has no physical pin yet; later SDC reads bind it.
-set voice_read_req_first [get_pins -quiet {frame_read_write_m0/frame_fifo_read_m0/read_req_d0_reg*.d frame_read_write_m0/frame_fifo_read_m0/read_req_d0_reg*.mi*}]
-if {[llength $voice_read_req_first] == 1} {
-    set_false_path -from [get_clocks {video_clk}] -to $voice_read_req_first
-}
-# Science audio now uses video_clk with a rational 12.288MHz clock-enable.
-# The old audio PLL is retained only for its established power-up lock/reset.
+# Startup-only and frame-stable CDC bundles. Bound ONLY paths launched in
+# the source clock, passing these stable source signals and terminating at the
+# FIRST destination-clock FF. Subsequent synchronizer stages launch in the
+# destination clock, so they do not match these constraints.
+#
+# Using source bundles survives TD's cross-hierarchy slice packing, which may
+# rename a first sampler after an unrelated neighboring LUT. No entire clock
+# domain is excluded and no pixel, SDRAM data or FIFO Gray-pointer path matches.
+# Keep each SDC command on one physical line for TD's deferred SDC reader.
+#
+# read_req is held until ack and crosses three FFs. The read-buffer index has
+# two FFs and is held for a whole frame; use a finite bound rather than the old
+# name-dependent first-pin false path. Geometry has two FFs then a frame latch.
+set_max_delay -from [get_clocks {video_clk}] -to [get_clocks {ext_mem_clk}] -through [get_nets -quiet {u_nature_intro_controls/slide* u_nature_intro_controls/photo* u_nature_intro_controls/active* u_nature_intro_controls/visible* video_timing_data_m0/read_req u_video_fade_transition/display_buf_idx*}] 20 -datapath_only -nowarn
+# SD control toggles/levels are held until consumed; photo payload additionally
+# waits three SD clocks AFTER the synchronized request, beyond its two FFs.
+set_max_delay -from [get_clocks {video_clk ext_mem_clk}] -to [get_clocks {sd_card_clk}] -through [get_nets -quiet {u_nature_intro_controls/exit_request u_nature_intro_controls/autoplay u_nature_intro_controls/audio_request u_nature_intro_controls/audio_photo* u_nature_intro_controls/teaching_next u_nature_intro_controls/teaching_auto frame_write_toggle_mem sd_card_bmp_m0/write_finish_toggle}] 20 -datapath_only -nowarn
+# Video handshakes are stable levels/toggles, each with two sampling FFs.
+set_max_delay -from [get_clocks {sd_card_clk}] -to [get_clocks {video_clk}] -through [get_nets -quiet {intro_assets_ready intro_owner intro_audio_ack sd_card_bmp_m0/u_intro_loader/assets_ready sd_card_bmp_m0/u_intro_loader/owner sd_card_bmp_m0/g_intro_audio$u_wav/ack_toggle sd_card_bmp_m0/g_intro_audio$u_wav/play_ready}] 39 -datapath_only -nowarn
+# Science audio remains in video_clk; original audio PLL supplies reset lock.
 
 # ------------------------------------------------------------
 # 4. 从原 timing(2).sdc 迁移过来的 HDMI 像素/串行时钟约束

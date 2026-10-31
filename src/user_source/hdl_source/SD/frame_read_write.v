@@ -10,10 +10,14 @@ module frame_read_write
 	parameter BURST_SIZE             = 256,
 	parameter WRITE_V_FLIP           = 1,      // 1: vertical flip when writing TF/BMP frame into SDRAM
 	parameter FRAME_WIDTH            = 640,
-	parameter FRAME_HEIGHT           = 480
+	parameter FRAME_HEIGHT           = 480,
+    parameter INTRO_SUPPORT          = 0
 ) 
 (
-	input                            rst,                  
+	input                            rst,
+    input                            intro_active,
+    input [1:0]                      intro_photo,
+    input [5:0]                      intro_slide,
 	input                            mem_clk,                    // external memory controller user interface clock
 	input							 Sdr_init_done,
 	input							 Sdr_init_ref_vld,
@@ -103,6 +107,30 @@ assign write_ready = !write_fifo_full && write_used_words < 9'd480;
 
 wire O_wr_busy;
 wire O_rd_busy;
+wire raw_read_enable,mapped_read_enable;
+wire [ADDR_BITS-1:0] raw_read_address;
+wire [20:0] mapped_read_address;
+reg intro_meta,intro_synced;
+reg map_frame;
+always @(posedge mem_clk or posedge rst) begin
+    if(rst) begin intro_meta<=0;intro_synced<=0;map_frame<=0;end
+    else begin
+        intro_meta<=intro_active;intro_synced<=intro_meta;
+        if(read_fifo_aclr) map_frame<=INTRO_SUPPORT!=0 && intro_synced;
+    end
+end
+generate if(INTRO_SUPPORT!=0) begin:g_intro_map
+    nature_intro_address u_address(
+        .clk(mem_clk),.rst(rst),.frame_clear(read_fifo_aclr),.enabled(map_frame),
+        .photo_async(intro_photo),.slide_async(intro_slide),.request(raw_read_enable),
+        .mapped_request(mapped_read_enable),.address(mapped_read_address)
+    );
+end else begin:g_no_intro_map
+    assign mapped_read_enable=1'b0;
+    assign mapped_read_address=21'd0;
+end endgenerate
+assign App_rd_en=map_frame ? mapped_read_enable : raw_read_enable;
+assign App_rd_addr=map_frame ? mapped_read_address : raw_read_address;
 
 assign App_wr_busy = O_wr_busy;//下个时钟写指令拉高
 assign App_rd_busy = O_rd_busy;//读指令还没有过去十个时钟;因为写指令优先，不需要在意下个时钟是否是读指令
@@ -182,11 +210,13 @@ frame_fifo_read
 	.MEM_DATA_BITS              (MEM_DATA_BITS            ),
 	.ADDR_BITS                  (ADDR_BITS                ),
 	.BURST_BITS                 (BURST_BITS               ),
-	.BURST_SIZE                 (BURST_SIZE               )
+	.BURST_SIZE                 (BURST_SIZE               ),
+    .INTRO_SUPPORT             (INTRO_SUPPORT)
 )
 frame_fifo_read_m0
 (
 	.rst                        (rst                      ),
+    .intro_map                  (map_frame),
 	.mem_clk                    (mem_clk                  ),
     .Sdr_init_done				(Sdr_init_done),
 	.Sdr_init_ref_vld			(Sdr_init_ref_vld),
@@ -195,8 +225,8 @@ frame_fifo_read_m0
 	.App_wr_busy				(App_wr_busy),
     .O_rd_busy					(O_rd_busy),
 	
-    .App_rd_en					(App_rd_en),
-    .App_rd_addr				(App_rd_addr),
+    .App_rd_en					(raw_read_enable),
+    .App_rd_addr				(raw_read_address),
 	.read_req                   (read_req                 ),
 	.read_req_ack               (read_req_ack_mem         ),
 	.read_finish                (read_finish              ),

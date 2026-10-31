@@ -1,0 +1,632 @@
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_controls
+# tb_nature_controls
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:18 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:58:18 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:18 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:58:18 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:18 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:58:18 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_controls 
+# Start time: 17:58:18 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_controls(fast)
+# Loading work.nature_intro_controls(fast)
+# Loading work.waveform_key_control(fast)
+# ALL NATURE CONTROL TESTS PASSED: manual, autoplay, PCM ack, held-key quarantine, legacy keys
+# ** Note: $finish    : tb_nature_controls.sv(55)
+#    Time: 20420 ns  Iteration: 1  Instance: /tb_nature_controls
+# End time: 17:58:20 on Oct 31,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_address
+# tb_nature_address
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:21 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:58:21 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:21 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:58:21 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:21 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:58:21 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_address 
+# Start time: 17:58:21 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_address(fast)
+# Loading work.nature_intro_address(fast)
+# ALL NATURE ADDRESS TESTS PASSED: 132 full frames with stalls, all four layers, every slide position, aligned BL4 groups
+# ** Note: $finish    : tb_nature_address.sv(46)
+#    Time: 426859 us  Iteration: 1  Instance: /tb_nature_address
+# End time: 17:58:47 on Oct 31,2026, Elapsed time: 0:00:26
+# Errors: 0, Warnings: 0
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_loader
+# tb_nature_loader
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:48 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:58:48 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:48 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:58:49 on Oct 31,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:49 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:58:49 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_loader 
+# Start time: 17:58:49 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "nature_intro_loader(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_loader(fast)
+# Loading work.nature_intro_loader(fast)
+# ALL NATURE LOADER TESTS PASSED: four bank preload, out-of-order IDs, source/memory completion, bus handoff, old-card fallback
+# ** Note: $finish    : tb_nature_loader.sv(39)
+#    Time: 1095 ns  Iteration: 2  Instance: /tb_nature_loader
+# End time: 17:58:50 on Oct 31,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_wav
+# tb_nature_wav
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:51 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:58:51 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:51 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:58:51 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:52 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:58:52 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_wav 
+# Start time: 17:58:52 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../src/user_source/hdl_source/SD/nature_wav_player.v(37): (vopt-2685) [TFMPC] - Too few port connections for 'pcm_fifo'.  Expected 14, found 11.
+# ** Warning: ../src/user_source/hdl_source/SD/nature_wav_player.v(37): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../src/user_source/hdl_source/SD/nature_wav_player.v(37): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../src/user_source/hdl_source/SD/nature_wav_player.v(37): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Note: (vopt-143) Recognized 1 FSM in module "nature_wav_player(fast)".
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_wav(fast)
+# Loading work.nature_wav_player(fast)
+# Loading work.wfifo_32_32_512(fast)
+# Loading work.fifo_cross_domain_addr_process_al_wfifo_32_32_512(fast)
+# Loading work.ram_infer_wfifo_32_32_512(fast)
+# ALL NATURE WAV TESTS PASSED: four real PCM streams, 2400 signed samples, 100/25MHz FIFO, clean exit, bad header muted/acknowledged
+# ** Note: $finish    : tb_nature_wav.sv(82)
+#    Time: 53977160 ns  Iteration: 1  Instance: /tb_nature_wav
+# End time: 17:58:55 on Oct 31,2026, Elapsed time: 0:00:03
+# Errors: 0, Warnings: 7
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_bandwidth
+# tb_nature_bandwidth
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:56 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:58:56 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:57 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:58:57 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:58:57 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:58:57 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_bandwidth 
+# Start time: 17:58:57 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "frame_fifo_write(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "frame_fifo_read(fast)".
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../src/user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(140): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(140): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(140): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(140): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(192): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(192): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(192): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../src/user_source/hdl_source/SD/frame_read_write.v(192): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_bandwidth(fast)
+# Loading work.frame_read_write(fast)
+# Loading work.nature_intro_address(fast)
+# Loading work.wfifo_32_32_512(fast)
+# Loading work.fifo_cross_domain_addr_process_al_wfifo_32_32_512(fast)
+# Loading work.ram_infer_wfifo_32_32_512(fast)
+# Loading work.frame_fifo_write(fast)
+# Loading work.rfifo_32_32_512(fast)
+# Loading work.fifo_cross_domain_addr_process_al_rfifo_32_32_512(fast)
+# Loading work.ram_infer_rfifo_32_32_512(fast)
+# Loading work.frame_fifo_read(fast)
+# ALL NATURE BANDWIDTH TESTS PASSED: 1536000 ordered pixels, 40/25MHz, 4205 refreshes, all four banks and legacy bypass
+# ** Note: $finish    : tb_nature_bandwidth.sv(69)
+#    Time: 76978 us  Iteration: 1  Instance: /tb_nature_bandwidth
+# End time: 17:59:06 on Oct 31,2026, Elapsed time: 0:00:09
+# Errors: 0, Warnings: 14
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_card
+# tb_nature_card
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:07 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:59:07 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:07 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:59:07 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:07 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:59:07 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_card 
+# Start time: 17:59:07 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 2 FSMs in module "bmp_bilinear_reader(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_card(fast)
+# Loading work.bmp_bilinear_reader(fast)
+# PASS exported intro BMP 0: 307200 unchanged pixels, offset=128, WAV tail skipped
+# PASS exported intro BMP 1: 307200 unchanged pixels, offset=128, WAV tail skipped
+# PASS exported intro BMP 2: 307200 unchanged pixels, offset=128, WAV tail skipped
+# PASS exported intro BMP 3: 307200 unchanged pixels, offset=128, WAV tail skipped
+# ALL NATURE CARD TESTS PASSED: four actual BMP packages, manifest identity, original five-page order, 1228800 pixels
+# ** Note: $finish    : tb_nature_card.sv(86)
+#    Time: 566018890 ns  Iteration: 1  Instance: /tb_nature_card
+# End time: 17:59:30 on Oct 31,2026, Elapsed time: 0:00:23
+# Errors: 0, Warnings: 0
+Reading C:/modeltech64_10.6e/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# set TEST_TOP tb_nature_preview
+# tb_nature_preview
+#  do run_nature.do
+# ../src/user_source/hdl_source
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:31 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/nature_intro_controls.v ../src/user_source/hdl_source/waveform_key_control.v ../src/user_source/hdl_source/nature_intro_address.v ../src/user_source/hdl_source/SD/nature_intro_loader.v ../src/user_source/hdl_source/SD/nature_wav_player.v ../src/user_source/hdl_source/IP/afifo_16_32_256.v tb_nature_controls.sv tb_nature_address.sv tb_nature_loader.sv tb_nature_wav.sv 
+# -- Compiling module nature_intro_controls
+# -- Compiling module waveform_key_control
+# -- Compiling module nature_intro_address
+# -- Compiling module nature_intro_loader
+# -- Compiling module nature_wav_player
+# -- Compiling module wfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+# -- Compiling module ram_infer_wfifo_32_32_512
+# -- Compiling module tb_nature_controls
+# -- Compiling module tb_nature_address
+# -- Compiling module tb_nature_loader
+# -- Compiling module tb_nature_wav
+# 
+# Top level modules:
+# 	tb_nature_controls
+# 	tb_nature_address
+# 	tb_nature_loader
+# 	tb_nature_wav
+# End time: 17:59:31 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:31 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/SD/bmp_bilinear_reader.v ../src/user_source/hdl_source/IP/afifo_32_16_256.v ../src/user_source/hdl_source/SD/frame_fifo_read.v ../src/user_source/hdl_source/SD/frame_fifo_write.v ../src/user_source/hdl_source/SD/frame_read_write.v tb_nature_card.sv tb_nature_bandwidth.sv 
+# -- Compiling module bmp_bilinear_reader
+# -- Compiling module rfifo_32_32_512
+# -- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+# -- Compiling module ram_infer_rfifo_32_32_512
+# -- Compiling module frame_fifo_read
+# -- Compiling module frame_fifo_write
+# -- Compiling module frame_read_write
+# -- Compiling module tb_nature_card
+# -- Compiling module tb_nature_bandwidth
+# 
+# Top level modules:
+# 	tb_nature_card
+# 	tb_nature_bandwidth
+# End time: 17:59:31 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+# Start time: 17:59:31 on Oct 31,2026
+# vlog -work nature_work ../src/user_source/hdl_source/sound_theme_footer.v ../src/user_source/hdl_source/video_osd_overlay.v tb_nature_preview.sv 
+# -- Compiling module sound_theme_footer
+# -- Compiling module video_osd_overlay
+# -- Compiling module tb_nature_preview
+# 
+# Top level modules:
+# 	tb_nature_preview
+# End time: 17:59:31 on Oct 31,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -c -voptargs="+acc" -L nature_work nature_work.tb_nature_preview 
+# Start time: 17:59:31 on Oct 31,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_nature_preview(fast)
+# Loading work.video_osd_overlay(fast)
+# Loading work.sound_theme_footer(fast)
+# ALL NATURE PREVIEW TESTS PASSED: four 640x480 compositions, original logo/time/parameters, Chinese ticker, original footer bars
+# ** Note: $finish    : tb_nature_preview.sv(45)
+#    Time: 49546560 ns  Iteration: 1  Instance: /tb_nature_preview
+# End time: 17:59:35 on Oct 31,2026, Elapsed time: 0:00:04
+# Errors: 0, Warnings: 0
