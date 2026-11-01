@@ -1,0 +1,81 @@
+[
+  {
+    "photo": 0,
+    "source": "G:\\BaiduNetdiskDownload\\7_lab_ex_2026_nosoft\\lab_ex5_i2s\\bmp_640x480_fit\\OIP-C (1).bmp",
+    "source_sha256": "4eb854166dd376ebe406df86eba7462ae1456657f7c9d29ee2fd2695cc25e487",
+    "bmp": "INTRO1.BMP",
+    "bmp_sha256": "360354f098728506bc8643fa87c3a2c2e861a3e6d1ef611cd20329f47b8ecc23",
+    "wav": "INTRO1.WAV",
+    "wav_sha256": "937347b35af99818d3459cb8d115a4e7e00d6ad4c2409d769311def669720008",
+    "wav_relative_sector": 1801,
+    "sample_rate": 48000,
+    "samples": 384000,
+    "source_file_unchanged": true,
+    "pixel_data_unchanged": true,
+    "foreground_roi": null,
+    "foreground_resize": null
+  },
+  {
+    "photo": 1,
+    "source": "G:\\BaiduNetdiskDownload\\7_lab_ex_2026_nosoft\\lab_ex5_i2s\\bmp_640x480_fit\\OIP-C.bmp",
+    "source_sha256": "d45256168ff76bd2fbab319833fb68aa9b484d827f09e37333cbef6fe5b13ae6",
+    "bmp": "INTRO2.BMP",
+    "bmp_sha256": "52ffe370a3d7f2e1bac7ab490ced4de13d4585ae3e9c22cb58ec69385870787f",
+    "wav": "INTRO2.WAV",
+    "wav_sha256": "7962ef27938f52b98a6bb50ce1ef71195039d2e91f9444bede083af0e21ba823",
+    "wav_relative_sector": 1801,
+    "sample_rate": 48000,
+    "samples": 384000,
+    "source_file_unchanged": true,
+    "pixel_data_unchanged": false,
+    "foreground_roi": [
+      0,
+      0,
+      512,
+      384
+    ],
+    "foreground_resize": "offline bilinear, aspect preserved, SDRAM BL4 safe"
+  },
+  {
+    "photo": 2,
+    "source": "G:\\BaiduNetdiskDownload\\7_lab_ex_2026_nosoft\\lab_ex5_i2s\\bmp_640x480_fit\\下载 (1).bmp",
+    "source_sha256": "6d8055e45b0e54b1f27851bd35fc6881aec8d89a283cffb6b363926edf11891e",
+    "bmp": "INTRO3.BMP",
+    "bmp_sha256": "05eb2949d4f290bad450c5c54e797fcb7aa3b671f786c0e58960b52f1f869755",
+    "wav": "INTRO3.WAV",
+    "wav_sha256": "20b61cfff36610956fafc58f4a060063c48c4e5557dba2c24d80bc39c13b008d",
+    "wav_relative_sector": 1801,
+    "sample_rate": 48000,
+    "samples": 384000,
+    "source_file_unchanged": true,
+    "pixel_data_unchanged": false,
+    "foreground_roi": [
+      0,
+      0,
+      512,
+      384
+    ],
+    "foreground_resize": "offline bilinear, aspect preserved, SDRAM BL4 safe"
+  },
+  {
+    "photo": 3,
+    "source": "G:\\BaiduNetdiskDownload\\7_lab_ex_2026_nosoft\\lab_ex5_i2s\\bmp_640x480_fit\\下载.bmp",
+    "source_sha256": "88ccec9f3f659207d6dc3db9a0dec9d73cd11240b61e13729b7fb3d8d417b989",
+    "bmp": "INTRO4.BMP",
+    "bmp_sha256": "133359ad90e5739ffba061fa4264273f6916c0a9e9b9073d4e0792677b268c38",
+    "wav": "INTRO4.WAV",
+    "wav_sha256": "ec69612425074182919d181c4473bfebb18e51cc84e3812126028374a045c69f",
+    "wav_relative_sector": 1801,
+    "sample_rate": 48000,
+    "samples": 384000,
+    "source_file_unchanged": true,
+    "pixel_data_unchanged": false,
+    "foreground_roi": [
+      0,
+      0,
+      512,
+      384
+    ],
+    "foreground_resize": "offline bilinear, aspect preserved, SDRAM BL4 safe"
+  }
+]
